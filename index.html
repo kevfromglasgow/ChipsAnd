@@ -3,39 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChipsAnd Admin</title>
+    <title>ChipsAnd Admin Pro</title>
     <style>
         body { font-family: -apple-system, sans-serif; padding: 20px; background: #f0f2f5; max-width: 600px; margin: 0 auto; }
         .section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        /* Tab System */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; background: #ddd; font-weight: bold; }
+        .tab-btn.active { background: #0070f3; color: white; }
+        
+        /* Order Cards */
         .order-card { background: #fffbe6; border: 1px solid #ffe58f; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        .history-card { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; }
+        
         .item-list { color: #555; font-size: 0.9rem; margin: 10px 0; padding-left: 20px; font-weight: 500; }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; }
         .btn-ready { background: #27ae60; margin-top: 10px; }
         .btn-toggle { background: #0070f3; width: auto; min-width: 100px; }
         .sold-out { background: #ff4757; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .order-meta { font-size: 0.75rem; color: #888; margin-top: 5px; }
+        
+        .hidden { display: none; }
+        .stat-box { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
     </style>
 </head>
 <body>
-    <h1>ChipsAnd Dashboard 🚛</h1>
-    <p style="font-size: 0.8rem; color: #666;">Tip: Tap anywhere on this screen once to enable the order "Ping" sound.</p>
-
-    <div class="section">
-        <h2>🔔 Active Orders</h2>
-        <div id="orders-list">Loading...</div>
+    <h1>ChipsAnd Manager 🚛</h1>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('live')">Live Orders</button>
+        <button class="tab-btn" onclick="showTab('history')">Sales History</button>
+        <button class="tab-btn" onclick="showTab('menu')">Menu</button>
     </div>
 
-    <div class="section">
-        <h2>🍔 Menu Availability</h2>
-        <div id="menu-list">Loading...</div>
+    <div id="tab-live">
+        <div class="section">
+            <h2>🔔 Active Orders</h2>
+            <div id="orders-list">Loading...</div>
+        </div>
+    </div>
+
+    <div id="tab-history" class="hidden">
+        <div class="section">
+            <div class="stat-box">
+                <h3 id="total-sales-count">0 Orders Sold</h3>
+                <p style="font-size: 0.8rem; color: #666;">(Completed orders from today)</p>
+            </div>
+            <h2>📜 Completed Today</h2>
+            <div id="history-list">No completed orders yet.</div>
+        </div>
+    </div>
+
+    <div id="tab-menu" class="hidden">
+        <div class="section">
+            <h2>🍔 Availability</h2>
+            <div id="menu-list">Loading...</div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot, doc, updateDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- PASTE YOUR FIREBASE CONFIG HERE ---
         const firebaseConfig = {
             apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8",
             authDomain: "chipsand-13831.firebaseapp.com",
@@ -48,51 +78,60 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- 1. LIVE ORDERS LISTENER ---
-        // We order by createdAt descending so newest is at the top
-        const q = query(
-            collection(db, "orders"), 
-            where("status", "==", "pending"), 
-            orderBy("createdAt", "desc")
-        );
+        // --- TAB LOGIC ---
+        window.showTab = (tabName) => {
+            document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            event.target.classList.add('active');
+        };
 
-        onSnapshot(q, (snapshot) => {
+        // --- 1. LIVE ORDERS ---
+        const liveQuery = query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
+        onSnapshot(liveQuery, (snapshot) => {
             const list = document.getElementById('orders-list');
             
-            // Play sound for brand new orders only
-            snapshot.docChanges().forEach((change) => {
+            snapshot.docChanges().forEach(change => {
                 if (change.type === "added") {
-                    const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3');
-                    audio.play().catch(err => console.log("Audio waiting for user interaction..."));
+                    new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3').play().catch(() => {});
                 }
             });
 
             list.innerHTML = snapshot.empty ? "No active orders." : "";
-            
             snapshot.forEach(orderDoc => {
                 const data = orderDoc.data();
-                const id = orderDoc.id;
-                
-                // Build the list of items for the owner to cook
-                const itemsHtml = data.items 
-                    ? data.items.map(i => `<li>${i.name}</li>`).join('') 
-                    : "<li>Details loading...</li>";
-
+                const itemsHtml = data.items ? data.items.map(i => `<li>${i.name}</li>`).join('') : "<li>Details loading...</li>";
                 const div = document.createElement('div');
                 div.className = 'order-card';
                 div.innerHTML = `
-                    <div class="flex-between">
-                        <strong>Order #${id.slice(-4)}</strong> 
-                        <span style="font-size: 0.8rem; font-weight: bold; color: #d4a017;">${data.type}</span>
-                    </div>
+                    <div class="flex-between"><strong>Order #${orderDoc.id.slice(-4)}</strong> <span>${data.type}</span></div>
                     <ul class="item-list">${itemsHtml}</ul>
-                    <button class="btn btn-ready" onclick="markReady('${id}')">MARK READY</button>
+                    <button class="btn btn-ready" onclick="markReady('${orderDoc.id}')">MARK READY</button>
                 `;
                 list.appendChild(div);
             });
         });
 
-        // --- 2. MENU TOGGLE LISTENER ---
+        // --- 2. SALES HISTORY ---
+        const historyQuery = query(collection(db, "orders"), where("status", "==", "ready"), orderBy("createdAt", "desc"));
+        onSnapshot(historyQuery, (snapshot) => {
+            const list = document.getElementById('history-list');
+            const countLabel = document.getElementById('total-sales-count');
+            
+            countLabel.innerText = `${snapshot.size} Orders Sold`;
+            list.innerHTML = snapshot.empty ? "No completed orders." : "";
+            
+            snapshot.forEach(orderDoc => {
+                const data = orderDoc.data();
+                const div = document.createElement('div');
+                div.className = 'history-card';
+                const time = data.createdAt ? data.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--';
+                div.innerHTML = `<strong>${time}</strong> - Order #${orderDoc.id.slice(-4)} (${data.type})`;
+                list.appendChild(div);
+            });
+        });
+
+        // --- 3. MENU LISTENER ---
         onSnapshot(collection(db, "menu"), (snapshot) => {
             const list = document.getElementById('menu-list');
             list.innerHTML = "";
@@ -101,26 +140,16 @@
                 const div = document.createElement('div');
                 div.className = 'flex-between';
                 div.style.padding = "10px 0";
-                div.innerHTML = `
-                    <span>${item.name}</span>
+                div.innerHTML = `<span>${item.name}</span>
                     <button class="btn btn-toggle ${item.is_available ? '' : 'sold-out'}" onclick="toggleStatus('${doc.id}', ${item.is_available})">
-                        ${item.is_available ? 'In Stock' : 'Sold Out'}
-                    </button>
-                `;
+                        ${item.is_available ? 'In Stock' : 'Sold Out'}</button>`;
                 list.appendChild(div);
             });
         });
 
         // --- ACTIONS ---
-        window.markReady = async (id) => {
-            const orderRef = doc(db, "orders", id);
-            await updateDoc(orderRef, { status: "ready" });
-        };
-
-        window.toggleStatus = async (id, currentStatus) => {
-            const itemRef = doc(db, "menu", id);
-            await updateDoc(itemRef, { is_available: !currentStatus });
-        };
+        window.markReady = async (id) => { await updateDoc(doc(db, "orders", id), { status: "ready" }); };
+        window.toggleStatus = async (id, s) => { await updateDoc(doc(db, "menu", id), { is_available: !s }); };
     </script>
 </body>
 </html>
