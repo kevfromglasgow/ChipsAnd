@@ -3,49 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChipsAnd | Menu</title>
+    <title>ChipsAnd | Elgin Street Food</title>
     <script src="https://js.stripe.com/v3/"></script>
     <style>
-        :root { --brand-orange: #e67e22; --brand-dark: #1a1a1a; --brand-grey: #333333; --text-main: #ffffff; }
-        body { font-family: -apple-system, sans-serif; padding: 0; margin: 0; background: var(--brand-grey); color: var(--text-main); padding-bottom: 220px; }
-        header { background: var(--brand-dark); padding: 20px; text-align: center; border-bottom: 4px solid var(--brand-orange); }
-        .logo { max-width: 140px; }
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-        
-        /* Menu Grid */
-        .category-section { margin-bottom: 30px; }
-        .category-title { color: var(--brand-orange); text-transform: uppercase; border-bottom: 2px solid var(--brand-orange); padding-bottom: 5px; margin-bottom: 15px; font-weight: bold; }
-        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-        .item-card { background: var(--brand-dark); border: 1px solid #444; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .add-btn { background: var(--brand-orange); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        :root {
+            --brand-orange: #e67e22;
+            --brand-dark: #1a1a1a;
+            --brand-grey: #333333;
+            --cream-bg: #FDF6E3; /* Mockup 1: Airy Cream */
+            --charcoal-text: #333333;
+            --glass-white: rgba(255, 255, 255, 0.7);
+        }
 
-        /* Advanced Cart Bar */
-        #cart-bar { position: fixed; bottom: 0; width: 100%; background: #222; border-top: 4px solid var(--brand-orange); display: none; box-sizing: border-box; z-index: 1000; padding: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
-        .cart-items-list { max-height: 150px; overflow-y: auto; margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 10px; }
-        .cart-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.9rem; }
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 0; margin: 0; 
+            background: var(--cream-bg); 
+            color: var(--charcoal-text);
+            padding-bottom: 220px; /* Space for the floating cart */
+        }
+
+        /* 2026 Header */
+        header {
+            background: var(--brand-dark);
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--brand-orange);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .logo { max-width: 160px; height: auto; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        /* Neumorphic Category Chips (Sticky Top Bar) */
+        .category-tabs {
+            position: sticky; top: 0; background: var(--cream-bg); z-index: 900;
+            display: flex; gap: 10px; overflow-x: auto; padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .cat-chip {
+            background: white; border: none; padding: 10px 20px;
+            border-radius: 30px; white-space: nowrap; font-weight: bold;
+            color: var(--brand-grey); cursor: pointer;
+            box-shadow: 4px 4px 10px #dfdbcb, -4px -4px 10px #ffffff;
+            transition: 0.2s;
+        }
+        .cat-chip:active, .cat-chip.active {
+            color: white; background: var(--brand-orange);
+            box-shadow: inset 4px 4px 5px #c36e1c, inset -4px -4px 5px #e69335;
+        }
+
+        /* Category Grid */
+        .category-section { margin-bottom: 50px; }
+        .category-title { color: var(--brand-orange); text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid var(--brand-orange); padding-bottom: 5px; margin-bottom: 25px; font-size: 1.5rem; font-weight: bold; }
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+        /* Tactical Product Cards */
+        .item-card {
+            background: white; border-radius: 20px; padding: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+            box-shadow: 6px 6px 15px #dfdbcb, -6px -6px 15px #ffffff;
+            transition: transform 0.2s;
+        }
+        .item-card:active { transform: scale(0.98); }
+        .item-card.sold-out { opacity: 0.4; filter: grayscale(1); pointer-events: none; }
+
+        .item-name { font-weight: bold; font-size: 1.2rem; }
+        .item-price { color: var(--brand-orange); font-weight: bold; font-size: 1.1rem; }
         
-        /* Quantity Controls */
-        .qty-controls { display: flex; align-items: center; gap: 10px; background: #333; border-radius: 5px; padding: 5px 10px; }
-        .qty-btn { background: var(--brand-orange); border: none; color: white; width: 25px; height: 25px; border-radius: 3px; cursor: pointer; font-weight: bold; }
-        
-        .total-display { font-size: 1.3rem; font-weight: bold; text-align: center; margin-bottom: 15px; }
-        .checkout-group { display: flex; gap: 10px; }
-        .pay-btn { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        
-        .sold-out { opacity: 0.4; filter: grayscale(1); pointer-events: none; }
+        /* Tactical Plus/Minus Buttons */
+        .tactical-btn {
+            background: var(--brand-orange); border: none; color: white;
+            width: 35px; height: 35px; border-radius: 8px;
+            font-weight: bold; font-size: 1.2rem; cursor: pointer;
+            box-shadow: 2px 2px 5px #dfdbcb, -2px -2px 5px #ffffff;
+            transition: 0.1s;
+        }
+        .tactical-btn:active {
+            box-shadow: inset 2px 2px 3px #c36e1c, inset -2px -2px 3px #e69335;
+        }
+
+        /* Glassmorphism Floating Cart (2026) */
+        #cart-bar {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 600px;
+            background: var(--glass-white); backdrop-filter: blur(10px);
+            padding: 20px; border-radius: 25px;
+            display: none; box-sizing: border-box; z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        .total-display { font-size: 1.6rem; font-weight: bold; text-align: center; margin-bottom: 15px; letter-spacing: 1px; }
+        .checkout-group { display: flex; gap: 15px; }
+        .pay-btn { flex: 1; padding: 18px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
+        .pay-btn:active { transform: scale(0.96); }
+
         #closed-screen { display: none; text-align: center; padding: 100px 20px; }
     </style>
 </head>
 <body>
     <header><img src="ChipsAndLogo.jpg" alt="ChipsAnd Logo" class="logo"></header>
-    <div id="active-menu" class="container"><div id="menu-display">Loading ChipsAnd...</div></div>
-    <div id="closed-screen"><h2>Truck is currently closed!</h2></div>
+
+    <div id="active-menu">
+        <div class="category-tabs" id="cat-tabs"></div>
+        
+        <div class="container">
+            <div id="menu-display"></div>
+        </div>
+    </div>
+
+    <div id="closed-screen"><div style="font-size: 5rem;">🚚</div><h2>ChipsAnd is Currently Closed</h2><p>Elgin's sustainable street food.</p></div>
 
     <div id="cart-bar">
-        <div id="cart-items" class="cart-items-list"></div>
-        <div class="total-display">Total: £<span id="total-price">0.00</span></div>
+        <div class="total-display">Your Bag: £<span id="total-price">0.00</span></div>
         <div class="checkout-group">
-            <button class="pay-btn" style="background: #27ae60; color: white;" onclick="startCheckout()">Card</button>
+            <button class="pay-btn" style="background: #27ae60; color: white;" onclick="startCheckout()">Card Payment</button>
             <button class="pay-btn" style="background: var(--brand-orange); color: white;" onclick="payOnCollection()">Pay at Truck</button>
         </div>
     </div>
@@ -54,21 +127,27 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // CONFIG (Already set for ChipsAnd)
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const stripe = Stripe('pk_test_51TDsgdBRv0TelT5pTQP1OvmhDzwfqFTF9nMmFhLNBMv76stDiKbjH2GQwDnqTNN29MhaH9uexTgefFf2NjTqNkhV001zUMBUDJ');
 
-        let cart = {}; // Using an object to track quantities by name
+        let cart = [];
 
+        // 1. WATCH SHOP STATUS (Open/Closed)
         onSnapshot(doc(db, "settings", "truck_status"), (docSnap) => {
             const isClosed = docSnap.data()?.is_closed;
             document.getElementById('active-menu').style.display = isClosed ? 'none' : 'block';
             document.getElementById('closed-screen').style.display = isClosed ? 'block' : 'none';
         });
 
+        // 2. LOAD & CATEGORIZE MENU
         onSnapshot(collection(db, "menu"), (snapshot) => {
             const display = document.getElementById('menu-display');
-            display.innerHTML = "";
+            const tabs = document.getElementById('cat-tabs');
+            display.innerHTML = ""; tabs.innerHTML = "";
+            
             const categories = {};
             snapshot.forEach(docSnap => {
                 const item = docSnap.data();
@@ -76,69 +155,57 @@
                 if (!categories[cat]) categories[cat] = [];
                 categories[cat].push({ id: docSnap.id, ...item });
             });
-            ["CHIPS", "TOASTIES", "PASTA POTS", "SIDES", "DRINKS"].forEach(catName => {
+
+            // Layout Priority
+            const sortOrder = ["CHIPS", "TOASTIES", "PASTA POTS", "SIDES", "DRINKS"];
+            
+            sortOrder.forEach(catName => {
                 if (categories[catName]) {
+                    // Create Category Chip
+                    const chip = document.createElement('button');
+                    chip.className = 'cat-chip'; chip.innerText = catName;
+                    chip.onclick = () => document.getElementById(`section-${catName}`).scrollIntoView({behavior: 'smooth', block: 'start'});
+                    tabs.appendChild(chip);
+
+                    // Create Category Section
                     const section = document.createElement('div');
-                    section.className = 'category-section';
+                    section.className = 'category-section'; section.id = `section-${catName}`;
                     section.innerHTML = `<div class="category-title">${catName}</div><div class="items-grid" id="grid-${catName}"></div>`;
                     display.appendChild(section);
+
+                    const grid = document.getElementById(`grid-${catName}`);
                     categories[catName].forEach(item => {
                         const div = document.createElement('div');
                         div.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
-                        div.innerHTML = `<div><strong>${item.name}</strong><br>£${item.price.toFixed(2)}</div>
-                            <button class="add-btn" onclick="updateCart('${item.name}', ${item.price}, 1)">ADD</button>`;
-                        document.getElementById(`grid-${catName}`).appendChild(div);
+                        div.innerHTML = `
+                            <div>
+                                <span class="item-name">${item.name}</span><br>
+                                <span class="item-price">£${item.price.toFixed(2)}</span>
+                            </div>
+                            <button class="tactical-btn" onclick="addToCart('${item.name}', ${item.price})">+</button>
+                        `;
+                        grid.appendChild(div);
                     });
                 }
             });
         });
 
-        window.updateCart = (name, price, change) => {
-            if (!cart[name]) {
-                if (change > 0) cart[name] = { price, qty: 1 };
-            } else {
-                cart[name].qty += change;
-                if (cart[name].qty <= 0) delete cart[name];
-            }
-            renderCart();
+        window.addToCart = (name, price) => {
+            cart.push({ name, price });
+            document.getElementById('cart-bar').style.display = 'block';
+            const total = cart.reduce((s, i) => s + i.price, 0);
+            document.getElementById('total-price').innerText = total.toFixed(2);
         };
 
-        function renderCart() {
-            const list = document.getElementById('cart-items');
-            const bar = document.getElementById('cart-bar');
-            list.innerHTML = "";
-            let total = 0;
-            let count = 0;
-
-            for (const name in cart) {
-                const item = cart[name];
-                total += item.price * item.qty;
-                count += item.qty;
-                const row = document.createElement('div');
-                row.className = 'cart-row';
-                row.innerHTML = `
-                    <span>${name}</span>
-                    <div class="qty-controls">
-                        <button class="qty-btn" onclick="updateCart('${name}', ${item.price}, -1)">-</button>
-                        <span>${item.qty}</span>
-                        <button class="qty-btn" onclick="updateCart('${name}', ${item.price}, 1)">+</button>
-                    </div>
-                `;
-                list.appendChild(row);
-            }
-
-            document.getElementById('total-price').innerText = total.toFixed(2);
-            bar.style.display = count > 0 ? 'block' : 'none';
-        }
+        window.startCheckout = async () => {
+            const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: cart }) });
+            const session = await res.json();
+            localStorage.setItem('last_cart', JSON.stringify(cart));
+            await stripe.redirectToCheckout({ sessionId: session.id });
+        };
 
         window.payOnCollection = async () => {
-            const orderItems = [];
-            for (const name in cart) {
-                for (let i = 0; i < cart[name].qty; i++) {
-                    orderItems.push({ name, price: cart[name].price });
-                }
-            }
-            const docRef = await addDoc(collection(db, "orders"), { items: orderItems, status: "pending", type: "Pickup", note: "", createdAt: serverTimestamp() });
+            const docRef = await addDoc(collection(db, "orders"), { items: cart, status: "pending", type: "Pickup", note: "", createdAt: serverTimestamp() });
             window.location.href = `track.html?id=${docRef.id}`;
         };
     </script>
