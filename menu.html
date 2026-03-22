@@ -10,102 +10,180 @@
             --brand-orange: #e67e22;
             --brand-dark: #1a1a1a;
             --brand-grey: #333333;
+            --text-main: #ffffff;
+            --text-dim: #aaaaaa;
         }
 
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             padding: 0; 
             margin: 0; 
             background: var(--brand-grey); 
-            color: white;
-            padding-bottom: 150px;
+            color: var(--text-main);
+            padding-bottom: 160px; /* Space for fixed cart */
         }
 
+        /* Header & Logo */
         header {
             background: var(--brand-dark);
-            padding: 20px;
+            padding: 30px 20px;
             text-align: center;
-            border-bottom: 3px solid var(--brand-orange);
+            border-bottom: 4px solid var(--brand-orange);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
         .logo {
-            max-width: 150px;
+            max-width: 180px;
             height: auto;
         }
 
         .container {
-            max-width: 600px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        h2 {
-            border-left: 5px solid var(--brand-orange);
-            padding-left: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 30px;
-            color: var(--brand-orange);
+        /* Category Styling */
+        .category-section {
+            margin-bottom: 50px;
         }
 
+        .category-title {
+            color: var(--brand-orange);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-bottom: 2px solid var(--brand-orange);
+            padding-bottom: 8px;
+            margin-bottom: 25px;
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        /* Responsive Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        /* Item Card Styling */
         .item-card { 
             background: var(--brand-dark); 
             padding: 20px; 
-            border-radius: 8px; 
-            margin-bottom: 15px; 
+            border-radius: 12px; 
             display: flex; 
+            flex-direction: column; 
             justify-content: space-between; 
-            align-items: center; 
             border: 1px solid #444;
-            transition: transform 0.2s;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
 
-        .item-card:active { transform: scale(0.98); }
+        .item-card:hover {
+            border-color: var(--brand-orange);
+            transform: translateY(-4px);
+            box-shadow: 0 6px 15px rgba(230, 126, 34, 0.2);
+        }
 
-        .item-info { flex: 1; }
-        .item-name { font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 4px; }
-        .item-price { color: var(--brand-orange); font-weight: bold; }
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .item-name { 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .item-price { 
+            color: var(--brand-orange); 
+            font-weight: bold; 
+            font-size: 1.2rem;
+            margin-left: 10px;
+        }
+
+        .item-desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+            font-style: italic;
+            line-height: 1.4;
+        }
         
         .add-btn { 
             background: var(--brand-orange); 
             color: white; 
             border: none; 
-            padding: 12px 20px; 
-            border-radius: 5px; 
+            padding: 14px; 
+            border-radius: 8px; 
             font-weight: bold; 
-            cursor: pointer; 
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background 0.2s;
         }
 
-        .item-card.sold-out { opacity: 0.4; filter: grayscale(1); }
+        .add-btn:hover { background: #d35400; }
+        .add-btn:active { transform: scale(0.96); }
 
-        /* Cart Bar */
+        .item-card.sold-out { opacity: 0.4; filter: grayscale(1); pointer-events: none; }
+
+        /* Floating Cart Bar */
         #cart-bar { 
             position: fixed; 
             bottom: 0; 
+            left: 0;
             width: 100%; 
             background: var(--brand-dark); 
-            padding: 20px; 
-            border-top: 4px solid var(--brand-orange); 
+            padding: 25px; 
+            border-top: 5px solid var(--brand-orange); 
             display: none; 
             box-sizing: border-box; 
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            z-index: 1000;
         }
 
-        .total-row { font-size: 1.4rem; font-weight: bold; margin-bottom: 15px; text-align: center; }
+        .total-row { 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            text-align: center;
+            letter-spacing: 1px;
+        }
         
-        .btn-group { display: flex; gap: 10px; }
+        .btn-group { 
+            display: flex; 
+            gap: 15px; 
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
         .pay-btn { 
             flex: 1; 
             padding: 18px; 
             border: none; 
-            border-radius: 5px; 
+            border-radius: 8px; 
             font-weight: bold; 
             font-size: 1rem;
             cursor: pointer;
             text-transform: uppercase;
+            transition: opacity 0.2s;
         }
 
-        #closed-screen { display: none; text-align: center; padding: 100px 20px; }
+        .pay-btn:hover { opacity: 0.9; }
+
+        /* Closed Screen */
+        #closed-screen { 
+            display: none; 
+            text-align: center; 
+            padding: 120px 20px; 
+        }
+
+        #closed-screen h2 { color: var(--brand-orange); font-size: 2rem; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -120,13 +198,13 @@
     </div>
 
     <div id="closed-screen">
-        <h1 style="font-size: 4rem;">🚛</h1>
-        <h2 style="border:none;">ChipsAnd is Currently Closed</h2>
-        <p>Catch us next time! Keep an eye on our socials.</p>
+        <div style="font-size: 5rem;">🚚</div>
+        <h2>ChipsAnd is Currently Closed</h2>
+        <p>We've sold out or finished up for the day. Catch us next time!</p>
     </div>
 
     <div id="cart-bar">
-        <div class="total-row">Total: £<span id="total-price">0.00</span></div>
+        <div class="total-row">TOTAL: £<span id="total-price">0.00</span></div>
         <div class="btn-group">
             <button id="checkout-btn" class="pay-btn" style="background: #27ae60; color: white;" onclick="startCheckout()">Card Payment</button>
             <button id="collect-btn" class="pay-btn" style="background: var(--brand-orange); color: white;" onclick="payOnCollection()">Pay at Truck</button>
@@ -137,6 +215,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // CONFIG (Already set for ChipsAnd)
         const firebaseConfig = {
             apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8",
             authDomain: "chipsand-13831.firebaseapp.com",
@@ -152,46 +231,59 @@
 
         let cart = [];
 
-        // 1. MASTER STATUS
+        // 1. WATCH SHOP STATUS (Open/Closed)
         onSnapshot(doc(db, "settings", "truck_status"), (docSnap) => {
-            const isClosed = docSnap.data()?.is_closed;
-            document.getElementById('active-menu').style.display = isClosed ? 'none' : 'block';
-            document.getElementById('closed-screen').style.display = isClosed ? 'block' : 'none';
+            if (docSnap.exists()) {
+                const isClosed = docSnap.data().is_closed;
+                document.getElementById('active-menu').style.display = isClosed ? 'none' : 'block';
+                document.getElementById('closed-screen').style.display = isClosed ? 'block' : 'none';
+            }
         });
 
-        // 2. LOAD MENU (Organized by Category)
+        // 2. LOAD & CATEGORIZE MENU
         onSnapshot(collection(db, "menu"), (snapshot) => {
             const display = document.getElementById('menu-display');
             display.innerHTML = "";
             
-            // Temporary storage to group items by category
             const categories = {};
-
             snapshot.forEach(docSnap => {
                 const item = docSnap.data();
-                const cat = item.category || "Other";
+                const cat = item.category || "GENERAL";
                 if (!categories[cat]) categories[cat] = [];
                 categories[cat].push({ id: docSnap.id, ...item });
             });
 
-            for (const [catName, items] of Object.entries(categories)) {
-                const section = document.createElement('div');
-                section.innerHTML = `<h2>${catName}</h2>`;
-                
-                items.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
-                    div.innerHTML = `
-                        <div class="item-info">
-                            <span class="item-name">${item.name}</span>
-                            <span class="item-price">£${item.price.toFixed(2)}</span>
-                        </div>
-                        ${item.is_available ? `<button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">ADD</button>` : '<span>SOLD OUT</span>'}
+            // Layout Priority
+            const sortOrder = ["CHIPS", "TOASTIES", "PASTA POTS", "SIDES", "DRINKS"];
+            
+            sortOrder.forEach(catName => {
+                if (categories[catName]) {
+                    const section = document.createElement('div');
+                    section.className = 'category-section';
+                    section.innerHTML = `
+                        <div class="category-title">${catName}</div>
+                        <div class="items-grid" id="grid-${catName}"></div>
                     `;
-                    section.appendChild(div);
-                });
-                display.appendChild(section);
-            }
+                    display.appendChild(section);
+
+                    const grid = document.getElementById(`grid-${catName}`);
+                    categories[catName].forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
+                        div.innerHTML = `
+                            <div class="item-header">
+                                <span class="item-name">${item.name}</span>
+                                <span class="item-price">£${item.price.toFixed(2)}</span>
+                            </div>
+                            <div class="item-desc">${item.description || ''}</div>
+                            ${item.is_available 
+                                ? `<button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">ADD TO ORDER</button>` 
+                                : '<span style="text-align:center; font-weight:bold; color:#666;">SOLD OUT</span>'}
+                        `;
+                        grid.appendChild(div);
+                    });
+                }
+            });
         });
 
         window.addToCart = (name, price) => {
@@ -204,19 +296,36 @@
         window.startCheckout = async () => {
             const btn = document.getElementById('checkout-btn');
             btn.innerText = "LOADING...";
-            const res = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: cart })
-            });
-            const session = await res.json();
-            localStorage.setItem('last_cart', JSON.stringify(cart));
-            await stripe.redirectToCheckout({ sessionId: session.id });
+            try {
+                const res = await fetch('/api/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: cart })
+                });
+                const session = await res.json();
+                localStorage.setItem('last_cart', JSON.stringify(cart));
+                await stripe.redirectToCheckout({ sessionId: session.id });
+            } catch (err) {
+                alert("Stripe connection error. Try again.");
+                btn.innerText = "CARD PAYMENT";
+            }
         };
 
         window.payOnCollection = async () => {
-            await addDoc(collection(db, "orders"), { items: cart, status: "pending", type: "Truck Pickup", createdAt: serverTimestamp() });
-            window.location.href = "success.html?method=pickup";
+            const btn = document.getElementById('collect-btn');
+            btn.innerText = "SENDING...";
+            try {
+                await addDoc(collection(db, "orders"), {
+                    items: cart,
+                    status: "pending",
+                    type: "Pickup",
+                    createdAt: serverTimestamp()
+                });
+                window.location.href = "success.html?method=pickup";
+            } catch (err) {
+                alert("Order failed. Please check your internet.");
+                btn.innerText = "PAY AT TRUCK";
+            }
         };
     </script>
 </body>
