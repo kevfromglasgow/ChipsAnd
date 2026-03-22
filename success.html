@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Successful!</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; text-align: center; padding: 50px 20px; background: #f9f9f9; }
+        .icon { font-size: 50px; color: #27ae60; }
+        h1 { color: #2c3e50; }
+        p { color: #7f8c8d; font-size: 1.1rem; }
+        .back-btn { display: inline-block; margin-top: 30px; padding: 15px 30px; background: #0070f3; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="icon">✅</div>
+    <h1>Order Received!</h1>
+    <p>We've started preparing your food. Please head to the truck for collection.</p>
+    <a href="menu.html" class="back-btn">Back to Menu</a>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // PASTE YOUR FIREBASE CONFIG HERE
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8",
+            authDomain: "chipsand-13831.firebaseapp.com",
+            projectId: "chipsand-13831",
+            storageBucket: "chipsand-13831.firebasestorage.app",
+            messagingSenderId: "105749630976",
+            appId: "1:105749630976:web:038ab2c3ce81612064c8e5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Logic to record the order in the database
+        async function logOrder() {
+            try {
+                // We create a new "order" document
+                await addDoc(collection(db, "orders"), {
+                    status: "pending",
+                    createdAt: serverTimestamp(),
+                    type: "Paid Online"
+                });
+                console.log("Order logged for the truck owner!");
+            } catch (e) {
+                console.error("Error logging order: ", e);
+            }
+        }
+
+        logOrder();
+    </script>
+</body>
+</html>
