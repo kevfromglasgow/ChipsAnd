@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
         price_data: {
           currency: 'gbp',
           product_data: { 
-            name: 'Food Truck Order',
+            name: 'ChipsAnd Order',
             description: items.map(i => i.name).join(', ')
           },
           unit_amount: totalInPence,
