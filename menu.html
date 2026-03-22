@@ -488,8 +488,8 @@
         <nav class="cat-nav" id="cat-tabs"></nav>
 
         <div class="hero-strip">
-            <p class="hero-eyebrow">Home of the The Chipsy Kings</p>
-            <h1 class="hero-title">Chips, Toasties & Tasty Toppings<br><em>Mon, 4-8PM | Fri, 12-4PM</em></h1>
+            <p class="hero-eyebrow">Today's Menu</p>
+            <h1 class="hero-title">Fresh. Hot.<br><em>Irresistible.</em></h1>
         </div>
 
         <div class="container">
@@ -517,8 +517,8 @@
                 <div class="cart-total">£<span id="total-price">0.00</span></div>
             </div>
             <div class="cart-actions">
-                <button class="cart-btn cart-btn-secondary" onclick="payOnCollection()">Pay at Truck</button>
-                <button class="cart-btn cart-btn-primary" onclick="startCheckout()">Pay Now →</button>
+                <button class="cart-btn cart-btn-secondary">Pay at Truck</button>
+                <button class="cart-btn cart-btn-primary">Pay Now →</button>
             </div>
         </div>
     </div>
@@ -533,6 +533,34 @@
         const stripe = Stripe('pk_test_51TDsgdBRv0TelT5pTQP1OvmhDzwfqFTF9nMmFhLNBMv76stDiKbjH2GQwDnqTNN29MhaH9uexTgefFf2NjTqNkhV001zUMBUDJ');
 
         let cart = [];
+
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            updateCart();
+            const bar = document.getElementById('cart-bar');
+            bar.style.transform = 'translateX(-50%) translateY(0) scale(1.03)';
+            setTimeout(() => bar.style.transform = 'translateX(-50%) translateY(0) scale(1)', 150);
+        }
+
+        function updateCart() {
+            const total = cart.reduce((s, i) => s + i.price, 0);
+            document.getElementById('total-price').innerText = total.toFixed(2);
+            document.getElementById('cart-count').innerText = cart.length;
+            document.getElementById('cart-bar').classList.toggle('visible', cart.length > 0);
+        }
+
+        // Cart button handlers — attached directly to existing HTML elements, no module scope issue
+        document.getElementById('cart-bar').querySelector('.cart-btn-primary').addEventListener('click', async () => {
+            const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: cart }) });
+            const session = await res.json();
+            localStorage.setItem('last_cart', JSON.stringify(cart));
+            await stripe.redirectToCheckout({ sessionId: session.id });
+        });
+
+        document.getElementById('cart-bar').querySelector('.cart-btn-secondary').addEventListener('click', async () => {
+            const docRef = await addDoc(collection(db, "orders"), { items: cart, status: "pending", type: "Pickup", note: "", createdAt: serverTimestamp() });
+            window.location.href = `track.html?id=${docRef.id}`;
+        });
 
         // Shop status
         onSnapshot(doc(db, "settings", "truck_status"), (docSnap) => {
@@ -564,11 +592,11 @@
                 const pill = document.createElement('button');
                 pill.className = 'cat-pill' + (idx === 0 ? ' active' : '');
                 pill.innerText = catName;
-                pill.onclick = () => {
+                pill.addEventListener('click', () => {
                     document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
                     pill.classList.add('active');
                     document.getElementById(`section-${catName}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
-                };
+                });
                 tabs.appendChild(pill);
 
                 // Section
@@ -591,46 +619,29 @@
                 categories[catName].forEach(item => {
                     const div = document.createElement('div');
                     div.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
-                    div.innerHTML = `
-                        <div class="item-info">
-                            <div class="item-name">${item.name}</div>
-                            <div class="item-price"><strong>£${item.price.toFixed(2)}</strong></div>
-                        </div>
-                        <button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">+</button>
+
+                    const info = document.createElement('div');
+                    info.className = 'item-info';
+                    info.innerHTML = `
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price"><strong>£${item.price.toFixed(2)}</strong></div>
                     `;
+
+                    const btn = document.createElement('button');
+                    btn.className = 'add-btn';
+                    btn.textContent = '+';
+                    // addEventListener keeps the closure — no global scope needed
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        addToCart(item.name, item.price);
+                    });
+
+                    div.appendChild(info);
+                    div.appendChild(btn);
                     grid.appendChild(div);
                 });
             });
         });
-
-        window.addToCart = (name, price) => {
-            cart.push({ name, price });
-            updateCart();
-
-            // Pop animation on cart
-            const bar = document.getElementById('cart-bar');
-            bar.style.transform = 'translateX(-50%) translateY(0) scale(1.03)';
-            setTimeout(() => bar.style.transform = 'translateX(-50%) translateY(0) scale(1)', 150);
-        };
-
-        function updateCart() {
-            const total = cart.reduce((s, i) => s + i.price, 0);
-            document.getElementById('total-price').innerText = total.toFixed(2);
-            document.getElementById('cart-count').innerText = cart.length;
-            document.getElementById('cart-bar').classList.toggle('visible', cart.length > 0);
-        }
-
-        window.startCheckout = async () => {
-            const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: cart }) });
-            const session = await res.json();
-            localStorage.setItem('last_cart', JSON.stringify(cart));
-            await stripe.redirectToCheckout({ sessionId: session.id });
-        };
-
-        window.payOnCollection = async () => {
-            const docRef = await addDoc(collection(db, "orders"), { items: cart, status: "pending", type: "Pickup", note: "", createdAt: serverTimestamp() });
-            window.location.href = `track.html?id=${docRef.id}`;
-        };
     </script>
 
 </body>
