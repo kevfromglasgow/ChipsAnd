@@ -6,12 +6,13 @@
     <title>Order Food</title>
     <script src="https://js.stripe.com/v3/"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; padding: 20px; background: #fafafa; margin-bottom: 100px; }
+        body { font-family: -apple-system, sans-serif; padding: 20px; background: #fafafa; margin-bottom: 120px; }
         .item { background: white; padding: 20px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .item.sold-out { opacity: 0.5; filter: grayscale(1); }
         .add-btn { background: #0070f3; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        #cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 20px; border-top: 2px solid #eee; display: none; box-sizing: border-box; }
-        .pay-btn { background: #27ae60; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; width: 100%; font-size: 1.1rem; }
+        #cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 20px; border-top: 2px solid #eee; display: none; box-sizing: border-box; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .pay-btn { flex: 1; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -19,13 +20,16 @@
     <div id="menu-display">Loading...</div>
 
     <div id="cart-bar">
-        <div style="margin-bottom:10px; font-weight:bold; font-size:1.2rem;">Total: £<span id="total-price">0.00</span></div>
-        <button id="checkout-btn" class="pay-btn" onclick="startCheckout()">Checkout</button>
+        <div style="font-weight:bold; font-size:1.2rem;">Total: £<span id="total-price">0.00</span></div>
+        <div class="btn-group">
+            <button id="checkout-btn" class="pay-btn" style="background: #27ae60;" onclick="startCheckout()">Pay Now (Stripe)</button>
+            <button id="collect-btn" class="pay-btn" style="background: #34495e;" onclick="payOnCollection()">Pay on Pickup</button>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8",
@@ -37,7 +41,7 @@
           };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const stripe = Stripe('pk_test_51TDsgdBRv0TelT5pTQP1OvmhDzwfqFTF9nMmFhLNBMv76stDiKbjH2GQwDnqTNN29MhaH9uexTgefFf2NjTqNkhV001zUMBUDJ'); // YOUR STRIPE PUBLISHABLE KEY
+        const stripe = Stripe('pk_test_51TDsgdBRv0TelT5pTQP1OvmhDzwfqFTF9nMmFhLNBMv76stDiKbjH2GQwDnqTNN29MhaH9uexTgefFf2NjTqNkhV001zUMBUDJ'); // PASTE STRIPE KEY
 
         let cart = [];
 
@@ -48,10 +52,8 @@
                 const item = doc.data();
                 const div = document.createElement('div');
                 div.className = `item ${item.is_available ? '' : 'sold-out'}`;
-                div.innerHTML = `
-                    <div><strong>${item.name}</strong><br>£${item.price.toFixed(2)}</div>
-                    ${item.is_available ? `<button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">Add</button>` : '<span>Sold Out</span>'}
-                `;
+                div.innerHTML = `<div><strong>${item.name}</strong><br>£${item.price.toFixed(2)}</div>
+                    ${item.is_available ? `<button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">Add</button>` : '<span>Sold Out</span>'}`;
                 display.appendChild(div);
             });
         });
@@ -60,20 +62,33 @@
             cart.push({ name, price });
             document.getElementById('cart-bar').style.display = 'block';
             const subtotal = cart.reduce((s, i) => s + i.price, 0);
-            const totalWithFees = (subtotal + 0.30) / (1 - 0.029);
-            document.getElementById('total-price').innerText = totalWithFees.toFixed(2);
+            document.getElementById('total-price').innerText = subtotal.toFixed(2);
         };
 
         window.startCheckout = async () => {
             const btn = document.getElementById('checkout-btn');
-            btn.innerText = "Processing...";
+            btn.innerText = "Connecting...";
             const res = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items: cart })
             });
             const session = await res.json();
+            // We save the cart to local storage so the success page can read it after Stripe redirect
+            localStorage.setItem('last_cart', JSON.stringify(cart));
             await stripe.redirectToCheckout({ sessionId: session.id });
+        };
+
+        window.payOnCollection = async () => {
+            const btn = document.getElementById('collect-btn');
+            btn.innerText = "Sending...";
+            await addDoc(collection(db, "orders"), {
+                items: cart,
+                status: "pending",
+                type: "Cash/Card on Pickup",
+                createdAt: serverTimestamp()
+            });
+            window.location.href = "success.html?method=pickup";
         };
     </script>
 </body>
