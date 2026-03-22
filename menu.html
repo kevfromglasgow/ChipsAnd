@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Menu</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; padding: 20px; background: #fafafa; }
+        .item-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .sold-out { opacity: 0.5; grayscale(100%); }
+        .price { font-weight: bold; color: #2ecc71; font-size: 1.1rem; }
+        .status-badge { font-size: 0.8rem; padding: 4px 8px; border-radius: 20px; background: #eee; }
+        .order-btn { background: #0070f3; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .disabled-btn { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>Today's Menu 🍔</h1>
+    <div id="customer-menu">Loading delicious food...</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // PASTE YOUR SAME CONFIG HERE
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8",
+            authDomain: "chipsand-13831.firebaseapp.com",
+            projectId: "chipsand-13831",
+            storageBucket: "chipsand-13831.firebasestorage.app",
+            messagingSenderId: "105749630976",
+            appId: "1:105749630976:web:038ab2c3ce81612064c8e5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        onSnapshot(collection(db, "menu"), (snapshot) => {
+            const menuDiv = document.getElementById('customer-menu');
+            menuDiv.innerHTML = '';
+
+            snapshot.forEach((itemDoc) => {
+                const item = itemDoc.data();
+                const card = document.createElement('div');
+                card.className = `item-card ${!item.is_available ? 'sold-out' : ''}`;
+                
+                card.innerHTML = `
+                    <div>
+                        <div style="font-weight:bold; font-size:1.2rem;">${item.name}</div>
+                        <div class="price">£${item.price}</div>
+                    </div>
+                    <div>
+                        ${item.is_available 
+                            ? `<button class="order-btn" onclick="alert('Checkout coming soon!')">Add to Order</button>` 
+                            : `<span class="status-badge">Sold Out</span>`}
+                    </div>
+                `;
+                menuDiv.appendChild(card);
+            });
+        });
+    </script>
+</body>
+</html>
