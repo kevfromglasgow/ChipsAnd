@@ -3,12 +3,13 @@
 <head>
     <title>Success!</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>body { text-align: center; font-family: sans-serif; padding: 50px; }</style>
+    <style>body { text-align: center; font-family: sans-serif; padding: 50px; background: #f9f9f9; }</style>
 </head>
 <body>
-    <h1>✅ Payment Confirmed!</h1>
-    <p>Your order has been sent to the truck.</p>
-    <a href="menu.html">Order More</a>
+    <div style="font-size: 50px;">✅</div>
+    <h1>Order Received!</h1>
+    <p>Head over to the truck to collect your food.</p>
+    <a href="menu.html" style="color: #0070f3; text-decoration: none; font-weight: bold;">Order More</a>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -25,14 +26,22 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function createOrder() {
-            // Write the "Pending" order so the Admin sees it instantly
-            await addDoc(collection(db, "orders"), {
-                status: "pending",
-                createdAt: serverTimestamp()
-            });
+        const params = new URLSearchParams(window.location.search);
+        
+        // If coming from Stripe, we need to log the order details
+        if (params.get('status') === 'success') {
+            const savedCart = JSON.parse(localStorage.getItem('last_cart') || '[]');
+            async function logStripeOrder() {
+                await addDoc(collection(db, "orders"), {
+                    items: savedCart,
+                    status: "pending",
+                    type: "Paid Online",
+                    createdAt: serverTimestamp()
+                });
+                localStorage.removeItem('last_cart');
+            }
+            logStripeOrder();
         }
-        createOrder();
     </script>
 </body>
 </html>
