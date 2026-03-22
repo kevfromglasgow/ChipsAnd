@@ -5,121 +5,521 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChipsAnd | Dundee</title>
     <script src="https://js.stripe.com/v3/"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --brand-orange: #e67e22;
-            --brand-dark: #1a1a1a;
-            --brand-grey: #333333;
-            --cream-bg: #FDF6E3; /* Mockup 1: Airy Cream */
-            --charcoal-text: #333333;
-            --glass-white: rgba(255, 255, 255, 0.7);
+            --orange: #F4712B;
+            --orange-dim: #c25a20;
+            --bg: #0E0E0E;
+            --surface: #161616;
+            --surface-2: #1F1F1F;
+            --border: rgba(255,255,255,0.07);
+            --text: #F0EDE8;
+            --muted: #888;
+            --cart-bg: rgba(18,18,18,0.92);
         }
 
-        body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            padding: 0; margin: 0; 
-            background: var(--cream-bg); 
-            color: var(--charcoal-text);
-            padding-bottom: 220px; /* Space for the floating cart */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding-bottom: 200px;
+            min-height: 100vh;
         }
 
-        /* 2026 Header */
+        /* ── HEADER ─────────────────────────────── */
         header {
-            background: var(--brand-dark);
-            padding: 30px 20px;
-            text-align: center;
-            border-bottom: 4px solid var(--brand-orange);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            padding: 28px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: rgba(14,14,14,0.95);
+            backdrop-filter: blur(16px);
+            z-index: 900;
         }
 
-        .logo { max-width: 160px; height: auto; }
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-
-        /* Neumorphic Category Chips (Sticky Top Bar) */
-        .category-tabs {
-            position: sticky; top: 0; background: var(--cream-bg); z-index: 900;
-            display: flex; gap: 10px; overflow-x: auto; padding: 15px;
-            border-bottom: 1px solid #ddd;
-        }
-        .cat-chip {
-            background: white; border: none; padding: 10px 20px;
-            border-radius: 30px; white-space: nowrap; font-weight: bold;
-            color: var(--brand-grey); cursor: pointer;
-            box-shadow: 4px 4px 10px #dfdbcb, -4px -4px 10px #ffffff;
-            transition: 0.2s;
-        }
-        .cat-chip:active, .cat-chip.active {
-            color: white; background: var(--brand-orange);
-            box-shadow: inset 4px 4px 5px #c36e1c, inset -4px -4px 5px #e69335;
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
         }
 
-        /* Category Grid */
-        .category-section { margin-bottom: 50px; }
-        .category-title { color: var(--brand-orange); text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid var(--brand-orange); padding-bottom: 5px; margin-bottom: 25px; font-size: 1.5rem; font-weight: bold; }
-        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: var(--text);
+        }
 
-        /* Tactical Product Cards */
+        .brand-name span {
+            color: var(--orange);
+        }
+
+        .brand-sub {
+            font-size: 0.72rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 300;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2ecc71;
+            box-shadow: 0 0 8px #2ecc71;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ── CATEGORY NAV ────────────────────────── */
+        .cat-nav {
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            padding: 0 40px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            scrollbar-width: none;
+        }
+
+        .cat-nav::-webkit-scrollbar { display: none; }
+
+        .cat-pill {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 18px 22px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .cat-pill:hover,
+        .cat-pill.active {
+            color: var(--orange);
+            border-bottom-color: var(--orange);
+        }
+
+        /* ── HERO STRIP ─────────────────────────── */
+        .hero-strip {
+            padding: 60px 40px 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .hero-eyebrow {
+            font-size: 0.72rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--orange);
+            margin-bottom: 12px;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.4rem, 5vw, 4rem);
+            font-weight: 900;
+            line-height: 1.05;
+            color: var(--text);
+            max-width: 600px;
+        }
+
+        .hero-title em {
+            font-style: italic;
+            color: var(--orange);
+        }
+
+        /* ── MAIN CONTENT ───────────────────────── */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        /* ── CATEGORY SECTION ───────────────────── */
+        .category-section {
+            margin-bottom: 64px;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .section-count {
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: var(--muted);
+        }
+
+        /* ── ITEM GRID ──────────────────────────── */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        /* ── ITEM CARD ──────────────────────────── */
         .item-card {
-            background: white; border-radius: 20px; padding: 20px;
-            display: flex; justify-content: space-between; align-items: flex-end;
-            box-shadow: 6px 6px 15px #dfdbcb, -6px -6px 15px #ffffff;
-            transition: transform 0.2s;
-        }
-        .item-card:active { transform: scale(0.98); }
-        .item-card.sold-out { opacity: 0.4; filter: grayscale(1); pointer-events: none; }
-
-        .item-name { font-weight: bold; font-size: 1.2rem; }
-        .item-price { color: var(--brand-orange); font-weight: bold; font-size: 1.1rem; }
-        
-        /* Tactical Plus/Minus Buttons */
-        .tactical-btn {
-            background: var(--brand-orange); border: none; color: white;
-            width: 35px; height: 35px; border-radius: 8px;
-            font-weight: bold; font-size: 1.2rem; cursor: pointer;
-            box-shadow: 2px 2px 5px #dfdbcb, -2px -2px 5px #ffffff;
-            transition: 0.1s;
-        }
-        .tactical-btn:active {
-            box-shadow: inset 2px 2px 3px #c36e1c, inset -2px -2px 3px #e69335;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.15s, background 0.2s;
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Glassmorphism Floating Cart (2026) */
+        .item-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(244,113,43,0.04) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .item-card:hover {
+            border-color: rgba(244,113,43,0.35);
+            transform: translateY(-2px);
+            background: var(--surface-2);
+        }
+
+        .item-card:hover::before { opacity: 1; }
+
+        .item-card.sold-out {
+            opacity: 0.35;
+            pointer-events: none;
+            filter: grayscale(0.6);
+        }
+
+        .item-info { flex: 1; }
+
+        .item-name {
+            font-weight: 500;
+            font-size: 1.05rem;
+            color: var(--text);
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .item-price {
+            font-size: 0.9rem;
+            color: var(--muted);
+            font-weight: 300;
+        }
+
+        .item-price strong {
+            color: var(--orange);
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .item-badge {
+            display: inline-block;
+            font-size: 0.62rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--orange);
+            border: 1px solid rgba(244,113,43,0.3);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+        }
+
+        /* ── ADD BUTTON ─────────────────────────── */
+        .add-btn {
+            background: none;
+            border: 1.5px solid rgba(244,113,43,0.4);
+            color: var(--orange);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-left: 16px;
+            transition: background 0.15s, border-color 0.15s, transform 0.1s;
+        }
+
+        .add-btn:hover {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: white;
+        }
+
+        .add-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* ── CART BAR ───────────────────────────── */
         #cart-bar {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 600px;
-            background: var(--glass-white); backdrop-filter: blur(10px);
-            padding: 20px; border-radius: 25px;
-            display: none; box-sizing: border-box; z-index: 1000;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.4);
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            width: calc(100% - 48px);
+            max-width: 540px;
+            background: var(--cart-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 16px 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(244,113,43,0.15);
         }
 
-        .total-display { font-size: 1.6rem; font-weight: bold; text-align: center; margin-bottom: 15px; letter-spacing: 1px; }
-        .checkout-group { display: flex; gap: 15px; }
-        .pay-btn { flex: 1; padding: 18px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
-        .pay-btn:active { transform: scale(0.96); }
+        #cart-bar.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
 
-        #closed-screen { display: none; text-align: center; padding: 100px 20px; }
+        .cart-inner {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .cart-icon-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .cart-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--surface-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--orange);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-details {
+            flex: 1;
+        }
+
+        .cart-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+        }
+
+        .cart-total {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .cart-actions {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .cart-btn {
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: filter 0.15s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        .cart-btn:hover { filter: brightness(1.1); }
+        .cart-btn:active { transform: scale(0.96); }
+
+        .cart-btn-primary {
+            background: var(--orange);
+            color: white;
+        }
+
+        .cart-btn-secondary {
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        /* ── CLOSED SCREEN ──────────────────────── */
+        #closed-screen {
+            display: none;
+            text-align: center;
+            padding: 120px 40px;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .closed-icon {
+            font-size: 4rem;
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        .closed-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .closed-sub {
+            color: var(--muted);
+            font-size: 1rem;
+            font-weight: 300;
+        }
+
+        /* ── DIVIDER ───────────────────────────── */
+        .bottom-pad { height: 60px; }
+
+        /* ── MOBILE ─────────────────────────────── */
+        @media (max-width: 600px) {
+            header { padding: 20px 20px; }
+            .cat-nav { padding: 0 20px; }
+            .hero-strip { padding: 40px 20px 30px; }
+            .container { padding: 0 20px; }
+            .items-grid { grid-template-columns: 1fr; }
+            #cart-bar { width: calc(100% - 32px); bottom: 16px; }
+            .cart-btn { padding: 12px 14px; font-size: 0.75rem; }
+        }
     </style>
 </head>
 <body>
-    <header><img src="ChipsAndLogo.png" alt="ChipsAnd Logo" class="logo"></header>
 
+    <!-- HEADER -->
+    <header>
+        <div class="brand">
+            <div>
+                <div class="brand-name">Chips<span>&</span></div>
+                <div class="brand-sub">Dundee Street Food</div>
+            </div>
+        </div>
+        <div class="header-status">
+            <span class="status-dot"></span>
+            <span>Open Now</span>
+        </div>
+    </header>
+
+    <!-- ACTIVE MENU -->
     <div id="active-menu">
-        <div class="category-tabs" id="cat-tabs"></div>
-        
+        <nav class="cat-nav" id="cat-tabs"></nav>
+
+        <div class="hero-strip">
+            <p class="hero-eyebrow">Today's Menu</p>
+            <h1 class="hero-title">Fresh. Hot.<br><em>Irresistible.</em></h1>
+        </div>
+
         <div class="container">
             <div id="menu-display"></div>
+            <div class="bottom-pad"></div>
         </div>
     </div>
 
-    <div id="closed-screen"><div style="font-size: 5rem;">🚚</div><h2>ChipsAnd is Currently Closed</h2><p>Dundee's Best Food Truck.</p></div>
+    <!-- CLOSED SCREEN -->
+    <div id="closed-screen">
+        <span class="closed-icon">🚚</span>
+        <h2 class="closed-title">We're Closed Right Now</h2>
+        <p class="closed-sub">Come find us next time — Dundee's finest street food.</p>
+    </div>
 
+    <!-- FLOATING CART -->
     <div id="cart-bar">
-        <div class="total-display">Your Bag: £<span id="total-price">0.00</span></div>
-        <div class="checkout-group">
-            <button class="pay-btn" style="background: #27ae60; color: white;" onclick="startCheckout()">Card Payment</button>
-            <button class="pay-btn" style="background: var(--brand-orange); color: white;" onclick="payOnCollection()">Pay at Truck</button>
+        <div class="cart-inner">
+            <div class="cart-icon-wrap">
+                <div class="cart-icon">🛍</div>
+                <div class="cart-badge" id="cart-count">0</div>
+            </div>
+            <div class="cart-details">
+                <div class="cart-label">Your Bag</div>
+                <div class="cart-total">£<span id="total-price">0.00</span></div>
+            </div>
+            <div class="cart-actions">
+                <button class="cart-btn cart-btn-secondary" onclick="payOnCollection()">Pay at Truck</button>
+                <button class="cart-btn cart-btn-primary" onclick="startCheckout()">Pay Now →</button>
+            </div>
         </div>
     </div>
 
@@ -127,7 +527,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CONFIG (Already set for ChipsAnd)
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -135,19 +534,19 @@
 
         let cart = [];
 
-        // 1. WATCH SHOP STATUS (Open/Closed)
+        // Shop status
         onSnapshot(doc(db, "settings", "truck_status"), (docSnap) => {
             const isClosed = docSnap.data()?.is_closed;
             document.getElementById('active-menu').style.display = isClosed ? 'none' : 'block';
             document.getElementById('closed-screen').style.display = isClosed ? 'block' : 'none';
         });
 
-        // 2. LOAD & CATEGORIZE MENU
+        // Menu
         onSnapshot(collection(db, "menu"), (snapshot) => {
             const display = document.getElementById('menu-display');
             const tabs = document.getElementById('cat-tabs');
             display.innerHTML = ""; tabs.innerHTML = "";
-            
+
             const categories = {};
             snapshot.forEach(docSnap => {
                 const item = docSnap.data();
@@ -156,46 +555,70 @@
                 categories[cat].push({ id: docSnap.id, ...item });
             });
 
-            // Layout Priority
             const sortOrder = ["CHIPS", "TOASTIES", "PASTA POTS", "SIDES", "DRINKS"];
-            
-            sortOrder.forEach(catName => {
-                if (categories[catName]) {
-                    // Create Category Chip
-                    const chip = document.createElement('button');
-                    chip.className = 'cat-chip'; chip.innerText = catName;
-                    chip.onclick = () => document.getElementById(`section-${catName}`).scrollIntoView({behavior: 'smooth', block: 'start'});
-                    tabs.appendChild(chip);
 
-                    // Create Category Section
-                    const section = document.createElement('div');
-                    section.className = 'category-section'; section.id = `section-${catName}`;
-                    section.innerHTML = `<div class="category-title">${catName}</div><div class="items-grid" id="grid-${catName}"></div>`;
-                    display.appendChild(section);
+            sortOrder.forEach((catName, idx) => {
+                if (!categories[catName]) return;
 
-                    const grid = document.getElementById(`grid-${catName}`);
-                    categories[catName].forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
-                        div.innerHTML = `
-                            <div>
-                                <span class="item-name">${item.name}</span><br>
-                                <span class="item-price">£${item.price.toFixed(2)}</span>
-                            </div>
-                            <button class="tactical-btn" onclick="addToCart('${item.name}', ${item.price})">+</button>
-                        `;
-                        grid.appendChild(div);
-                    });
-                }
+                // Nav pill
+                const pill = document.createElement('button');
+                pill.className = 'cat-pill' + (idx === 0 ? ' active' : '');
+                pill.innerText = catName;
+                pill.onclick = () => {
+                    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    document.getElementById(`section-${catName}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+                };
+                tabs.appendChild(pill);
+
+                // Section
+                const section = document.createElement('div');
+                section.className = 'category-section';
+                section.id = `section-${catName}`;
+                section.style.animationDelay = `${idx * 0.07}s`;
+
+                const count = categories[catName].length;
+                section.innerHTML = `
+                    <div class="section-header">
+                        <h2 class="section-title">${catName}</h2>
+                        <span class="section-count">${count} item${count !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="items-grid" id="grid-${catName}"></div>
+                `;
+                display.appendChild(section);
+
+                const grid = document.getElementById(`grid-${catName}`);
+                categories[catName].forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
+                    div.innerHTML = `
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price"><strong>£${item.price.toFixed(2)}</strong></div>
+                        </div>
+                        <button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">+</button>
+                    `;
+                    grid.appendChild(div);
+                });
             });
         });
 
         window.addToCart = (name, price) => {
             cart.push({ name, price });
-            document.getElementById('cart-bar').style.display = 'block';
+            updateCart();
+
+            // Pop animation on cart
+            const bar = document.getElementById('cart-bar');
+            bar.style.transform = 'translateX(-50%) translateY(0) scale(1.03)';
+            setTimeout(() => bar.style.transform = 'translateX(-50%) translateY(0) scale(1)', 150);
+        };
+
+        function updateCart() {
             const total = cart.reduce((s, i) => s + i.price, 0);
             document.getElementById('total-price').innerText = total.toFixed(2);
-        };
+            document.getElementById('cart-count').innerText = cart.length;
+            document.getElementById('cart-bar').classList.toggle('visible', cart.length > 0);
+        }
 
         window.startCheckout = async () => {
             const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: cart }) });
@@ -209,5 +632,6 @@
             window.location.href = `track.html?id=${docRef.id}`;
         };
     </script>
+
 </body>
 </html>
