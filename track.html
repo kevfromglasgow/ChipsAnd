@@ -3,33 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track My Order | ChipsAnd</title>
+    <title>Track Order | ChipsAnd | Elgin</title>
     <style>
-        :root { --brand-orange: #e67e22; --brand-dark: #1a1a1a; --brand-grey: #333333; }
-        body { font-family: -apple-system, sans-serif; background: var(--brand-grey); color: white; text-align: center; padding: 40px 20px; }
-        .card { background: var(--brand-dark); padding: 30px; border-radius: 15px; border: 2px solid var(--brand-orange); max-width: 400px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .status-badge { display: inline-block; padding: 10px 20px; border-radius: 30px; font-weight: bold; font-size: 1.2rem; margin: 20px 0; text-transform: uppercase; letter-spacing: 1px; }
-        .status-pending { background: #f1c40f; color: black; } /* Yellow */
-        .status-ready { background: #27ae60; color: white; border: 2px solid white; animation: pulse 1.5s infinite; } /* Green */
-        .status-cancelled { background: #c0392b; color: white; } /* Red */
-        .message-box { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 20px; font-style: italic; font-size: 0.9rem; border-left: 4px solid var(--brand-orange); }
+        :root { --brand-orange: #e67e22; --brand-dark: #1a1a1a; --brand-grey: #333333; --cream-bg: #FDF6E3; --charcoal-text: #333333; }
+        body { font-family: -apple-system, sans-serif; background: var(--cream-bg); color: var(--charcoal-text); text-align: center; padding: 40px 20px; }
+        
+        .track-logo { max-width: 130px; margin-bottom: 30px; }
+        
+        .tracking-card {
+            background: white; padding: 30px; border-radius: 20px;
+            max-width: 450px; margin: 0 auto;
+            box-shadow: 6px 6px 15px #dfdbcb, -6px -6px 15px #ffffff;
+            border: 2px solid var(--brand-orange);
+        }
+
+        h1 { margin-top: 0; color: var(--brand-grey); }
+        .order-id { color: #888; font-size: 0.9rem; letter-spacing: 1px; }
+
+        /* Status Pulsing Badge */
+        .live-status {
+            display: inline-block; padding: 12px 25px; border-radius: 30px;
+            font-weight: bold; font-size: 1.2rem; margin: 25px 0;
+            text-transform: uppercase; letter-spacing: 2px;
+            color: white; animation: pulse 1.5s infinite;
+        }
+        .status-ready { background: #27ae60; border: 2px solid white; box-shadow: 0 0 20px rgba(39, 174, 96, 0.5); }
+        .status-cooking { background: #f39c12; }
+        .status-cancelled { background: #c0392b; animation: none; opacity: 0.7; }
+
+        /* Note from Admin */
+        .message-box {
+            background: #fff8e1; color: #795548;
+            padding: 15px; border-radius: 12px;
+            margin-top: 25px; font-style: italic; font-size: 0.95rem;
+            border-left: 5px solid var(--brand-orange); text-align: left;
+        }
+
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .logo { max-width: 120px; margin-bottom: 20px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <img src="ChipsAndLogo.jpg" class="logo">
-    <div class="card" id="tracking-card">
-        <h2 id="order-id-display">Loading Order...</h2>
-        <div id="status-container"></div>
-        <div id="admin-message" class="hidden"></div>
-        <p style="margin-top:20px; color:#aaa;">Keep this page open. We'll update it the moment your food is ready!</p>
+    <header style="margin-bottom: 30px;"><img src="ChipsAndLogo.jpg" alt="ChipsAnd Logo" class="track-logo"></header>
+    
+    <div class="tracking-card">
+        <h1>Tracking Your Food</h1>
+        <div class="order-id" id="track-id-display">Connecting to truck...</div>
+        
+        <div id="live-status-container"></div>
+        
+        <div id="truck-message" class="hidden"></div>
+        
+        <p style="margin-top:25px; color:#666; font-size:0.9rem;">This page updates automatically. We'll chirp when it's time to collect!</p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // CONFIG (Already set for ChipsAnd)
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -39,36 +71,40 @@
         const orderId = params.get('id');
 
         if (orderId) {
-            document.getElementById('order-id-display').innerText = `Order #${orderId.slice(-4)}`;
+            document.getElementById('track-id-display').innerText = `ID: #${orderId.slice(-4)}`;
             
             // Listen to THIS specific order
             onSnapshot(doc(db, "orders", orderId), (docSnap) => {
+                const liveStatus = document.getElementById('live-status-container');
+                const truckMessage = document.getElementById('truck-message');
+
                 if (!docSnap.exists()) {
-                    document.getElementById('status-container').innerHTML = "<div class='status-badge'>Not Found</div>";
+                    liveStatus.innerHTML = "<div class='live-status status-cancelled'>Not Found</div>";
                     return;
                 }
 
                 const data = docSnap.data();
-                const status = data.status; // pending, ready, cancelled
-                const message = data.note || "";
+                const status = data.status || "pending";
+                const note = data.note || "";
 
-                // Update UI based on status
-                let statusHTML = "";
-                if (status === "pending") statusHTML = `<div class="status-badge status-pending">👨‍🍳 We've got your Order!</div>`;
-                if (status === "ready") statusHTML = `<div class="status-badge status-ready">✅ Ready for Pickup!</div>`;
-                if (status === "cancelled") statusHTML = `<div class="status-badge status-cancelled">❌ Order Cancelled</div>`;
+                // 1. UPDATE LIVE STATUS BADGE
+                let badgeHTML = "";
+                if (status === "pending") badgeHTML = `<div class="live-status status-cooking">👨‍🍳 Cooking Now</div>`;
+                if (status === "ready") badgeHTML = `<div class="live-status status-ready">✅ Ready for Collection!</div>`;
+                if (status === "cancelled") badgeHTML = `<div class="live-status status-cancelled">❌ Order Cancelled</div>`;
                 
-                document.getElementById('status-container').innerHTML = statusHTML;
+                liveStatus.innerHTML = badgeHTML;
 
-                // Show admin note if it exists
-                const msgBox = document.getElementById('admin-message');
-                if (message) {
-                    msgBox.innerHTML = `<strong>Note from Truck:</strong><br>"${message}"`;
-                    msgBox.className = "message-box";
+                // 2. UPDATE TRUCK NOTE
+                if (note) {
+                    truckMessage.innerHTML = `<strong>Note from Truck:</strong><br>"${note}"`;
+                    truckMessage.className = "message-box";
                 } else {
-                    msgBox.className = "hidden";
+                    truckMessage.className = "hidden";
                 }
             });
+        } else {
+            document.getElementById('track-id-display').innerText = `Error: No Order ID Found`;
         }
     </script>
 </body>
