@@ -5,45 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChipsAnd | Admin Panel</title>
     <style>
+        :root {
+            --brand-orange: #e67e22;
+            --brand-dark: #1a1a1a;
+            --brand-grey: #333333;
+            --success-green: #27ae60;
+        }
+
         body { font-family: -apple-system, sans-serif; padding: 20px; background: #f0f2f5; max-width: 800px; margin: 0 auto; }
         .section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        #login-gate { position:fixed; top:0; left:0; width:100%; height:100%; background:#f0f2f5; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        .login-box { background:white; padding:40px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.1); text-align:center; }
+        
+        /* Login Overlay */
+        #login-gate { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--brand-dark); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; color: white; }
+        .login-box { background:var(--brand-grey); padding:40px; border-radius:15px; border: 2px solid var(--brand-orange); text-align:center; }
         input { padding:12px; margin-bottom:10px; width:250px; border-radius:8px; border:1px solid #ddd; display:block; }
-        .master-status { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; transition: 0.3s; }
-        .status-open { background: #27ae60; }
+        
+        /* Master Status Banner */
+        .master-status { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; }
+        .status-open { background: var(--success-green); }
         .status-closed { background: #c0392b; }
-        .tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; background: #dee2e6; font-weight: bold; }
-        .tab-btn.active { background: #0070f3; color: white; }
+        .tab-btn.active { background: var(--brand-orange); color: white; }
+        
+        /* Cards & Buttons */
         .order-card { background: #fffbe6; border: 1px solid #ffe58f; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
-        .btn { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; }
-        .btn-ready { background: #27ae60; width: 100%; margin-top: 10px; }
-        .btn-toggle { background: #0070f3; }
-        .btn-archive { background: #34495e; width: 100%; margin-top: 20px; }
-        .sold-out { background: #ff4757; }
+        .history-card { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; }
+        .btn { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-ready { background: var(--success-green); width: 100%; margin-top: 10px; }
+        .btn-toggle { background: var(--brand-orange); min-width: 100px; }
+        .sold-out { background: #7f8c8d; }
         .hidden { display: none; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Bulk Import Styling */
+        textarea { width: 100%; border-radius: 8px; border: 1px solid #ccc; padding: 10px; font-family: monospace; font-size: 0.8rem; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
     <div id="login-gate">
         <div class="login-box">
-            <h1>ChipsAnd Admin</h1>
-            <input type="email" id="admin-email" placeholder="Email">
+            <h1 style="color: var(--brand-orange); margin-top:0;">ChipsAnd Admin</h1>
+            <input type="email" id="admin-email" placeholder="Admin Email">
             <input type="password" id="admin-password" placeholder="Password">
-            <button class="btn" style="background:#0070f3; width:100%;" onclick="handleLogin()">Login</button>
-            <p id="login-error" style="color:red; margin-top:10px; font-size:0.8rem;"></p>
+            <button class="btn" style="background:var(--brand-orange); width:100%;" onclick="handleLogin()">Login</button>
+            <p id="login-error" style="color:#ff7675; margin-top:10px; font-size:0.8rem;"></p>
         </div>
     </div>
 
     <div id="admin-content" class="hidden">
-        <h1 style="text-align: center;">ChipsAnd Manager</h1>
+        <h1 style="text-align: center; color: var(--brand-dark);">ChipsAnd Manager 🚛</h1>
+
         <div id="master-panel" class="master-status status-open">
             <div>
                 <h2 id="status-text" style="margin:0;">ChipsAnd is OPEN</h2>
-                <small>Customers can order online</small>
+                <small>Customers can view menu and order</small>
             </div>
             <button class="btn" style="background: rgba(255,255,255,0.2); border: 1px solid white;" onclick="toggleMasterStatus()">Toggle Shop</button>
         </div>
@@ -51,22 +70,33 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="showTab('live')">Live Orders</button>
             <button class="tab-btn" onclick="showTab('menu')">Inventory</button>
-            <button class="tab-btn" onclick="showTab('history')">Stats/Archive</button>
+            <button class="tab-btn" onclick="showTab('history')">Daily Stats</button>
         </div>
 
         <div id="tab-live" class="tab-content">
-            <div class="section"><h3>🔔 New Orders</h3><div id="orders-list"></div></div>
+            <div class="section">
+                <h3>🔔 Incoming Orders</h3>
+                <div id="orders-list">Waiting for orders...</div>
+            </div>
         </div>
 
         <div id="tab-menu" class="tab-content hidden">
-            <div class="section"><h3>🍔 Inventory</h3><div id="menu-list"></div></div>
+            <div class="section" style="background: #fff3e0; border: 2px dashed var(--brand-orange);">
+                <h4>Bulk Import Items</h4>
+                <textarea id="bulk-input" rows="4" placeholder='Paste JSON list here...'></textarea>
+                <button class="btn" style="background: var(--brand-orange); width: 100%; margin-top: 10px;" onclick="runBulkImport()">Run Import</button>
+            </div>
+            <div class="section">
+                <h3>🍟 Current Menu</h3>
+                <div id="menu-list">Loading items...</div>
+            </div>
         </div>
 
         <div id="tab-history" class="tab-content hidden">
             <div class="section">
-                <h3 id="total-sales-count">0 Orders Sold</h3>
+                <h2 id="total-sales-count" style="text-align:center;">0 Orders Sold</h2>
                 <div id="history-list"></div>
-                <button class="btn btn-archive" onclick="closeShift()">Close Shift</button>
+                <button class="btn" style="background: var(--brand-grey); width:100%;" onclick="closeShift()">Archive Shift (CHIPS123)</button>
             </div>
         </div>
     </div>
@@ -89,11 +119,12 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // --- AUTH & LOGIN ---
         window.handleLogin = () => {
             const email = document.getElementById('admin-email').value;
             const pass = document.getElementById('admin-password').value;
-            signInWithEmailAndPassword(auth, email, pass).catch(() => {
-                document.getElementById('login-error').innerText = "Invalid Credentials";
+            signInWithEmailAndPassword(auth, email, pass).catch(err => {
+                document.getElementById('login-error').innerText = "Access Denied";
             });
         };
 
@@ -101,9 +132,76 @@
             if (user) {
                 document.getElementById('login-gate').style.display = 'none';
                 document.getElementById('admin-content').classList.remove('hidden');
+                initDashboard();
+            } else {
+                document.getElementById('login-gate').style.display = 'flex';
+                document.getElementById('admin-content').classList.add('hidden');
             }
         });
 
+        // --- DASHBOARD LOGIC ---
+        function initDashboard() {
+            // Master Toggle
+            onSnapshot(doc(db, "settings", "truck_status"), (docSnap) => {
+                const isClosed = docSnap.data()?.is_closed;
+                const panel = document.getElementById('master-panel');
+                panel.className = isClosed ? "master-status status-closed" : "master-status status-open";
+                document.getElementById('status-text').innerText = isClosed ? "ChipsAnd is CLOSED" : "ChipsAnd is OPEN";
+                window.currentMasterStatus = isClosed;
+            });
+
+            // Live Orders
+            const liveQ = query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
+            onSnapshot(liveQ, (snapshot) => {
+                const list = document.getElementById('orders-list');
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === "added") new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3').play().catch(()=>{});
+                });
+                list.innerHTML = snapshot.empty ? "No active orders." : "";
+                snapshot.forEach(orderDoc => {
+                    const data = orderDoc.data();
+                    const items = data.items ? data.items.map(i => `<li>${i.name}</li>`).join('') : "";
+                    const div = document.createElement('div');
+                    div.className = 'order-card';
+                    div.innerHTML = `<div class="flex-between"><strong>#${orderDoc.id.slice(-4)}</strong> <span>${data.type}</span></div><ul style="font-size:0.9rem;">${items}</ul><button class="btn btn-ready" onclick="markReady('${orderDoc.id}')">MARK READY</button>`;
+                    list.appendChild(div);
+                });
+            });
+
+            // Inventory List
+            onSnapshot(collection(db, "menu"), (snapshot) => {
+                const list = document.getElementById('menu-list');
+                list.innerHTML = "";
+                snapshot.forEach(docSnap => {
+                    const item = docSnap.data();
+                    const div = document.createElement('div');
+                    div.className = 'flex-between';
+                    div.style.padding = "10px 0; border-bottom:1px solid #eee;";
+                    div.innerHTML = `<span>${item.name} <small>(${item.category})</small></span>
+                        <button class="btn btn-toggle ${item.is_available ? '' : 'sold-out'}" onclick="toggleItem('${docSnap.id}', ${item.is_available})">
+                        ${item.is_available ? 'In Stock' : 'Sold Out'}</button>`;
+                    list.appendChild(div);
+                });
+            });
+
+            // History
+            const historyQ = query(collection(db, "orders"), where("status", "==", "ready"), orderBy("createdAt", "desc"));
+            onSnapshot(historyQ, (snapshot) => {
+                document.getElementById('total-sales-count').innerText = `${snapshot.size} Orders Sold Today`;
+                const list = document.getElementById('history-list');
+                list.innerHTML = "";
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const time = data.createdAt ? data.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--';
+                    const div = document.createElement('div');
+                    div.className = 'history-card';
+                    div.innerHTML = `<strong>${time}</strong> - Order #${doc.id.slice(-4)}`;
+                    list.appendChild(div);
+                });
+            });
+        }
+
+        // --- GLOBAL ACTIONS ---
         window.showTab = (tabName) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -111,61 +209,36 @@
             event.target.classList.add('active');
         };
 
-        onSnapshot(doc(db, "settings", "truck_status"), (docSnap) => {
-            const isClosed = docSnap.data()?.is_closed;
-            document.getElementById('master-panel').className = isClosed ? "master-status status-closed" : "master-status status-open";
-            document.getElementById('status-text').innerText = isClosed ? "ChipsAnd is CLOSED" : "ChipsAnd is OPEN";
-            window.currentMasterStatus = isClosed;
-        });
-
         window.toggleMasterStatus = async () => {
             await updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window.currentMasterStatus });
         };
 
-        const liveQ = query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
-        onSnapshot(liveQ, (snapshot) => {
-            const list = document.getElementById('orders-list');
-            snapshot.docChanges().forEach(change => { if (change.type === "added") new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3').play().catch(()=>{}); });
-            list.innerHTML = "";
-            snapshot.forEach(orderDoc => {
-                const data = orderDoc.data();
-                const items = data.items ? data.items.map(i => `<li>${i.name}</li>`).join('') : "";
-                const div = document.createElement('div');
-                div.className = 'order-card';
-                div.innerHTML = `<div class="flex-between"><strong>#${orderDoc.id.slice(-4)}</strong> <span>${data.type}</span></div><ul>${items}</ul><button class="btn btn-ready" onclick="markReady('${orderDoc.id}')">MARK READY</button>`;
-                list.appendChild(div);
-            });
-        });
-
-        onSnapshot(collection(db, "menu"), (snapshot) => {
-            const list = document.getElementById('menu-list');
-            list.innerHTML = "";
-            snapshot.forEach(docSnap => {
-                const item = docSnap.data();
-                const div = document.createElement('div');
-                div.className = 'flex-between'; div.style.padding = "10px 0; border-bottom:1px solid #eee;";
-                div.innerHTML = `<span>${item.name}</span><button class="btn btn-toggle ${item.is_available ? '' : 'sold-out'}" onclick="toggleItem('${docSnap.id}', ${item.is_available})">${item.is_available ? 'In Stock' : 'Sold Out'}</button>`;
-                list.appendChild(div);
-            });
-        });
-
-        const historyQ = query(collection(db, "orders"), where("status", "==", "ready"), orderBy("createdAt", "desc"));
-        onSnapshot(historyQ, (snapshot) => {
-            document.getElementById('total-sales-count').innerText = `${snapshot.size} Orders Sold`;
-            const list = document.getElementById('history-list');
-            list.innerHTML = "";
-            snapshot.forEach(orderDoc => {
-                const time = orderDoc.data().createdAt ? orderDoc.data().createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--';
-                const div = document.createElement('div');
-                div.className = 'history-card';
-                div.innerHTML = `<strong>${time}</strong> - #${orderDoc.id.slice(-4)}`;
-                list.appendChild(div);
-            });
-        });
-
         window.markReady = async (id) => await updateDoc(doc(db, "orders", id), { status: "ready" });
         window.toggleItem = async (id, s) => await updateDoc(doc(db, "menu", id), { is_available: !s });
-        window.closeShift = async () => { if (prompt("Password:") === "CHIPS123") { const snap = await getDocs(query(collection(db, "orders"), where("status", "==", "ready"))); const batch = writeBatch(db); snap.docs.forEach(d => batch.update(d.ref, { status: "archived" })); await batch.commit(); } };
+
+        window.runBulkImport = async () => {
+            const input = document.getElementById('bulk-input').value;
+            try {
+                const items = JSON.parse(input);
+                const batch = writeBatch(db);
+                items.forEach(item => {
+                    const newRef = doc(collection(db, "menu"));
+                    batch.set(newRef, { name: item.name, price: item.price, category: item.category, is_available: true });
+                });
+                await batch.commit();
+                alert("Imported " + items.length + " items!");
+                document.getElementById('bulk-input').value = "";
+            } catch(e) { alert("Invalid JSON format"); }
+        };
+
+        window.closeShift = async () => {
+            if (prompt("Password:") === "CHIPS123") {
+                const snap = await getDocs(query(collection(db, "orders"), where("status", "==", "ready")));
+                const batch = writeBatch(db);
+                snap.docs.forEach(d => batch.update(d.ref, { status: "archived" }));
+                await batch.commit();
+            }
+        };
     </script>
 </body>
 </html>
