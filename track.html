@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track My Order | ChipsAnd</title>
+    <style>
+        :root { --brand-orange: #e67e22; --brand-dark: #1a1a1a; --brand-grey: #333333; }
+        body { font-family: -apple-system, sans-serif; background: var(--brand-grey); color: white; text-align: center; padding: 40px 20px; }
+        .card { background: var(--brand-dark); padding: 30px; border-radius: 15px; border: 2px solid var(--brand-orange); max-width: 400px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .status-badge { display: inline-block; padding: 10px 20px; border-radius: 30px; font-weight: bold; font-size: 1.2rem; margin: 20px 0; text-transform: uppercase; letter-spacing: 1px; }
+        .status-pending { background: #f1c40f; color: black; } /* Yellow */
+        .status-ready { background: #27ae60; color: white; border: 2px solid white; animation: pulse 1.5s infinite; } /* Green */
+        .status-cancelled { background: #c0392b; color: white; } /* Red */
+        .message-box { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 20px; font-style: italic; font-size: 0.9rem; border-left: 4px solid var(--brand-orange); }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .logo { max-width: 120px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <img src="ChipsAndLogo.jpg" class="logo">
+    <div class="card" id="tracking-card">
+        <h2 id="order-id-display">Loading Order...</h2>
+        <div id="status-container"></div>
+        <div id="admin-message" class="hidden"></div>
+        <p style="margin-top:20px; color:#aaa;">Keep this page open. We'll update it the moment your food is ready!</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Get Order ID from URL
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get('id');
+
+        if (orderId) {
+            document.getElementById('order-id-display').innerText = `Order #${orderId.slice(-4)}`;
+            
+            // Listen to THIS specific order
+            onSnapshot(doc(db, "orders", orderId), (docSnap) => {
+                if (!docSnap.exists()) {
+                    document.getElementById('status-container').innerHTML = "<div class='status-badge'>Not Found</div>";
+                    return;
+                }
+
+                const data = docSnap.data();
+                const status = data.status; // pending, ready, cancelled
+                const message = data.note || "";
+
+                // Update UI based on status
+                let statusHTML = "";
+                if (status === "pending") statusHTML = `<div class="status-badge status-pending">👨‍🍳 Cooking Now</div>`;
+                if (status === "ready") statusHTML = `<div class="status-badge status-ready">✅ Ready for Pickup!</div>`;
+                if (status === "cancelled") statusHTML = `<div class="status-badge status-cancelled">❌ Order Cancelled</div>`;
+                
+                document.getElementById('status-container').innerHTML = statusHTML;
+
+                // Show admin note if it exists
+                const msgBox = document.getElementById('admin-message');
+                if (message) {
+                    msgBox.innerHTML = `<strong>Note from Truck:</strong><br>"${message}"`;
+                    msgBox.className = "message-box";
+                } else {
+                    msgBox.className = "hidden";
+                }
+            });
+        }
+    </script>
+</body>
+</html>
