@@ -5,137 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChipsAnd | Admin Panel</title>
     <style>
-        :root {
-            --brand-orange: #e67e22;
-            --brand-dark: #1a1a1a;
-            --brand-grey: #333333;
-            --success-green: #27ae60;
-            --danger-red: #c0392b;
-        }
-
+        :root { --brand-orange: #e67e22; --brand-dark: #1a1a1a; --brand-grey: #333333; --success-green: #27ae60; --danger-red: #c0392b; }
         body { font-family: -apple-system, sans-serif; padding: 20px; background: #f0f2f5; max-width: 900px; margin: 0 auto; }
         .section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        
-        /* Login Overlay */
         #login-gate { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--brand-dark); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; color: white; }
         .login-box { background:var(--brand-grey); padding:40px; border-radius:15px; border: 2px solid var(--brand-orange); text-align:center; }
-        input, select { padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; display:block; box-sizing: border-box; }
-        
-        /* Header & Logout Bar */
-        .admin-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 25px; 
-            background: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .admin-header h1 { font-size: 1.4rem; margin: 0; color: var(--brand-dark); }
-        .logout-btn { background: #7f8c8d; padding: 10px 18px; font-size: 0.85rem; border-radius: 8px; border: none; color: white; cursor: pointer; white-space: nowrap; font-weight: bold; }
-        .logout-btn:hover { background: var(--danger-red); }
-
-        /* Master Status Banner */
+        input, select { padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; display:block; width: 100%; box-sizing: border-box; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 15px 20px; border-radius: 12px; }
+        .logout-btn { background: #7f8c8d; padding: 10px 18px; font-size: 0.85rem; border-radius: 8px; border: none; color: white; cursor: pointer; font-weight: bold; }
         .master-status { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; }
         .status-open { background: var(--success-green); }
         .status-closed { background: var(--danger-red); }
-
-        /* Tabs */
         .tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; }
-        .tab-btn { flex: 1; padding: 14px; border: none; border-radius: 10px; cursor: pointer; background: #dee2e6; font-weight: bold; white-space: nowrap; }
+        .tab-btn { flex: 1; padding: 14px; border: none; border-radius: 10px; cursor: pointer; background: #dee2e6; font-weight: bold; }
         .tab-btn.active { background: var(--brand-orange); color: white; }
-        
-        /* Order Cards */
         .order-card { background: #fffbe6; border: 1px solid #ffe58f; padding: 20px; border-radius: 12px; margin-bottom: 15px; }
-        .history-card { background: #f8f9fa; border: 1px solid #ddd; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        
-        .btn { padding: 12px 18px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
-        .btn-ready { background: var(--success-green); width: 100%; margin-top: 15px; font-size: 1rem; }
-        .btn-delete-order { background: none; color: var(--danger-red); border: 1px solid var(--danger-red); font-size: 0.75rem; padding: 5px 10px; margin-top: 10px; border-radius: 4px; }
-        .btn-delete-order:hover { background: var(--danger-red); color: white; }
-
-        /* Inventory Buttons */
-        .btn-toggle { background: var(--brand-orange); min-width: 100px; }
-        .btn-edit { background: #3498db; margin-right: 5px; }
-        .btn-save { background: var(--success-green); margin-right: 5px; }
-        .btn-remove-item { color: var(--danger-red); background: none; font-size: 0.8rem; text-decoration: underline; margin-top: 8px; border: none; cursor: pointer; }
-        
-        .sold-out { background: #95a5a6; }
-        .hidden { display: none; }
+        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-ready { background: var(--success-green); width: 100%; margin-top: 10px; }
+        .btn-delete-order { background: none; color: var(--danger-red); border: 1px solid var(--danger-red); font-size: 0.75rem; padding: 5px 10px; margin-top: 10px; border-radius: 4px; cursor: pointer; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .edit-input { padding: 8px; margin-bottom: 6px; width: 100%; border: 1px solid #ccc; border-radius: 4px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-
     <div id="login-gate">
         <form class="login-box" onsubmit="event.preventDefault(); handleLogin();">
             <h1 style="color: var(--brand-orange); margin-top:0;">ChipsAnd Admin</h1>
-            <input type="email" id="admin-email" placeholder="Admin Email" style="width:260px;" required>
-            <input type="password" id="admin-password" placeholder="Password" style="width:260px;" required>
+            <input type="email" id="admin-email" placeholder="Email" required>
+            <input type="password" id="admin-password" placeholder="Password" required>
             <button type="submit" class="btn" style="background:var(--brand-orange); width:100%;">Login</button>
             <p id="login-error" style="color:#ff7675; margin-top:10px; font-size:0.8rem;"></p>
         </form>
     </div>
 
     <div id="admin-content" class="hidden">
-        <header class="admin-header">
-            <h1>ChipsAnd Manager 🚛</h1>
-            <button class="logout-btn" onclick="handleLogout()">Log Out</button>
-        </header>
-
+        <header class="admin-header"><h1>ChipsAnd Manager 🚛</h1><button class="logout-btn" onclick="handleLogout()">Log Out</button></header>
         <div id="master-panel" class="master-status status-open">
-            <div>
-                <h2 id="status-text" style="margin:0;">ChipsAnd is OPEN</h2>
-                <small>Customers can view menu and order online</small>
-            </div>
+            <div><h2 id="status-text" style="margin:0;">Shop is OPEN</h2><small>Online ordering active</small></div>
             <button class="btn" style="background: rgba(255,255,255,0.2); border: 1px solid white;" onclick="toggleMasterStatus()">Toggle Shop</button>
         </div>
-        
         <div class="tabs">
             <button class="tab-btn active" onclick="showTab('live')">Live Orders</button>
             <button class="tab-btn" onclick="showTab('menu')">Inventory</button>
             <button class="tab-btn" onclick="showTab('history')">Daily Stats</button>
         </div>
-
-        <div id="tab-live" class="tab-content">
-            <div class="section">
-                <h3>🔔 Incoming Orders</h3>
-                <div id="orders-list">Waiting for orders...</div>
-            </div>
-        </div>
-
+        <div id="tab-live" class="tab-content"><div class="section"><h3>🔔 Incoming Orders</h3><div id="orders-list">Waiting...</div></div></div>
         <div id="tab-menu" class="tab-content hidden">
             <div class="section" style="border: 2px solid var(--brand-orange);">
-                <h3 style="margin-top:0; color: var(--brand-orange);">➕ Add Special / Item</h3>
-                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                    <input type="text" id="new-item-name" placeholder="Item Name" style="flex: 2; min-width: 150px;">
-                    <input type="number" id="new-item-price" placeholder="Price" step="0.01" style="flex: 1; min-width: 80px;">
-                    <select id="new-item-category" style="flex: 1; min-width: 120px; padding: 12px; border-radius: 8px;">
-                        <option value="CHIPS">CHIPS</option>
-                        <option value="TOASTIES">TOASTIES</option>
-                        <option value="PASTA POTS">PASTA POTS</option>
-                        <option value="SIDES">SIDES</option>
-                        <option value="DRINKS">DRINKS</option>
-                    </select>
-                    <button class="btn" style="background: var(--success-green); width: 100%;" onclick="addNewItem()">Add to Menu</button>
+                <h3>➕ Add New Item</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" id="new-item-name" placeholder="Name" style="flex:2;">
+                    <input type="number" id="new-item-price" placeholder="Price" style="flex:1;">
+                    <select id="new-item-category" style="flex:1;"><option value="CHIPS">CHIPS</option><option value="TOASTIES">TOASTIES</option><option value="PASTA POTS">PASTA POTS</option><option value="SIDES">SIDES</option><option value="DRINKS">DRINKS</option></select>
+                    <button class="btn" style="background: var(--success-green); width: 100%;" onclick="addNewItem()">Add Item</button>
                 </div>
             </div>
-
-            <div class="section">
-                <h3>🍟 Current Menu Inventory</h3>
-                <div id="menu-list">Loading items...</div>
-            </div>
+            <div class="section"><h3>🍟 Current Menu</h3><div id="menu-list"></div></div>
         </div>
-
-        <div id="tab-history" class="tab-content hidden">
-            <div class="section">
-                <h2 id="total-sales-count" style="text-align:center; color: var(--brand-orange);">0 Orders Sold Today</h2>
-                <div id="history-list"></div>
-                <button class="btn" style="background: var(--brand-grey); width:100%; margin-top:20px;" onclick="closeShift()">Archive Shift (CHIPS123)</button>
-            </div>
-        </div>
+        <div id="tab-history" class="tab-content hidden"><div class="section"><h2 id="total-sales-count" style="text-align:center;">0 Sold Today</h2><div id="history-list"></div><button class="btn" style="background: var(--brand-grey); width:100%; margin-top:20px;" onclick="closeShift()">Archive Shift</button></div></div>
     </div>
 
     <script type="module">
@@ -143,43 +70,23 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, updateDoc, collection, query, where, orderBy, getDocs, writeBatch, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8",
-            authDomain: "chipsand-13831.firebaseapp.com",
-            projectId: "chipsand-13831",
-            storageBucket: "chipsand-13831.firebasestorage.app",
-            messagingSenderId: "105749630976",
-            appId: "1:105749630976:web:038ab2c3ce81612064c8e5"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- AUTH ---
         window.handleLogin = () => {
-            const email = document.getElementById('admin-email').value;
-            const pass = document.getElementById('admin-password').value;
             const silent = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3');
             silent.volume = 0; silent.play().catch(()=>{});
-
-            signInWithEmailAndPassword(auth, email, pass).catch(() => document.getElementById('login-error').innerText = "Access Denied");
+            signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-password').value).catch(() => document.getElementById('login-error').innerText = "Denied");
         };
-
-        window.handleLogout = () => { if(confirm("Log out?")) signOut(auth); };
+        window.handleLogout = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('login-gate').style.display = 'none';
-                document.getElementById('admin-content').classList.remove('hidden');
-                initDashboard();
-            } else {
-                document.getElementById('login-gate').style.display = 'flex';
-                document.getElementById('admin-content').classList.add('hidden');
-            }
+            if (user) { document.getElementById('login-gate').style.display = 'none'; document.getElementById('admin-content').classList.remove('hidden'); initDashboard(); }
+            else { document.getElementById('login-gate').style.display = 'flex'; document.getElementById('admin-content').classList.add('hidden'); }
         });
 
-        // --- DASHBOARD INIT ---
         function initDashboard() {
             onSnapshot(doc(db, "settings", "truck_status"), (docSnap) => {
                 const isClosed = docSnap.data()?.is_closed;
@@ -187,97 +94,32 @@
                 document.getElementById('status-text').innerText = isClosed ? "ChipsAnd is CLOSED" : "ChipsAnd is OPEN";
                 window.currentMasterStatus = isClosed;
             });
-
-            const liveQ = query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc"));
-            onSnapshot(liveQ, (snapshot) => {
+            onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc")), (snapshot) => {
                 const list = document.getElementById('orders-list');
                 snapshot.docChanges().forEach(change => { if (change.type === "added" && !snapshot.metadata.fromCache) new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3').play().catch(()=>{}); });
-                list.innerHTML = snapshot.empty ? "No active orders." : "";
+                list.innerHTML = snapshot.empty ? "No orders." : "";
                 snapshot.forEach(orderDoc => {
                     const data = orderDoc.data();
-                    const items = data.items ? data.items.map(i => `<li>${i.name}</li>`).join('') : "";
                     const div = document.createElement('div');
                     div.className = 'order-card';
-                    div.innerHTML = `
-                        <div class="flex-between"><strong>Order #${orderDoc.id.slice(-4)}</strong> <span>${data.type}</span></div>
-                        <ul style="font-size:0.9rem; margin:15px 0; padding-left:20px;">${items}</ul>
-                        <button class="btn btn-ready" onclick="updateOrderStatus('${orderDoc.id}', 'ready')">MARK READY</button>
-                        <button class="btn-delete-order" onclick="deleteOrder('${orderDoc.id}', 'Live')">Cancel Order</button>
-                    `;
+                    div.innerHTML = `<div class="flex-between"><strong>#${orderDoc.id.slice(-4)}</strong> <span>${data.type}</span></div>
+                        <ul style="font-size:0.9rem;">${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul>
+                        <button class="btn btn-ready" onclick="updateOrderStatus('${orderDoc.id}', 'ready')">READY</button>
+                        <button class="btn-delete-order" onclick="deleteDoc(doc(db, 'orders', '${orderDoc.id}'))">Cancel</button>`;
                     list.appendChild(div);
                 });
             });
-
             onSnapshot(collection(db, "menu"), (snapshot) => {
-                const list = document.getElementById('menu-list');
-                list.innerHTML = "";
+                const list = document.getElementById('menu-list'); list.innerHTML = "";
                 snapshot.forEach(docSnap => {
-                    const item = docSnap.data();
-                    const id = docSnap.id;
-                    const div = document.createElement('div');
-                    div.className = 'flex-between'; div.style.padding = "15px 0; border-bottom:1px solid #eee; align-items: flex-start;";
-                    div.innerHTML = `
-                        <div id="view-${id}" style="flex: 2;">
-                            <strong>${item.name}</strong> <small style="color:#888;">(${item.category})</small><br>
-                            <span style="color: var(--brand-orange); font-weight:bold;">£${item.price.toFixed(2)}</span><br>
-                            <button class="btn-remove-item" onclick="deleteMenuItem('${id}', '${item.name}')">Delete Item</button>
-                        </div>
-                        <div id="edit-${id}" class="hidden" style="flex: 2;">
-                            <input type="text" id="edit-name-${id}" value="${item.name}" class="edit-input">
-                            <input type="number" id="edit-price-${id}" value="${item.price}" step="0.01" class="edit-input">
-                            <select id="edit-cat-${id}" class="edit-input">
-                                <option value="CHIPS" ${item.category === 'CHIPS' ? 'selected' : ''}>CHIPS</option>
-                                <option value="TOASTIES" ${item.category === 'TOASTIES' ? 'selected' : ''}>TOASTIES</option>
-                                <option value="PASTA POTS" ${item.category === 'PASTA POTS' ? 'selected' : ''}>PASTA POTS</option>
-                                <option value="SIDES" ${item.category === 'SIDES' ? 'selected' : ''}>SIDES</option>
-                                <option value="DRINKS" ${item.category === 'DRINKS' ? 'selected' : ''}>DRINKS</option>
-                            </select>
-                        </div>
-                        <div style="text-align: right;">
-                            <button id="btn-edit-${id}" class="btn btn-edit" onclick="toggleEdit('${id}')">Edit</button>
-                            <button id="btn-save-${id}" class="btn btn-save hidden" onclick="saveEdit('${id}')">Save</button>
-                            <button class="btn btn-toggle ${item.is_available ? '' : 'sold-out'}" onclick="toggleItem('${id}', ${item.is_available})">${item.is_available ? 'In Stock' : 'Sold Out'}</button>
-                        </div>
-                    `;
-                    list.appendChild(div);
-                });
-            });
-
-            const historyQ = query(collection(db, "orders"), where("status", "==", "ready"), orderBy("createdAt", "desc"));
-            onSnapshot(historyQ, (snapshot) => {
-                document.getElementById('total-sales-count').innerText = `${snapshot.size} Orders Sold Today`;
-                const list = document.getElementById('history-list');
-                list.innerHTML = "";
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const time = data.createdAt ? data.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--';
-                    const div = document.createElement('div');
-                    div.className = 'history-card';
-                    div.innerHTML = `
-                        <div><strong>${time}</strong> - Order #${docSnap.id.slice(-4)}</div>
-                        <button class="btn-delete-order" style="margin:0; border:none; color:#999;" onclick="deleteOrder('${docSnap.id}', 'History')">Remove</button>
-                    `;
+                    const item = docSnap.data(); const id = docSnap.id;
+                    const div = document.createElement('div'); div.className = 'flex-between'; div.style.padding = "10px 0; border-bottom:1px solid #eee;";
+                    div.innerHTML = `<div><strong>${item.name}</strong> £${item.price.toFixed(2)}<br><button style="color:red; background:none; border:none; cursor:pointer; font-size:0.7rem; text-decoration:underline;" onclick="deleteDoc(doc(db, 'menu', '${id}'))">Delete Item</button></div>
+                        <button class="btn ${item.is_available ? '' : 'status-closed'}" style="background:${item.is_available ? 'var(--brand-orange)' : '#7f8c8d'}" onclick="updateDoc(doc(db, 'menu', '${id}'), {is_available: ${!item.is_available}})">${item.is_available ? 'In Stock' : 'Sold Out'}</button>`;
                     list.appendChild(div);
                 });
             });
         }
-
-        // --- ACTIONS ---
-        window.toggleEdit = (id) => {
-            document.getElementById(`view-${id}`).classList.toggle('hidden');
-            document.getElementById(`edit-${id}`).classList.toggle('hidden');
-            document.getElementById(`btn-edit-${id}`).classList.toggle('hidden');
-            document.getElementById(`btn-save-${id}`).classList.toggle('hidden');
-        };
-
-        window.saveEdit = async (id) => {
-            await updateDoc(doc(db, "menu", id), {
-                name: document.getElementById(`edit-name-${id}`).value,
-                price: parseFloat(document.getElementById(`edit-price-${id}`).value),
-                category: document.getElementById(`edit-cat-${id}`).value
-            });
-            alert("Updated!");
-        };
 
         window.showTab = (tabName) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -285,31 +127,12 @@
             document.getElementById(`tab-${tabName}`).classList.remove('hidden');
             event.target.classList.add('active');
         };
-
         window.toggleMasterStatus = async () => await updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window.currentMasterStatus });
         window.updateOrderStatus = async (id, status) => await updateDoc(doc(db, "orders", id), { status: status });
-        window.deleteOrder = async (id, loc) => { if(confirm(`Delete order from ${loc}?`)) await deleteDoc(doc(db, "orders", id)); };
-        window.toggleItem = async (id, s) => await updateDoc(doc(db, "menu", id), { is_available: !s });
-        
         window.addNewItem = async () => {
-            const name = document.getElementById('new-item-name').value;
-            const price = document.getElementById('new-item-price').value;
-            const category = document.getElementById('new-item-category').value;
-            if(!name || !price) return alert("Enter name and price!");
+            const name = document.getElementById('new-item-name').value; const price = document.getElementById('new-item-price').value; const category = document.getElementById('new-item-category').value;
             await addDoc(collection(db, "menu"), { name, price: parseFloat(price), category, is_available: true });
             document.getElementById('new-item-name').value = ""; document.getElementById('new-item-price').value = "";
-        };
-
-        window.deleteMenuItem = async (id, name) => { if(confirm("Permanently delete " + name + "?")) await deleteDoc(doc(db, "menu", id)); };
-
-        window.closeShift = async () => {
-            if (prompt("Enter Password to Archive All Orders:") === "CHIPS123") {
-                const snap = await getDocs(query(collection(db, "orders"), where("status", "==", "ready")));
-                const batch = writeBatch(db);
-                snap.docs.forEach(d => batch.update(d.ref, { status: "archived" }));
-                await batch.commit();
-                alert("Shift Archived.");
-            }
         };
     </script>
 </body>
