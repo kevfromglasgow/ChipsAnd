@@ -1,229 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChipsAnd | Menu</title>
-    <title>ChipsAnd | Order Online</title>
     <script src="https://js.stripe.com/v3/"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; padding: 20px; background: #fafafa; margin-bottom: 120px; }
-        .item { background: white; padding: 20px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .item.sold-out { opacity: 0.5; filter: grayscale(1); }
-        .add-btn { background: #0070f3; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        #cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 20px; border-top: 2px solid #eee; display: none; box-sizing: border-box; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .pay-btn { flex: 1; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         :root {
             --brand-orange: #e67e22;
             --brand-dark: #1a1a1a;
             --brand-grey: #333333;
+            --text-main: #ffffff;
+            --text-dim: #aaaaaa;
         }
 
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            padding: 0; 
-            margin: 0; 
+            font-family: -apple-system, sans-serif; 
+            padding: 0; margin: 0; 
             background: var(--brand-grey); 
-            color: white;
-            padding-bottom: 150px;
+            color: var(--text-main);
+            padding-bottom: 160px; 
         }
 
         header {
             background: var(--brand-dark);
-            padding: 20px;
+            padding: 30px 20px;
             text-align: center;
-            border-bottom: 3px solid var(--brand-orange);
+            border-bottom: 4px solid var(--brand-orange);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        .logo {
-            max-width: 150px;
-            height: auto;
-        }
+        .logo { max-width: 180px; height: auto; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        h2 {
-            border-left: 5px solid var(--brand-orange);
-            padding-left: 15px;
+        .category-section { margin-bottom: 40px; }
+        .category-title {
+            color: var(--brand-orange);
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-top: 30px;
-            color: var(--brand-orange);
+            border-bottom: 2px solid var(--brand-orange);
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
         }
 
-        .item-card { 
-            background: var(--brand-dark); 
-            padding: 20px; 
-            border-radius: 8px; 
-            margin-bottom: 15px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .item-card {
+            background: var(--brand-dark);
             border: 1px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             transition: transform 0.2s;
         }
 
-        .item-card:active { transform: scale(0.98); }
-
-        .item-info { flex: 1; }
-        .item-name { font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 4px; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .item-name { font-weight: bold; font-size: 1.1rem; }
         .item-price { color: var(--brand-orange); font-weight: bold; }
-        
+        .item-card.sold-out { opacity: 0.4; filter: grayscale(1); pointer-events: none; }
+
         .add-btn { 
-            background: var(--brand-orange); 
-            color: white; 
-            border: none; 
-            padding: 12px 20px; 
-            border-radius: 5px; 
-            font-weight: bold; 
-            cursor: pointer; 
+            background: var(--brand-orange); color: white; border: none; 
+            padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            margin-top: 15px; text-transform: uppercase;
         }
 
-        .item-card.sold-out { opacity: 0.4; filter: grayscale(1); }
-
-        /* Cart Bar */
         #cart-bar { 
-            position: fixed; 
-            bottom: 0; 
-            width: 100%; 
-            background: var(--brand-dark); 
-            padding: 20px; 
-            border-top: 4px solid var(--brand-orange); 
-            display: none; 
-            box-sizing: border-box; 
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            position: fixed; bottom: 0; width: 100%; background: var(--brand-dark); 
+            padding: 25px; border-top: 5px solid var(--brand-orange); 
+            display: none; box-sizing: border-box; z-index: 1000;
         }
 
-        .total-row { font-size: 1.4rem; font-weight: bold; margin-bottom: 15px; text-align: center; }
-        
-        .btn-group { display: flex; gap: 10px; }
-        .pay-btn { 
-            flex: 1; 
-            padding: 18px; 
-            border: none; 
-            border-radius: 5px; 
-            font-weight: bold; 
-            font-size: 1rem;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
+        .pay-btn { flex: 1; padding: 18px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         #closed-screen { display: none; text-align: center; padding: 100px 20px; }
     </style>
 </head>
 <body>
-    <div id="active-menu">
-        <h1 style="color: #1a1a1a;">ChipsAnd Menu 🍟</h1>
-        <div id="menu-display">Loading delicious food...</div>
-        <div id="cart-bar">
-            <div style="font-weight:bold; font-size:1.2rem; margin-bottom: 10px;">Total: £<span id="total-price">0.00</span></div>
-            <div class="btn-group">
-                <button id="checkout-btn" class="pay-btn" style="background: #27ae60;" onclick="startCheckout()">Pay Now</button>
-                <button id="collect-btn" class="pay-btn" style="background: #34495e;" onclick="payOnCollection()">Pay on Pickup</button>
-
-    <header>
-        <img src="ChipsAndLogo.jpg" alt="ChipsAnd Logo" class="logo">
-    </header>
+    <header><img src="ChipsAndLogo.jpg" alt="ChipsAnd Logo" class="logo"></header>
 
     <div id="active-menu" class="container">
-        <div id="menu-display">
-            </div>
-        </div>
+        <div id="menu-display">Loading...</div>
     </div>
 
     <div id="closed-screen">
-        <h1 style="font-size: 3rem;">🚚</h1>
-        <h2>ChipsAnd is Closed</h2>
-        <p>We've finished up for today. Check back tomorrow!</p>
-        <h1 style="font-size: 4rem;">🚛</h1>
-        <h2 style="border:none;">ChipsAnd is Currently Closed</h2>
-        <p>Catch us next time! Keep an eye on our socials.</p>
+        <div style="font-size: 5rem;">🚚</div>
+        <h2>ChipsAnd is Currently Closed</h2>
+        <p>Check back tomorrow!</p>
     </div>
 
     <div id="cart-bar">
-        <div class="total-row">Total: £<span id="total-price">0.00</span></div>
-        <div class="btn-group">
-            <button id="checkout-btn" class="pay-btn" style="background: #27ae60; color: white;" onclick="startCheckout()">Card Payment</button>
-            <button id="collect-btn" class="pay-btn" style="background: var(--brand-orange); color: white;" onclick="payOnCollection()">Pay at Truck</button>
+        <div style="font-size: 1.5rem; font-weight: bold; text-align: center; margin-bottom: 15px;">TOTAL: £<span id="total-price">0.00</span></div>
+        <div style="display: flex; gap: 10px; max-width: 800px; margin: 0 auto;">
+            <button class="pay-btn" style="background: #27ae60; color: white;" onclick="startCheckout()">Card Payment</button>
+            <button class="pay-btn" style="background: var(--brand-orange); color: white;" onclick="payOnCollection()">Pay at Truck</button>
         </div>
     </div>
 
     <script type="module">
-@@ -54,33 +152,58 @@ <h2>ChipsAnd is Closed</h2>
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8",
+            authDomain: "chipsand-13831.firebaseapp.com",
+            projectId: "chipsand-13831",
+            storageBucket: "chipsand-13831.firebasestorage.app",
+            messagingSenderId: "105749630976",
+            appId: "1:105749630976:web:038ab2c3ce81612064c8e5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const stripe = Stripe('pk_test_51TDsgdBRv0TelT5pTQP1OvmhDzwfqFTF9nMmFhLNBMv76stDiKbjH2GQwDnqTNN29MhaH9uexTgefFf2NjTqNkhV001zUMBUDJ');
 
         let cart = [];
 
-        // 1. MASTER STATUS
         onSnapshot(doc(db, "settings", "truck_status"), (docSnap) => {
             const isClosed = docSnap.data()?.is_closed;
             document.getElementById('active-menu').style.display = isClosed ? 'none' : 'block';
             document.getElementById('closed-screen').style.display = isClosed ? 'block' : 'none';
         });
 
-        // 2. LOAD MENU (Organized by Category)
         onSnapshot(collection(db, "menu"), (snapshot) => {
             const display = document.getElementById('menu-display');
             display.innerHTML = "";
-            
-            // Temporary storage to group items by category
             const categories = {};
-
             snapshot.forEach(docSnap => {
                 const item = docSnap.data();
-                const div = document.createElement('div');
-                div.className = `item ${item.is_available ? '' : 'sold-out'}`;
-                div.innerHTML = `<div><strong>${item.name}</strong><br>£${item.price.toFixed(2)}</div>
-                    ${item.is_available ? `<button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">Add</button>` : '<span>Sold Out</span>'}`;
-                display.appendChild(div);
-                const cat = item.category || "Other";
+                const cat = item.category || "GENERAL";
                 if (!categories[cat]) categories[cat] = [];
                 categories[cat].push({ id: docSnap.id, ...item });
             });
 
-            for (const [catName, items] of Object.entries(categories)) {
-                const section = document.createElement('div');
-                section.innerHTML = `<h2>${catName}</h2>`;
-                
-                items.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
-                    div.innerHTML = `
-                        <div class="item-info">
-                            <span class="item-name">${item.name}</span>
-                            <span class="item-price">£${item.price.toFixed(2)}</span>
-                        </div>
-                        ${item.is_available ? `<button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">ADD</button>` : '<span>SOLD OUT</span>'}
-                    `;
-                    section.appendChild(div);
-                });
-                display.appendChild(section);
-            }
+            ["CHIPS", "TOASTIES", "PASTA POTS", "SIDES", "DRINKS"].forEach(catName => {
+                if (categories[catName]) {
+                    const section = document.createElement('div');
+                    section.className = 'category-section';
+                    section.innerHTML = `<div class="category-title">${catName}</div><div class="items-grid" id="grid-${catName}"></div>`;
+                    display.appendChild(section);
+                    categories[catName].forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
+                        div.innerHTML = `<div class="item-header"><span class="item-name">${item.name}</span><span class="item-price">£${item.price.toFixed(2)}</span></div>
+                            ${item.is_available ? `<button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">ADD TO ORDER</button>` : '<span style="text-align:center; margin-top:10px;">SOLD OUT</span>'}`;
+                        document.getElementById(`grid-${catName}`).appendChild(div);
+                    });
+                }
+            });
         });
 
         window.addToCart = (name, price) => {
             cart.push({ name, price });
             document.getElementById('cart-bar').style.display = 'block';
             document.getElementById('total-price').innerText = cart.reduce((s, i) => s + i.price, 0).toFixed(2);
-            const subtotal = cart.reduce((s, i) => s + i.price, 0);
-            document.getElementById('total-price').innerText = subtotal.toFixed(2);
         };
 
         window.startCheckout = async () => {
-            document.getElementById('checkout-btn').innerText = "Connecting...";
-            const btn = document.getElementById('checkout-btn');
-            btn.innerText = "LOADING...";
-            const res = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-@@ -92,7 +215,7 @@ <h2>ChipsAnd is Closed</h2>
+            const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: cart }) });
+            const session = await res.json();
+            localStorage.setItem('last_cart', JSON.stringify(cart));
+            await stripe.redirectToCheckout({ sessionId: session.id });
         };
 
         window.payOnCollection = async () => {
             await addDoc(collection(db, "orders"), { items: cart, status: "pending", type: "Pickup", createdAt: serverTimestamp() });
-            await addDoc(collection(db, "orders"), { items: cart, status: "pending", type: "Truck Pickup", createdAt: serverTimestamp() });
             window.location.href = "success.html?method=pickup";
         };
     </script>
+</body>
+</html>
