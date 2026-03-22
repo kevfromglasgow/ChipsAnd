@@ -3,36 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChipsAnd | Menu</title>
+    <title>ChipsAnd | Order Online</title>
     <script src="https://js.stripe.com/v3/"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; padding: 20px; background: #fafafa; margin-bottom: 120px; }
-        .item { background: white; padding: 20px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .item.sold-out { opacity: 0.5; filter: grayscale(1); }
-        .add-btn { background: #0070f3; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        #cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 20px; border-top: 2px solid #eee; display: none; box-sizing: border-box; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .pay-btn { flex: 1; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        :root {
+            --brand-orange: #e67e22;
+            --brand-dark: #1a1a1a;
+            --brand-grey: #333333;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 0; 
+            margin: 0; 
+            background: var(--brand-grey); 
+            color: white;
+            padding-bottom: 150px;
+        }
+
+        header {
+            background: var(--brand-dark);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--brand-orange);
+        }
+
+        .logo {
+            max-width: 150px;
+            height: auto;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h2 {
+            border-left: 5px solid var(--brand-orange);
+            padding-left: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 30px;
+            color: var(--brand-orange);
+        }
+
+        .item-card { 
+            background: var(--brand-dark); 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border: 1px solid #444;
+            transition: transform 0.2s;
+        }
+
+        .item-card:active { transform: scale(0.98); }
+
+        .item-info { flex: 1; }
+        .item-name { font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 4px; }
+        .item-price { color: var(--brand-orange); font-weight: bold; }
+        
+        .add-btn { 
+            background: var(--brand-orange); 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
+
+        .item-card.sold-out { opacity: 0.4; filter: grayscale(1); }
+
+        /* Cart Bar */
+        #cart-bar { 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            background: var(--brand-dark); 
+            padding: 20px; 
+            border-top: 4px solid var(--brand-orange); 
+            display: none; 
+            box-sizing: border-box; 
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        }
+
+        .total-row { font-size: 1.4rem; font-weight: bold; margin-bottom: 15px; text-align: center; }
+        
+        .btn-group { display: flex; gap: 10px; }
+        .pay-btn { 
+            flex: 1; 
+            padding: 18px; 
+            border: none; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
         #closed-screen { display: none; text-align: center; padding: 100px 20px; }
     </style>
 </head>
 <body>
-    <div id="active-menu">
-        <h1 style="color: #1a1a1a;">ChipsAnd Menu 🍟</h1>
-        <div id="menu-display">Loading delicious food...</div>
-        <div id="cart-bar">
-            <div style="font-weight:bold; font-size:1.2rem; margin-bottom: 10px;">Total: £<span id="total-price">0.00</span></div>
-            <div class="btn-group">
-                <button id="checkout-btn" class="pay-btn" style="background: #27ae60;" onclick="startCheckout()">Pay Now</button>
-                <button id="collect-btn" class="pay-btn" style="background: #34495e;" onclick="payOnCollection()">Pay on Pickup</button>
+
+    <header>
+        <img src="ChipsAndLogo.jpg" alt="ChipsAnd Logo" class="logo">
+    </header>
+
+    <div id="active-menu" class="container">
+        <div id="menu-display">
             </div>
-        </div>
     </div>
 
     <div id="closed-screen">
-        <h1 style="font-size: 3rem;">🚚</h1>
-        <h2>ChipsAnd is Closed</h2>
-        <p>We've finished up for today. Check back tomorrow!</p>
+        <h1 style="font-size: 4rem;">🚛</h1>
+        <h2 style="border:none;">ChipsAnd is Currently Closed</h2>
+        <p>Catch us next time! Keep an eye on our socials.</p>
+    </div>
+
+    <div id="cart-bar">
+        <div class="total-row">Total: £<span id="total-price">0.00</span></div>
+        <div class="btn-group">
+            <button id="checkout-btn" class="pay-btn" style="background: #27ae60; color: white;" onclick="startCheckout()">Card Payment</button>
+            <button id="collect-btn" class="pay-btn" style="background: var(--brand-orange); color: white;" onclick="payOnCollection()">Pay at Truck</button>
+        </div>
     </div>
 
     <script type="module">
@@ -54,33 +152,58 @@
 
         let cart = [];
 
+        // 1. MASTER STATUS
         onSnapshot(doc(db, "settings", "truck_status"), (docSnap) => {
             const isClosed = docSnap.data()?.is_closed;
             document.getElementById('active-menu').style.display = isClosed ? 'none' : 'block';
             document.getElementById('closed-screen').style.display = isClosed ? 'block' : 'none';
         });
 
+        // 2. LOAD MENU (Organized by Category)
         onSnapshot(collection(db, "menu"), (snapshot) => {
             const display = document.getElementById('menu-display');
             display.innerHTML = "";
+            
+            // Temporary storage to group items by category
+            const categories = {};
+
             snapshot.forEach(docSnap => {
                 const item = docSnap.data();
-                const div = document.createElement('div');
-                div.className = `item ${item.is_available ? '' : 'sold-out'}`;
-                div.innerHTML = `<div><strong>${item.name}</strong><br>£${item.price.toFixed(2)}</div>
-                    ${item.is_available ? `<button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">Add</button>` : '<span>Sold Out</span>'}`;
-                display.appendChild(div);
+                const cat = item.category || "Other";
+                if (!categories[cat]) categories[cat] = [];
+                categories[cat].push({ id: docSnap.id, ...item });
             });
+
+            for (const [catName, items] of Object.entries(categories)) {
+                const section = document.createElement('div');
+                section.innerHTML = `<h2>${catName}</h2>`;
+                
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
+                    div.innerHTML = `
+                        <div class="item-info">
+                            <span class="item-name">${item.name}</span>
+                            <span class="item-price">£${item.price.toFixed(2)}</span>
+                        </div>
+                        ${item.is_available ? `<button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">ADD</button>` : '<span>SOLD OUT</span>'}
+                    `;
+                    section.appendChild(div);
+                });
+                display.appendChild(section);
+            }
         });
 
         window.addToCart = (name, price) => {
             cart.push({ name, price });
             document.getElementById('cart-bar').style.display = 'block';
-            document.getElementById('total-price').innerText = cart.reduce((s, i) => s + i.price, 0).toFixed(2);
+            const subtotal = cart.reduce((s, i) => s + i.price, 0);
+            document.getElementById('total-price').innerText = subtotal.toFixed(2);
         };
 
         window.startCheckout = async () => {
-            document.getElementById('checkout-btn').innerText = "Connecting...";
+            const btn = document.getElementById('checkout-btn');
+            btn.innerText = "LOADING...";
             const res = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -92,7 +215,7 @@
         };
 
         window.payOnCollection = async () => {
-            await addDoc(collection(db, "orders"), { items: cart, status: "pending", type: "Pickup", createdAt: serverTimestamp() });
+            await addDoc(collection(db, "orders"), { items: cart, status: "pending", type: "Truck Pickup", createdAt: serverTimestamp() });
             window.location.href = "success.html?method=pickup";
         };
     </script>
