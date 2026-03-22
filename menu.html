@@ -3,44 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Menu</title>
+    <title>Order Food</title>
     <script src="https://js.stripe.com/v3/"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; padding: 20px; background: #fafafa; margin-bottom: 120px; }
-        h1 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .item-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .sold-out { opacity: 0.5; filter: grayscale(100%); }
-        .price { font-weight: bold; color: #2ecc71; font-size: 1.1rem; }
-        .status-badge { font-size: 0.8rem; padding: 4px 8px; border-radius: 20px; background: #eee; color: #666; }
-        .order-btn { background: #0070f3; color: white; border: none; padding: 12px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
-        .order-btn:active { transform: scale(0.95); }
-        
-        /* The Floating Cart */
-        #cart-container { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 20px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1); border-top: 1px solid #eee; box-sizing: border-box; }
-        .cart-flex { display: flex; justify-content: space-between; align-items: center; max-width: 600px; margin: 0 auto; }
-        .pay-btn { background: #27ae60; color: white; border: none; padding: 15px 30px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+        body { font-family: -apple-system, sans-serif; padding: 20px; background: #fafafa; margin-bottom: 100px; }
+        .item { background: white; padding: 20px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .item.sold-out { opacity: 0.5; filter: grayscale(1); }
+        .add-btn { background: #0070f3; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 20px; border-top: 2px solid #eee; display: none; box-sizing: border-box; }
+        .pay-btn { background: #27ae60; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; width: 100%; font-size: 1.1rem; }
     </style>
 </head>
 <body>
-    <h1>Today's Menu 🍔</h1>
-    <div id="customer-menu">Loading delicious food...</div>
+    <h1>ChipsAnd Menu 🍔</h1>
+    <div id="menu-display">Loading...</div>
 
-    <div id="cart-container" style="display: none;">
-        <div class="cart-flex">
-            <div>
-                <span id="cart-count" style="color: #666;">0 items</span>
-                <div style="font-weight: bold; font-size: 1.3rem;">Total: £<span id="cart-total">0.00</span></div>
-                <div style="font-size: 0.7rem; color: #888;">+ processing fee included</div>
-            </div>
-            <button id="checkout-btn" class="pay-btn">Checkout</button>
-        </div>
+    <div id="cart-bar">
+        <div style="margin-bottom:10px; font-weight:bold; font-size:1.2rem;">Total: £<span id="total-price">0.00</span></div>
+        <button id="checkout-btn" class="pay-btn" onclick="startCheckout()">Checkout</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 1. YOUR FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8",
             authDomain: "chipsand-13831.firebaseapp.com",
@@ -48,89 +34,47 @@
             storageBucket: "chipsand-13831.firebasestorage.app",
             messagingSenderId: "105749630976",
             appId: "1:105749630976:web:038ab2c3ce81612064c8e5"
-        };
-
+          };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        
-        // 2. YOUR STRIPE PUBLISHABLE KEY
-        const stripe = Stripe('pk_test_51TDsgdBRv0TelT5pTQP1OvmhDzwfqFTF9nMmFhLNBMv76stDiKbjH2GQwDnqTNN29MhaH9uexTgefFf2NjTqNkhV001zUMBUDJ');
+        const stripe = Stripe('pk_test_51TDsgdBRv0TelT5pTQP1OvmhDzwfqFTF9nMmFhLNBMv76stDiKbjH2GQwDnqTNN29MhaH9uexTgefFf2NjTqNkhV001zUMBUDJ'); // YOUR STRIPE PUBLISHABLE KEY
 
         let cart = [];
 
-        // Listen for Menu Changes
         onSnapshot(collection(db, "menu"), (snapshot) => {
-            const menuDiv = document.getElementById('customer-menu');
-            menuDiv.innerHTML = '';
-
-            snapshot.forEach((itemDoc) => {
-                const item = itemDoc.data();
-                const card = document.createElement('div');
-                card.className = `item-card ${!item.is_available ? 'sold-out' : ''}`;
-                
-                card.innerHTML = `
-                    <div>
-                        <div style="font-weight:bold; font-size:1.2rem;">${item.name}</div>
-                        <div class="price">£${item.price.toFixed(2)}</div>
-                    </div>
-                    <div>
-                        ${item.is_available 
-                            ? `<button class="order-btn" onclick="addToCart('${item.name}', ${item.price})">Add to Cart</button>` 
-                            : `<span class="status-badge">Sold Out</span>`}
-                    </div>
+            const display = document.getElementById('menu-display');
+            display.innerHTML = "";
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                const div = document.createElement('div');
+                div.className = `item ${item.is_available ? '' : 'sold-out'}`;
+                div.innerHTML = `
+                    <div><strong>${item.name}</strong><br>£${item.price.toFixed(2)}</div>
+                    ${item.is_available ? `<button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">Add</button>` : '<span>Sold Out</span>'}
                 `;
-                menuDiv.appendChild(card);
+                display.appendChild(div);
             });
         });
 
-        // Add to Cart Logic
         window.addToCart = (name, price) => {
             cart.push({ name, price });
-            updateCartUI();
+            document.getElementById('cart-bar').style.display = 'block';
+            const subtotal = cart.reduce((s, i) => s + i.price, 0);
+            const totalWithFees = (subtotal + 0.30) / (1 - 0.029);
+            document.getElementById('total-price').innerText = totalWithFees.toFixed(2);
         };
 
-        function updateCartUI() {
-            const container = document.getElementById('cart-container');
-            const countLabel = document.getElementById('cart-count');
-            const totalLabel = document.getElementById('cart-total');
-            
-            if (cart.length > 0) {
-                container.style.display = 'block';
-                countLabel.innerText = `${cart.length} item${cart.length > 1 ? 's' : ''}`;
-                const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
-                
-                // Show the customer the total including the Stripe fee we calculate later
-                const totalWithFees = (subtotal + 0.30) / (1 - 0.029);
-                totalLabel.innerText = totalWithFees.toFixed(2);
-            }
-        }
-
-        // Checkout Trigger
-        document.getElementById('checkout-btn').addEventListener('click', async () => {
+        window.startCheckout = async () => {
             const btn = document.getElementById('checkout-btn');
-            btn.innerText = "Connecting...";
-            btn.disabled = true;
-
-            // This calls the /api/checkout.js file we created in GitHub
-            const response = await fetch('/api/checkout', {
+            btn.innerText = "Processing...";
+            const res = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items: cart })
             });
-
-            const session = await response.json();
-            
-            // Send user to Stripe Secure Checkout
-            const result = await stripe.redirectToCheckout({
-                sessionId: session.id,
-            });
-
-            if (result.error) {
-                alert(result.error.message);
-                btn.innerText = "Checkout";
-                btn.disabled = false;
-            }
-        });
+            const session = await res.json();
+            await stripe.redirectToCheckout({ sessionId: session.id });
+        };
     </script>
 </body>
 </html>
