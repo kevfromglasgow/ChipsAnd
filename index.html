@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Truck Admin</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; padding: 20px; background: #f0f2f5; }
+        h1 { color: #1c1e21; }
+        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .item-name { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
+        .status { margin-bottom: 15px; font-weight: 600; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; color: white; }
+        .btn-sold-out { background-color: #ff4757; }
+        .btn-in-stock { background-color: #2ed573; }
+    </style>
+</head>
+<body>
+    <h1>Inventory Control</h1>
+    <div id="menu-list">Loading items...</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- PASTE YOUR CONFIG BELOW THIS LINE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8",
+            authDomain: "chipsand-13831.firebaseapp.com",
+            projectId: "chipsand-13831",
+            storageBucket: "chipsand-13831.firebasestorage.app",
+            messagingSenderId: "105749630976",
+            appId: "1:105749630976:web:038ab2c3ce81612064c8e5"
+        };
+        // --- PASTE YOUR CONFIG ABOVE THIS LINE ---
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // This "listens" to your Firebase in real-time
+        onSnapshot(collection(db, "menu"), (snapshot) => {
+            const menuList = document.getElementById('menu-list');
+            menuList.innerHTML = ''; // Clear the "Loading" text
+
+            snapshot.forEach((itemDoc) => {
+                const data = itemDoc.data();
+                const id = itemDoc.id;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="item-name">${data.name}</div>
+                    <div class="status" style="color: ${data.is_available ? '#2ed573' : '#ff4757'}">
+                        ${data.is_available ? '● Currently In Stock' : '○ SOLD OUT'}
+                    </div>
+                    <button class="btn ${data.is_available ? 'btn-sold-out' : 'btn-in-stock'}" 
+                            onclick="toggleItem('${id}', ${data.is_available})">
+                        ${data.is_available ? 'MARK AS SOLD OUT' : 'MARK AS IN STOCK'}
+                    </button>
+                `;
+                menuList.appendChild(card);
+            });
+        });
+
+        // The logic to change the database
+        window.toggleItem = async (id, currentStatus) => {
+            const itemRef = doc(db, "menu", id);
+            await updateDoc(itemRef, { is_available: !currentStatus });
+        };
+    </script>
+</body>
+</html>
