@@ -6,95 +6,30 @@
     <title>ChipsAnd | Menu</title>
     <script src="https://js.stripe.com/v3/"></script>
     <style>
-        :root {
-            --brand-orange: #e67e22;
-            --brand-dark: #1a1a1a;
-            --brand-grey: #333333;
-            --text-main: #ffffff;
-            --text-dim: #aaaaaa;
-        }
-
-        body { 
-            font-family: -apple-system, sans-serif; 
-            padding: 0; margin: 0; 
-            background: var(--brand-grey); 
-            color: var(--text-main);
-            padding-bottom: 160px; 
-        }
-
-        header {
-            background: var(--brand-dark);
-            padding: 30px 20px;
-            text-align: center;
-            border-bottom: 4px solid var(--brand-orange);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
+        :root { --brand-orange: #e67e22; --brand-dark: #1a1a1a; --brand-grey: #333333; --text-main: #ffffff; --text-dim: #aaaaaa; }
+        body { font-family: -apple-system, sans-serif; padding: 0; margin: 0; background: var(--brand-grey); color: var(--text-main); padding-bottom: 160px; }
+        header { background: var(--brand-dark); padding: 30px 20px; text-align: center; border-bottom: 4px solid var(--brand-orange); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .logo { max-width: 180px; height: auto; }
         .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-
         .category-section { margin-bottom: 40px; }
-        .category-title {
-            color: var(--brand-orange);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-bottom: 2px solid var(--brand-orange);
-            padding-bottom: 5px;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-        }
-
-        .items-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
-        }
-
-        .item-card {
-            background: var(--brand-dark);
-            border: 1px solid #444;
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.2s;
-        }
-
+        .category-title { color: var(--brand-orange); text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid var(--brand-orange); padding-bottom: 5px; margin-bottom: 20px; font-size: 1.5rem; }
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .item-card { background: var(--brand-dark); border: 1px solid #444; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s; }
         .item-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .item-name { font-weight: bold; font-size: 1.1rem; }
         .item-price { color: var(--brand-orange); font-weight: bold; }
         .item-card.sold-out { opacity: 0.4; filter: grayscale(1); pointer-events: none; }
-
-        .add-btn { 
-            background: var(--brand-orange); color: white; border: none; 
-            padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer;
-            margin-top: 15px; text-transform: uppercase;
-        }
-
-        #cart-bar { 
-            position: fixed; bottom: 0; width: 100%; background: var(--brand-dark); 
-            padding: 25px; border-top: 5px solid var(--brand-orange); 
-            display: none; box-sizing: border-box; z-index: 1000;
-        }
-
-        .pay-btn { flex: 1; padding: 18px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .add-btn { background: var(--brand-orange); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; text-transform: uppercase; }
+        #cart-bar { position: fixed; bottom: 0; width: 100%; background: var(--brand-dark); padding: 25px; border-top: 5px solid var(--brand-orange); display: none; box-sizing: border-box; z-index: 1000; }
+        .pay-btn { flex: 1; padding: 18px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: opacity 0.2s; }
+        .pay-btn:active { transform: scale(0.98); }
         #closed-screen { display: none; text-align: center; padding: 100px 20px; }
     </style>
 </head>
 <body>
     <header><img src="ChipsAndLogo.jpg" alt="ChipsAnd Logo" class="logo"></header>
-
-    <div id="active-menu" class="container">
-        <div id="menu-display">Loading...</div>
-    </div>
-
-    <div id="closed-screen">
-        <div style="font-size: 5rem;">🚚</div>
-        <h2>ChipsAnd is Currently Closed</h2>
-        <p>Check back tomorrow!</p>
-    </div>
-
+    <div id="active-menu" class="container"><div id="menu-display">Loading...</div></div>
+    <div id="closed-screen"><div style="font-size: 5rem;">🚚</div><h2>ChipsAnd is Currently Closed</h2><p>Check back tomorrow!</p></div>
     <div id="cart-bar">
         <div style="font-size: 1.5rem; font-weight: bold; text-align: center; margin-bottom: 15px;">TOTAL: £<span id="total-price">0.00</span></div>
         <div style="display: flex; gap: 10px; max-width: 800px; margin: 0 auto;">
@@ -107,15 +42,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8",
-            authDomain: "chipsand-13831.firebaseapp.com",
-            projectId: "chipsand-13831",
-            storageBucket: "chipsand-13831.firebasestorage.app",
-            messagingSenderId: "105749630976",
-            appId: "1:105749630976:web:038ab2c3ce81612064c8e5"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const stripe = Stripe('pk_test_51TDsgdBRv0TelT5pTQP1OvmhDzwfqFTF9nMmFhLNBMv76stDiKbjH2GQwDnqTNN29MhaH9uexTgefFf2NjTqNkhV001zUMBUDJ');
@@ -138,7 +65,6 @@
                 if (!categories[cat]) categories[cat] = [];
                 categories[cat].push({ id: docSnap.id, ...item });
             });
-
             ["CHIPS", "TOASTIES", "PASTA POTS", "SIDES", "DRINKS"].forEach(catName => {
                 if (categories[catName]) {
                     const section = document.createElement('div');
@@ -170,8 +96,8 @@
         };
 
         window.payOnCollection = async () => {
-            await addDoc(collection(db, "orders"), { items: cart, status: "pending", type: "Pickup", createdAt: serverTimestamp() });
-            window.location.href = "success.html?method=pickup";
+            const docRef = await addDoc(collection(db, "orders"), { items: cart, status: "pending", type: "Pickup", note: "", createdAt: serverTimestamp() });
+            window.location.href = `track.html?id=${docRef.id}`;
         };
     </script>
 </body>
