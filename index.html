@@ -4,213 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChipsAnd | Admin</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <!-- PDF Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-
     <style>
-        :root {
-            --orange: #F4712B;
-            --orange-dim: #c25a20;
-            --bg: #0E0E0E;
-            --surface: #161616;
-            --surface-2: #1F1F1F;
-            --surface-3: #252525;
-            --border: rgba(255,255,255,0.07);
-            --border-hover: rgba(244,113,43,0.35);
-            --text: #F0EDE8;
-            --muted: #888;
-            --green: #2ecc71;
-            --green-dim: #1a7a42;
-            --red: #e74c3c;
-            --red-dim: #8a1f1f;
-            --blue: #3498db;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
-
-        /* ── LOGIN ───────────────────────────────── */
-        #login-gate {
-            position: fixed; inset: 0;
-            background: var(--bg);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-wrap {
-            width: 100%;
-            max-width: 380px;
-            padding: 24px;
-        }
-
-        .login-eyebrow { font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; color: var(--orange); margin-bottom: 10px; }
-        .login-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 900; margin-bottom: 36px; line-height: 1.1; }
-        .login-title em { font-style: italic; color: var(--orange); }
-
-        .field { margin-bottom: 14px; }
-        .field label { display: block; font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-        .field input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; color: var(--text); padding: 14px 16px; outline: none; }
-        .field input:focus { border-color: var(--orange); }
-
-        .login-btn { width: 100%; margin-top: 8px; padding: 16px; background: var(--orange); border: none; border-radius: 12px; color: white; font-weight: 500; cursor: pointer; }
-
-        /* ── LAYOUT ──────────────────────────────── */
-        #admin-content { display: none; }
-        .app-header { background: rgba(14,14,14,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 800; }
-        .brand-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 900; }
+        :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --surface-2: #1F1F1F; --text: #F0EDE8; --muted: #888; --green: #2ecc71; --red: #e74c3c; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 50px; }
+        .app-header { background: var(--surface); padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .brand-name { font-family: 'Playfair Display'; font-size: 1.4rem; font-weight: 900; }
         .brand-name span { color: var(--orange); }
-        .brand-tag { font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
-
-        .logout-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); font-size: 0.78rem; letter-spacing: 1px; text-transform: uppercase; padding: 10px 18px; border-radius: 10px; cursor: pointer; }
-        .logout-btn:hover { border-color: var(--red); color: var(--red); }
-
-        /* ── STATUS BAR ───────────────────── */
-        .status-bar { margin: 28px 32px 0; border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; border: 1px solid; }
-        .status-bar.open { background: rgba(46,204,113,0.08); border-color: rgba(46,204,113,0.25); }
-        .status-bar.closed { background: rgba(231,76,60,0.08); border-color: rgba(231,76,60,0.25); }
-        .status-label { font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
-        .status-value { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .open .status-dot { background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 2s infinite; }
-        .closed .status-dot { background: var(--red); box-shadow: 0 0 10px var(--red); }
-        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-        .toggle-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); font-size: 0.8rem; padding: 12px 20px; border-radius: 10px; cursor: pointer; }
-
-        /* ── TABS ────────────────────────────────── */
-        .tab-nav { display: flex; margin: 28px 32px 0; border-bottom: 1px solid var(--border); }
-        .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; color: var(--muted); font-size: 0.78rem; letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 22px; cursor: pointer; }
-        .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); }
-
-        /* ── CONTENT AREA ────────────────────────── */
-        .content-area { padding: 28px 32px; max-width: 960px; }
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
-
-        /* ── CARDS / ORDERS ────────────────────── */
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
-        .card-title { font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
-        .order-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 14px; }
-        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-        .order-id { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; }
-        .order-type { font-size: 0.68rem; text-transform: uppercase; color: var(--muted); background: var(--surface-3); padding: 4px 10px; border-radius: 20px; }
-        .cust-box { background: rgba(244,113,43,0.05); border: 1px solid rgba(244,113,43,0.1); border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 0.9rem; }
         
-        .order-items { list-style: none; margin-bottom: 16px; }
-        .order-items li { font-size: 0.9rem; padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
-        .order-items li::before { content: '—'; color: var(--orange); font-size: 0.7rem; }
+        .tab-nav { display: flex; margin: 20px 32px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .tab-btn { background: none; border: none; color: var(--muted); padding: 14px 22px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
+        .tab-btn.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
 
-        .btn { font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.8rem; padding: 11px 18px; border-radius: 10px; border: none; cursor: pointer; }
+        .content-area { padding: 0 32px; max-width: 900px; }
+        .card { background: var(--surface); border-radius: 16px; padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .order-card { background: var(--surface-2); border-radius: 14px; padding: 20px; margin-bottom: 15px; }
+        
+        .btn { padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 500; }
         .btn-primary { background: var(--orange); color: white; }
         .btn-ready { background: var(--green); color: white; width: 100%; }
-        .btn-danger { background: none; color: var(--red); font-size: 0.75rem; cursor: pointer; }
-        .btn-ghost { background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); }
-        .btn-pdf { background: #34495e; color: white; width: 100%; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-pdf { background: #34495e; color: white; width: 100%; margin-bottom: 15px; }
 
-        /* ── INVENTORY ───────────────────────────── */
-        .menu-item-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border); gap: 16px; }
-        .menu-item-info { flex: 1; }
-        .menu-item-name { font-weight: 500; font-size: 0.95rem; margin-bottom: 3px; }
-        .menu-item-meta { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 10px; }
-        .menu-item-price { color: var(--orange); font-weight: 500; }
-        .menu-item-cat { background: var(--surface-3); padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; text-transform: uppercase; }
-        .stock-toggle { font-size: 0.72rem; text-transform: uppercase; padding: 7px 14px; border-radius: 20px; border: 1px solid; cursor: pointer; }
-        .stock-toggle.in-stock { background: rgba(46,204,113,0.1); color: var(--green); border-color: rgba(46,204,113,0.3); }
-        .stock-toggle.sold-out { background: rgba(231,76,60,0.1); color: var(--red); border-color: rgba(231,76,60,0.3); }
-
-        .add-form { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-        .add-form input, .add-form select { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); padding: 13px 16px; outline: none; }
-
+        input, select { background: var(--surface-2); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
         .hidden { display: none !important; }
+        #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN -->
     <div id="login-gate">
-        <div class="login-wrap">
-            <p class="login-eyebrow">Staff Access</p>
-            <h1 class="login-title">ChipsAnd<br><em>Admin.</em></h1>
-            <form onsubmit="event.preventDefault(); handleLogin();">
-                <div class="field">
-                    <label>Email</label>
-                    <input type="email" id="admin-email" placeholder="you@chipsand.co.uk" required>
-                </div>
-                <div class="field">
-                    <label>Password</label>
-                    <input type="password" id="admin-password" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="login-btn">Sign In →</button>
-            </form>
+        <div style="width:300px; text-align:center;">
+            <h1 class="brand-name">Chips<span>&</span> Admin</h1>
+            <input type="email" id="admin-email" placeholder="Email" style="width:100%">
+            <input type="password" id="admin-pass" placeholder="Password" style="width:100%">
+            <button class="btn btn-primary" onclick="handleLogin()" style="width:100%">Sign In</button>
         </div>
     </div>
 
-    <!-- ADMIN CONTENT -->
-    <div id="admin-content">
+    <div id="admin-content" class="hidden">
         <header class="app-header">
-            <div>
-                <div class="brand-name">Chips<span>&</span></div>
-                <div class="brand-tag">Manager Panel</div>
-            </div>
-            <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
+            <div class="brand-name">Chips<span>&</span> <span>Admin</span></div>
+            <button class="btn" style="background:#333; color:white;" onclick="signOut(auth)">Logout</button>
         </header>
 
-        <div class="status-bar open" id="master-panel">
-            <div>
-                <div class="status-label">Shop Status</div>
-                <div class="status-value"><span class="status-dot"></span><span id="status-text">Open for Orders</span></div>
+        <div class="card" style="margin: 20px 32px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>Shop Status: <strong id="status-text">...</strong></div>
+                <button class="btn btn-primary" onclick="toggleShop()">Toggle Status</button>
             </div>
-            <button class="toggle-btn" onclick="toggleMasterStatus()">Toggle Status</button>
         </div>
 
         <nav class="tab-nav">
-            <button class="tab-btn active" onclick="showTab('live', this)">Live Menu Orders</button>
+            <button class="tab-btn active" onclick="showTab('live', this)">Live Orders</button>
             <button class="tab-btn" onclick="showTab('pies', this)">Pie Batch</button>
             <button class="tab-btn" onclick="showTab('menu', this)">Inventory</button>
         </nav>
 
         <div class="content-area">
-            <!-- TAB: LIVE ORDERS -->
-            <div id="tab-live" class="tab-panel active">
-                <div id="orders-list"></div>
-            </div>
+            <div id="tab-live" class="tab-panel"><div id="orders-list"></div></div>
 
-            <!-- TAB: PIE BATCH -->
-            <div id="tab-pies" class="tab-panel">
-                <button class="btn btn-pdf" onclick="generatePiePDF()">📄 Download PDF Prep Sheet</button>
+            <div id="tab-pies" class="tab-panel hidden">
+                <div class="card" style="border-color:var(--orange)">
+                    <h3 style="margin-bottom:15px">Pie Batch Control</h3>
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
+                        <input type="checkbox" id="pie-toggle"> <label>Enable Pie Orders</label>
+                        <input type="number" id="pie-stock" placeholder="Stock" style="width:80px; margin:0">
+                        <button class="btn btn-primary" onclick="updatePieSettings()">Update</button>
+                    </div>
+                    <button class="btn btn-pdf" onclick="generatePiePDF()">Download PDF Prep Sheet</button>
+                    <button class="btn" style="width:100%; background:#444; color:white;" onclick="archivePies()">Archive Current Pie Batch</button>
+                </div>
                 <div id="pie-list"></div>
             </div>
 
-            <!-- TAB: INVENTORY -->
-            <div id="tab-menu" class="tab-panel">
+            <div id="tab-menu" class="tab-panel hidden">
                 <div class="card">
-                    <div class="card-title">Add New Item</div>
-                    <div class="add-form">
-                        <input type="text" id="new-item-name" placeholder="Item name">
-                        <input type="number" id="new-item-price" placeholder="Price" step="0.01">
-                        <select id="new-item-category">
-                            <option value="CHIPS">Chips</option>
-                            <option value="PIES">Pies</option>
-                            <option value="TOASTIES">Toasties</option>
-                            <option value="PASTA POTS">Pasta Pots</option>
-                            <option value="SIDES">Sides</option>
-                            <option value="DRINKS">Drinks</option>
+                    <h3>Add Item</h3>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                        <input type="text" id="new-name" placeholder="Name">
+                        <input type="number" id="new-price" placeholder="Price">
+                        <select id="new-cat">
+                            <option value="CHIPS">CHIPS</option>
+                            <option value="PIES">PIES</option>
+                            <option value="SIDES">SIDES</option>
                         </select>
                     </div>
-                    <button class="btn btn-primary" onclick="addNewItem()">Add to Menu</button>
+                    <button class="btn btn-primary" onclick="addItem()">Add to Menu</button>
                 </div>
-                <div class="card"><div class="card-title">Current Menu</div><div id="menu-list"></div></div>
+                <div id="menu-list"></div>
             </div>
         </div>
     </div>
@@ -218,133 +101,77 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, collection, query, where, orderBy, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, collection, query, where, orderBy, getDocs, writeBatch, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- AUTH ---
-        window.handleLogin = () => {
-            const e = document.getElementById('admin-email').value;
-            const p = document.getElementById('admin-password').value;
-            signInWithEmailAndPassword(auth, e, p).catch(() => alert("Access Denied"));
-        };
-        window.handleLogout = () => signOut(auth);
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('login-gate').style.display = 'none';
-                document.getElementById('admin-content').style.display = 'block';
-                initDashboard();
-            } else {
-                document.getElementById('login-gate').style.display = 'flex';
-                document.getElementById('admin-content').style.display = 'none';
-            }
+        window.handleLogin = () => signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-pass').value).catch(e => alert(e.message));
+        onAuthStateChanged(auth, user => {
+            if(user) { document.getElementById('login-gate').classList.add('hidden'); document.getElementById('admin-content').classList.remove('hidden'); initAdmin(); }
+            else document.getElementById('login-gate').classList.remove('hidden');
         });
 
-        function initDashboard() {
-            // Status
-            onSnapshot(doc(db, "settings", "truck_status"), (s) => {
-                const closed = s.data()?.is_closed;
-                window.masterClosed = closed;
-                document.getElementById('master-panel').className = `status-bar ${closed ? 'closed' : 'open'}`;
-                document.getElementById('status-text').innerText = closed ? 'Closed for Orders' : 'Open for Orders';
+        function initAdmin() {
+            onSnapshot(doc(db, "settings", "truck_status"), s => {
+                const data = s.data();
+                window.masterClosed = data.is_closed;
+                document.getElementById('status-text').innerText = data.is_closed ? "CLOSED" : "OPEN";
+                document.getElementById('pie-toggle').checked = data.pies_enabled;
+                document.getElementById('pie-stock').value = data.pie_inventory;
             });
 
-            // Orders
-            onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc")), (snap) => {
-                const live = document.getElementById('orders-list');
-                const pie = document.getElementById('pie-list');
+            onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc")), snap => {
+                const live = document.getElementById('orders-list'); const pie = document.getElementById('pie-list');
                 live.innerHTML = ""; pie.innerHTML = "";
-                
                 snap.forEach(d => {
                     const data = d.data();
-                    const card = document.createElement('div');
-                    card.className = 'order-card';
-                    const cust = data.customer;
-                    
-                    // Logic: Add Mark Ready button ONLY for Live PICKUP orders
-                    const actionButton = data.type === 'PICKUP' 
-                        ? `<button class="btn btn-ready" onclick="markOrderReady('${d.id}')">MARK READY</button>`
-                        : '';
-
-                    card.innerHTML = `
-                        <div class="order-header">
-                            <div class="order-id">#${d.id.slice(-4).toUpperCase()}</div>
-                            <div class="order-type">${data.type}</div>
-                        </div>
-                        ${cust ? `<div class="cust-box"><strong>${cust.name}</strong> • ${cust.phone}<br><small>${cust.msg || ''}</small></div>` : ''}
-                        <ul class="order-items">${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul>
-                        ${actionButton}
-                    `;
-
-                    data.type === 'PRE-ORDER' ? pie.appendChild(card) : live.appendChild(card);
+                    const div = document.createElement('div'); div.className = 'order-card';
+                    div.innerHTML = `<div style="display:flex; justify-content:space-between;"><strong>#${d.id.slice(-4).toUpperCase()}</strong><span>${data.type}</span></div>
+                        ${data.customer ? `<div style="background:#222; padding:10px; margin:10px 0;">${data.customer.name} - ${data.customer.phone}</div>` : ''}
+                        <ul>${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul>
+                        ${data.type === 'PICKUP' ? `<button class="btn btn-ready" onclick="updateStatus('${d.id}', 'ready')">MARK READY</button>` : ''}`;
+                    data.type === 'PRE-ORDER' ? pie.appendChild(div) : live.appendChild(div);
                 });
             });
 
-            // Inventory
-            onSnapshot(collection(db, "menu"), (snap) => {
-                const list = document.getElementById('menu-list');
-                list.innerHTML = "";
+            onSnapshot(collection(db, "menu"), snap => {
+                const list = document.getElementById('menu-list'); list.innerHTML = "";
                 snap.forEach(d => {
                     const item = d.data();
-                    const row = document.createElement('div');
-                    row.className = 'menu-item-row';
-                    row.innerHTML = `
-                        <div class="menu-item-info">
-                            <div class="menu-item-name">${item.name}</div>
-                            <div class="menu-item-meta">
-                                <span class="menu-item-price">£${item.price.toFixed(2)}</span>
-                                <span class="menu-item-cat">${item.category}</span>
-                            </div>
-                        </div>
-                        <div class="menu-item-actions">
-                            <button class="stock-toggle ${item.is_available ? 'in-stock' : 'sold-out'}" onclick="toggleStock('${d.id}', ${item.is_available})">
-                                ${item.is_available ? 'In Stock' : 'Sold Out'}
-                            </button>
-                            <button class="btn btn-danger" onclick="deleteItem('${d.id}')">Remove</button>
-                        </div>
-                    `;
-                    list.appendChild(row);
+                    const div = document.createElement('div'); div.style = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #333";
+                    div.innerHTML = `<span>${item.name} (£${item.price})</span><button onclick="deleteDoc(doc(db, 'menu', '${d.id}'))" style="color:red; background:none; border:none;">Remove</button>`;
+                    list.appendChild(div);
                 });
             });
         }
 
-        // --- ACTIONS ---
         window.showTab = (name, btn) => {
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${name}`).classList.add('active');
-            btn.classList.add('active');
+            document.getElementById(`tab-${name}`).classList.remove('hidden'); btn.classList.add('active');
         };
 
-        window.toggleMasterStatus = async () => await updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window.masterClosed });
-        window.markOrderReady = async (id) => await updateDoc(doc(db, "orders", id), { status: "ready" });
-        window.toggleStock = async (id, cur) => await updateDoc(doc(db, "menu", id), { is_available: !cur });
-        window.deleteItem = async (id) => { if(confirm("Remove item?")) await deleteDoc(doc(db, "menu", id)); };
-        
-        window.addNewItem = async () => {
-            const name = document.getElementById('new-item-name').value;
-            const price = parseFloat(document.getElementById('new-item-price').value);
-            const cat = document.getElementById('new-item-category').value;
-            await addDoc(collection(db, "menu"), { name, price, category: cat, is_available: true });
+        window.toggleShop = async () => await updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window.masterClosed });
+        window.updatePieSettings = async () => await updateDoc(doc(db, "settings", "truck_status"), { pies_enabled: document.getElementById('pie-toggle').checked, pie_inventory: parseInt(document.getElementById('pie-stock').value) });
+        window.updateStatus = async (id, status) => await updateDoc(doc(db, "orders", id), { status });
+        window.archivePies = async () => {
+            if(!confirm("Archive all?")) return;
+            const s = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
+            const b = writeBatch(db); s.forEach(d => b.update(d.ref, { status: "archived" })); await b.commit();
         };
 
         window.generatePiePDF = async () => {
-            const { jsPDF } = window.jspdf;
-            const docPDF = new jsPDF();
+            const { jsPDF } = window.jspdf; const docPDF = new jsPDF();
             const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
-            const rows = [];
-            snap.forEach(d => {
-                const data = d.data();
-                rows.push([data.customer.name, data.customer.phone, data.items.map(i => i.name).join(", "), data.customer.msg || '-']);
-            });
-            docPDF.text("Pie Batch Prep Sheet", 14, 15);
-            docPDF.autoTable({ startY: 20, head: [['Customer', 'Phone', 'Pies', 'Notes']], body: rows, headStyles: { fillColor: [244, 113, 43] } });
-            docPDF.save("Pie_Report.pdf");
+            const rows = []; snap.forEach(d => { const data = d.data(); rows.push([data.customer.name, data.customer.phone, data.items.map(i => i.name).join(", "), data.customer.msg || '-']); });
+            docPDF.text("Pie Batch Prep", 14, 15); docPDF.autoTable({ startY: 20, head: [['Customer', 'Phone', 'Items', 'Notes']], body: rows });
+            docPDF.save("Pie_Prep.pdf");
         };
+
+        window.addItem = async () => await addDoc(collection(db, "menu"), { name: document.getElementById('new-name').value, price: parseFloat(document.getElementById('new-price').value), category: document.getElementById('new-cat').value, is_available: true });
     </script>
 </body>
 </html>
