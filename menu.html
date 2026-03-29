@@ -3,390 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChipsAnd | Dundee Street Food</title>
-    <script src="https://js.stripe.com/v3/"></script>
+    <title>ChipsAnd | Dundee</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
     <style>
         :root {
             --orange: #F4712B;
-            --orange-dim: #c25a20;
             --bg: #0E0E0E;
             --surface: #161616;
             --surface-2: #1F1F1F;
             --border: rgba(255,255,255,0.07);
             --text: #F0EDE8;
             --muted: #888;
-            --cart-bg: rgba(18,18,18,0.92);
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding-bottom: 200px;
-            min-height: 100vh;
+        /* ── LANDING SELECTION ───────────────────── */
+        #landing-screen {
+            position: fixed; inset: 0; background: var(--bg); z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+            padding: 40px; text-align: center;
+        }
+        .choice-btn {
+            width: 100%; max-width: 300px; padding: 24px; border-radius: 16px;
+            border: 1px solid var(--border); background: var(--surface);
+            color: var(--text); font-family: 'Playfair Display', serif; font-size: 1.4rem;
+            cursor: pointer; transition: 0.3s;
+        }
+        .choice-btn:hover { border-color: var(--orange); background: var(--surface-2); transform: translateY(-3px); }
+        .choice-btn span { display: block; font-family: 'DM Sans'; font-size: 0.8rem; color: var(--muted); margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* ── PRE-ORDER FORM ─────────────────────── */
+        #preorder-fields { display: none; margin-top: 20px; padding: 20px; background: var(--surface); border-radius: 16px; border: 1px solid var(--orange); }
+        input, textarea { 
+            width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; 
+            border: 1px solid var(--border); background: var(--bg); color: white; font-family: 'DM Sans';
         }
 
-        /* ── HEADER ─────────────────────────────── */
-        header {
-            padding: 28px 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            background: rgba(14,14,14,0.95);
-            backdrop-filter: blur(16px);
-            z-index: 900;
-        }
-
-        .brand-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            font-weight: 900;
-            letter-spacing: -0.5px;
-            color: var(--text);
-        }
-
+        /* ── EXISTING STYLES RE-APPLIED ───────────── */
+        header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); sticky; top: 0; background: rgba(14,14,14,0.9); backdrop-filter: blur(10px); z-index: 900; }
+        .brand-name { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; }
         .brand-name span { color: var(--orange); }
-
-        .brand-sub {
-            font-size: 0.72rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--muted);
-            font-weight: 300;
+        .cat-nav { display: flex; padding: 0 40px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+        .cat-pill { background: none; border: none; color: var(--muted); padding: 18px 20px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+        .cat-pill.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px; }
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .item-card { background: var(--surface); border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+        .add-btn { background: none; border: 1.5px solid var(--orange); color: var(--orange); width: 35px; height: 35px; border-radius: 8px; cursor: pointer; }
+        
+        #cart-bar { 
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); 
+            width: calc(100% - 40px); max-width: 500px; background: rgba(22,22,22,0.95); 
+            border: 1px solid var(--orange); border-radius: 20px; padding: 20px; 
+            display: none; z-index: 1000; backdrop-filter: blur(10px);
         }
-
-        .header-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-            color: var(--muted);
-            text-transform: uppercase;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #2ecc71;
-            box-shadow: 0 0 8px #2ecc71;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        /* ── CATEGORY NAV ────────────────────────── */
-        .cat-nav {
-            display: flex;
-            padding: 0 40px;
-            background: var(--bg);
-            border-bottom: 1px solid var(--border);
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        .cat-nav::-webkit-scrollbar { display: none; }
-
-        .cat-pill {
-            background: none;
-            border: none;
-            color: var(--muted);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.78rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            padding: 18px 22px;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: 0.2s;
-            white-space: nowrap;
-        }
-
-        .cat-pill.active {
-            color: var(--orange);
-            border-bottom-color: var(--orange);
-        }
-
-        /* ── HERO ─────────────────────────── */
-        .hero-strip { padding: 60px 40px 40px; max-width: 1100px; margin: 0 auto; }
-        .hero-eyebrow { font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase; color: var(--orange); margin-bottom: 12px; }
-        .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(2.4rem, 5vw, 4rem); font-weight: 700; line-height: 1.05; }
-        .hero-title em { font-style: italic; color: var(--orange); }
-
-        /* ── MENU GRID ──────────────────────────── */
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
-        .category-section { margin-bottom: 64px; }
-        .section-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 28px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
-        .section-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--text); }
-        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-
-        .item-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            transition: 0.2s;
-        }
-        .item-card:hover { border-color: rgba(244,113,43,0.35); background: var(--surface-2); }
-        .item-card.sold-out { opacity: 0.35; pointer-events: none; }
-
-        .item-name { font-weight: 500; font-size: 1.05rem; margin-bottom: 6px; }
-        .item-price strong { color: var(--orange); font-size: 1rem; }
-
-        .add-btn {
-            background: none;
-            border: 1.5px solid rgba(244,113,43,0.4);
-            color: var(--orange);
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            font-size: 1.3rem;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .add-btn:hover { background: var(--orange); border-color: var(--orange); color: white; }
-
-        /* ── CART BAR ───────────────────────────── */
-        #cart-bar {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(120px);
-            width: calc(100% - 48px);
-            max-width: 540px;
-            background: var(--cart-bg);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 16px 20px;
-            z-index: 1000;
-            opacity: 0;
-            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.6);
-        }
-
-        #cart-bar.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-        .cart-inner { display: flex; align-items: center; gap: 16px; }
-        .cart-icon-wrap { position: relative; }
-        .cart-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
-        .cart-badge { position: absolute; top: -6px; right: -6px; background: var(--orange); color: white; font-size: 0.65rem; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-        .cart-details { flex: 1; }
-        .cart-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); }
-        .cart-total { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--text); }
-        .cart-actions { display: flex; gap: 10px; }
-
-        .cart-btn { border: none; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.8rem; padding: 12px 18px; border-radius: 12px; cursor: pointer; transition: 0.2s; }
-        .cart-btn-primary { background: var(--orange); color: white; }
-        .cart-btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
-
-        #closed-screen { display: none; text-align: center; padding: 120px 40px; }
-
-        @media (max-width: 600px) {
-            header { padding: 20px; }
-            .hero-strip { padding: 40px 20px; }
-            .container { padding: 0 20px; }
-            .cat-nav { padding: 0 20px; }
-        }
+        .confirm-btn { background: var(--orange); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
+    <!-- CHOICE SCREEN -->
+    <div id="landing-screen">
+        <div class="brand-name" style="margin-bottom: 20px;">Chips<span>&</span></div>
+        <button class="choice-btn" onclick="startFlow('PIES')">Pre-Order Pies<span>Weekly Batch • Limited Stock</span></button>
+        <button class="choice-btn" onclick="startFlow('MENU')">Order From Menu<span>Live Kitchen • Collection Only</span></button>
+    </div>
+
     <header>
-        <div class="brand">
-            <div class="brand-name">Chips<span>&</span></div>
-            <div class="brand-sub">Dundee Street Food</div>
-        </div>
-        <div class="header-status">
-            <span class="status-dot"></span>
-            <span>Open Now</span>
-        </div>
+        <div class="brand-name" onclick="location.reload()" style="cursor:pointer">Chips<span>&</span></div>
+        <div id="header-mode" style="font-size: 0.7rem; color: var(--orange); letter-spacing: 2px; text-transform: uppercase;"></div>
     </header>
 
-    <div id="active-menu">
+    <div id="main-content" class="hidden">
         <nav class="cat-nav" id="cat-tabs"></nav>
-        <div class="hero-strip">
-            <p class="hero-eyebrow">Today's Menu</p>
-            <h1 class="hero-title">Home of the The Chipsy Kings<br><em>Mon:4-8PM // Fri:12-4PM</em></h1>
-        </div>
         <div class="container">
             <div id="menu-display"></div>
-            <div style="height: 100px;"></div>
         </div>
     </div>
 
-    <div id="closed-screen">
-        <span style="font-size: 4rem;">🚚</span>
-        <h2 style="font-family: 'Playfair Display'; font-size: 2rem; margin-top: 20px;">We're Closed Right Now</h2>
-        <p style="color: var(--muted);">Come find us next time!</p>
-    </div>
-
+    <!-- CART / ORDER BAR -->
     <div id="cart-bar">
-        <div class="cart-inner">
-            <div class="cart-icon-wrap">
-                <div class="cart-icon">🛍</div>
-                <div class="cart-badge" id="cart-count">0</div>
-            </div>
-            <div class="cart-details">
-                <div class="cart-label">Your Bag</div>
-                <div class="cart-total">£<span id="total-price">0.00</span></div>
-            </div>
-            <div class="cart-actions">
-                <button class="cart-btn cart-btn-secondary" id="pay-truck">Pay at Truck</button>
-                <button class="cart-btn cart-btn-primary" id="pay-now">Pay Now →</button>
-            </div>
+        <div id="preorder-fields">
+            <input type="text" id="cust-name" placeholder="Your Full Name *" required>
+            <input type="tel" id="cust-phone" placeholder="Phone Number *" required>
+            <textarea id="cust-note" placeholder="Message to truck (Optional)"></textarea>
         </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px; align-items: baseline;">
+            <span style="color: var(--muted); font-size: 0.8rem;">Total Amount:</span>
+            <span style="font-size: 1.5rem; font-family: 'Playfair Display'; font-weight: 900;">£<span id="total-price">0.00</span></span>
+        </div>
+        <button class="confirm-btn" id="main-action-btn" onclick="submitOrder()">Confirm Order</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", 
-            authDomain: "chipsand-13831.firebaseapp.com", 
-            projectId: "chipsand-13831", 
-            storageBucket: "chipsand-13831.firebasestorage.app", 
-            messagingSenderId: "105749630976", 
-            appId: "1:105749630976:web:038ab2c3ce81612064c8e5" 
-        };
-        
+        const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const stripe = Stripe('pk_test_51TDsgdBRv0TelT5pTQP1OvmhDzwfqFTF9nMmFhLNBMv76stDiKbjH2GQwDnqTNN29MhaH9uexTgefFf2NjTqNkhV001zUMBUDJ');
 
-        let cart = {}; 
+        let cart = {};
+        let currentMode = ''; // 'PIES' or 'MENU'
 
-        // GLOBALLY ACCESSIBLE ADD FUNCTION
-        window.addToCart = function(name, price) {
-            if (!cart[name]) {
-                cart[name] = { price: price, qty: 1 };
-            } else {
-                cart[name].qty += 1;
+        window.startFlow = (mode) => {
+            currentMode = mode;
+            document.getElementById('landing-screen').style.display = 'none';
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('header-mode').innerText = mode === 'PIES' ? 'Pre-Order Mode' : 'Live Menu Mode';
+            
+            if(mode === 'PIES') {
+                document.getElementById('preorder-fields').style.display = 'block';
             }
+            loadMenu();
+        };
+
+        window.addToCart = (name, price) => {
+            if (!cart[name]) cart[name] = { price, qty: 1 };
+            else cart[name].qty += 1;
             updateUI();
         };
 
         function updateUI() {
-            let total = 0;
-            let count = 0;
-            for (const id in cart) {
-                total += cart[id].price * cart[id].qty;
-                count += cart[id].qty;
-            }
+            let total = 0, count = 0;
+            for (const id in cart) { total += cart[id].price * cart[id].qty; count += cart[id].qty; }
             document.getElementById('total-price').innerText = total.toFixed(2);
-            document.getElementById('cart-count').innerText = count;
-            
-            const bar = document.getElementById('cart-bar');
-            if (count > 0) {
-                bar.classList.add('visible');
-                // Pop animation
-                bar.style.transform = 'translateX(-50%) scale(1.05)';
-                setTimeout(() => bar.style.transform = 'translateX(-50%) scale(1)', 150);
-            } else {
-                bar.classList.remove('visible');
-            }
+            document.getElementById('cart-bar').style.display = count > 0 ? 'block' : 'none';
         }
 
-        // Checkout Handlers
-        document.getElementById('pay-now').addEventListener('click', async () => {
-            const items = [];
-            for (const name in cart) {
-                for(let i=0; i < cart[name].qty; i++) items.push({ name, price: cart[name].price });
+        window.submitOrder = async () => {
+            if (currentMode === 'PIES') {
+                const name = document.getElementById('cust-name').value;
+                const phone = document.getElementById('cust-phone').value;
+                if (!name || !phone) return alert("Please provide Name and Phone");
             }
-            const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items }) });
-            const session = await res.json();
-            localStorage.setItem('last_cart', JSON.stringify(items));
-            await stripe.redirectToCheckout({ sessionId: session.id });
-        });
 
-        document.getElementById('pay-truck').addEventListener('click', async () => {
-            const items = [];
+            const itemsArray = [];
             for (const name in cart) {
-                for(let i=0; i < cart[name].qty; i++) items.push({ name, price: cart[name].price });
+                for(let i=0; i<cart[name].qty; i++) itemsArray.push({ name, price: cart[name].price });
             }
-            const docRef = await addDoc(collection(db, "orders"), { items, status: "pending", type: "Pickup", note: "", createdAt: serverTimestamp() });
+
+            const orderData = {
+                items: itemsArray,
+                status: "pending",
+                type: currentMode === 'PIES' ? "PRE-ORDER" : "PICKUP",
+                customer: currentMode === 'PIES' ? { 
+                    name: document.getElementById('cust-name').value,
+                    phone: document.getElementById('cust-phone').value,
+                    msg: document.getElementById('cust-note').value
+                } : null,
+                createdAt: serverTimestamp()
+            };
+
+            const docRef = await addDoc(collection(db, "orders"), orderData);
             window.location.href = `track.html?id=${docRef.id}`;
-        });
+        };
 
-        // Listen for Truck Status
-        onSnapshot(doc(db, "settings", "truck_status"), (docSnap) => {
-            const isClosed = docSnap.data()?.is_closed;
-            document.getElementById('active-menu').style.display = isClosed ? 'none' : 'block';
-            document.getElementById('closed-screen').style.display = isClosed ? 'block' : 'none';
-        });
+        function loadMenu() {
+            onSnapshot(collection(db, "menu"), (snapshot) => {
+                const display = document.getElementById('menu-display');
+                const tabs = document.getElementById('cat-tabs');
+                display.innerHTML = ""; tabs.innerHTML = "";
 
-        // Listen for Menu
-        onSnapshot(collection(db, "menu"), (snapshot) => {
-            const display = document.getElementById('menu-display');
-            const tabs = document.getElementById('cat-tabs');
-            display.innerHTML = ""; tabs.innerHTML = "";
+                const categories = {};
+                snapshot.forEach(docSnap => {
+                    const item = docSnap.data();
+                    const cat = item.category || "GENERAL";
+                    // Logic: If PIES mode, only show PIES. If MENU mode, show everything EXCEPT PIES.
+                    if (currentMode === 'PIES' && cat !== 'PIES') return;
+                    if (currentMode === 'MENU' && cat === 'PIES') return;
 
-            const categories = {};
-            snapshot.forEach(docSnap => {
-                const item = docSnap.data();
-                const cat = item.category || "CHIPS";
-                if (!categories[cat]) categories[cat] = [];
-                categories[cat].push({ id: docSnap.id, ...item });
-            });
+                    if (!categories[cat]) categories[cat] = [];
+                    categories[cat].push({ id: docSnap.id, ...item });
+                });
 
-            const sortOrder = ["PIES", "CHIPS", "TOASTIES", "PASTA POTS", "SIDES", "DRINKS"];
-            sortOrder.forEach((catName, idx) => {
-                if (!categories[catName]) return;
+                Object.keys(categories).forEach(catName => {
+                    const section = document.createElement('div');
+                    section.id = `section-${catName}`;
+                    section.innerHTML = `<h2 style="font-family:'Playfair Display'; margin: 30px 0 15px;">${catName}</h2><div class="items-grid" id="grid-${catName}"></div>`;
+                    display.appendChild(section);
 
-                // Tab
-                const btn = document.createElement('button');
-                btn.className = 'cat-pill' + (idx === 0 ? ' active' : '');
-                btn.innerText = catName;
-                btn.onclick = () => {
-                    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-                    btn.classList.add('active');
-                    document.getElementById(`section-${catName}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
-                };
-                tabs.appendChild(btn);
-
-                // Section
-                const section = document.createElement('div');
-                section.className = 'category-section';
-                section.id = `section-${catName}`;
-                section.innerHTML = `
-                    <div class="section-header">
-                        <h2 class="section-title">${catName}</h2>
-                        <span class="section-count">${categories[catName].length} items</span>
-                    </div>
-                    <div class="items-grid" id="grid-${catName}"></div>
-                `;
-                display.appendChild(section);
-
-                const grid = document.getElementById(`grid-${catName}`);
-                categories[catName].forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
-                    card.innerHTML = `
-                        <div class="item-info">
-                            <div class="item-name">${item.name}</div>
-                            <div class="item-price"><strong>£${item.price.toFixed(2)}</strong></div>
-                        </div>
-                        <button class="add-btn" onclick="addToCart('${item.name.replace(/'/g, "\\'")}', ${item.price})">+</button>
-                    `;
-                    grid.appendChild(card);
+                    categories[catName].forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
+                        card.innerHTML = `<div><div style="font-weight:500;">${item.name}</div><div style="color:var(--orange);">£${item.price.toFixed(2)}</div></div>
+                            <button class="add-btn" onclick="addToCart('${item.name.replace(/'/g, "\\'")}', ${item.price})">+</button>`;
+                        document.getElementById(`grid-${catName}`).appendChild(card);
+                    });
                 });
             });
-        });
+        }
     </script>
 </body>
 </html>
