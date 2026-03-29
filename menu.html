@@ -16,7 +16,6 @@
             --text: #F0EDE8;
             --muted: #888;
         }
-
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
@@ -34,14 +33,12 @@
         }
         .choice-btn:hover:not(.btn-disabled) { border-color: var(--orange); background: var(--surface-2); transform: translateY(-3px); }
         .choice-btn span { display: block; font-family: 'DM Sans'; font-size: 0.8rem; color: var(--muted); margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
-        
         .btn-disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
 
         /* ── HEADER & NAV ────────────────────────── */
         header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(14,14,14,0.9); backdrop-filter: blur(10px); z-index: 900; }
         .brand-name { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; }
         .brand-name span { color: var(--orange); }
-        
         .cat-nav { display: flex; padding: 0 40px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
         .cat-pill { background: none; border: none; color: var(--muted); padding: 18px 20px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; white-space: nowrap; }
         .cat-pill.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
@@ -66,7 +63,7 @@
         
         input, textarea { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: white; outline: none; }
         input:focus { border-color: var(--orange); }
-        .confirm-btn { background: var(--orange); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        .confirm-btn { background: var(--orange); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -114,12 +111,10 @@
         let currentMode = '';
         let globalStock = 0;
 
-        // Monitor Truck Status and Pie Inventory
         onSnapshot(doc(db, "settings", "truck_status"), (s) => {
             const data = s.data();
             const menuBtn = document.getElementById('menu-choice-btn');
             const menuSub = document.getElementById('menu-status-text');
-            
             if(data?.is_closed) {
                 menuBtn.classList.add('btn-disabled');
                 menuBtn.onclick = null;
@@ -129,7 +124,6 @@
                 menuBtn.onclick = () => startFlow('MENU');
                 menuSub.innerText = "Live Kitchen • Collection Only";
             }
-
             const pieBtn = document.getElementById('pie-choice-btn');
             globalStock = data?.pie_inventory || 0;
             if(data?.pies_enabled && globalStock > 0) {
@@ -138,7 +132,6 @@
                 document.getElementById('pie-inventory-text').innerText = `${globalStock} Pies Remaining`;
             } else {
                 pieBtn.classList.add('hidden');
-                pieBtn.onclick = null;
             }
         });
 
@@ -184,20 +177,20 @@
         }
 
         document.getElementById('submit-order-btn').onclick = async () => {
+            const btn = document.getElementById('submit-order-btn');
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
-            const btn = document.getElementById('submit-order-btn');
 
-            if (currentMode === 'PIES' && (!name || !phone)) return alert("Name/Phone required for Pie Pre-orders");
+            if (currentMode === 'PIES' && (!name || !phone)) return alert("Name/Phone required");
             
             btn.disabled = true;
             btn.innerText = "Processing...";
 
-            let pieQtyOrdered = 0;
-            const itemsArray = [];
+            let pieQty = 0;
+            const items = [];
             for (const n in cart) { 
-                if (currentMode === 'PIES') pieQtyOrdered += cart[n].qty;
-                for(let i=0; i<cart[n].qty; i++) itemsArray.push({ name: n, price: cart[n].price }); 
+                if (currentMode === 'PIES') pieQty += cart[n].qty;
+                for(let i=0; i<cart[n].qty; i++) items.push({ name: n, price: cart[n].price }); 
             }
 
             try {
@@ -205,19 +198,16 @@
                     const settingsRef = doc(db, "settings", "truck_status");
                     const snap = await getDoc(settingsRef);
                     const freshStock = snap.data().pie_inventory || 0;
-
-                    if (freshStock < pieQtyOrdered) {
-                        alert(`Only ${freshStock} pies left! Please adjust your cart.`);
+                    if (freshStock < pieQty) {
+                        alert(`Only ${freshStock} left!`);
                         btn.disabled = false;
                         btn.innerText = "Confirm Order";
                         return;
                     }
-                    // Subtract from inventory
-                    await updateDoc(settingsRef, { pie_inventory: freshStock - pieQtyOrdered });
+                    await updateDoc(settingsRef, { pie_inventory: freshStock - pieQty });
                 }
-
                 const docRef = await addDoc(collection(db, "orders"), {
-                    items: itemsArray,
+                    items: items,
                     status: "pending",
                     type: currentMode === 'PIES' ? "PRE-ORDER" : "PICKUP",
                     customer: currentMode === 'PIES' ? { name, phone, msg: document.getElementById('cust-note').value } : null,
@@ -225,7 +215,8 @@
                 });
                 window.location.href = `track.html?id=${docRef.id}`;
             } catch (e) {
-                alert("Order failed. Please try again.");
+                console.error(e);
+                alert("Order failed. Check database connection.");
                 btn.disabled = false;
                 btn.innerText = "Confirm Order";
             }
@@ -234,15 +225,14 @@
         function loadMenu() {
             onSnapshot(collection(db, "menu"), (snap) => {
                 const display = document.getElementById('menu-display');
-                const tabs = document.getElementById('cat-tabs');
-                display.innerHTML = ""; tabs.innerHTML = "";
+                display.innerHTML = "";
                 const categories = {};
                 snap.forEach(d => {
                     const item = d.data();
                     const cat = item.category || "CHIPS";
                     if ((currentMode === 'PIES' && cat !== 'PIES') || (currentMode === 'MENU' && cat === 'PIES')) return;
                     if (!categories[cat]) categories[cat] = [];
-                    categories[cat].push({ id: d.id, ...item });
+                    categories[cat].push({ ...item });
                 });
                 Object.keys(categories).forEach(cat => {
                     const sec = document.createElement('div');
