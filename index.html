@@ -8,21 +8,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --text: #F0EDE8; --green: #2ecc71; --red: #e74c3c; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 50px; margin: 0; }
+        :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --surface-2: #1F1F1F; --text: #F0EDE8; --muted: #888; --green: #2ecc71; --red: #e74c3c; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 50px; }
         .app-header { background: var(--surface); padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .brand-name { font-family: 'Playfair Display'; font-size: 1.4rem; font-weight: 900; }
         .brand-name span { color: var(--orange); }
         .tab-nav { display: flex; margin: 20px 32px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .tab-btn { background: none; border: none; color: #888; padding: 14px 22px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+        .tab-btn { background: none; border: none; color: var(--muted); padding: 14px 22px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
         .tab-btn.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
+        .content-area { padding: 0 32px; max-width: 900px; }
         .card { background: var(--surface); border-radius: 16px; padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
-        .order-card { background: #1f1f1f; border-radius: 14px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .btn { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; }
-        .btn-ready { background: var(--green); color: white; width: 100%; margin-bottom: 8px; }
-        .btn-cancel { background: var(--red); color: white; width: 100%; font-size: 0.75rem; }
-        .sort-btn { background: #333; color: white; padding: 5px 12px; margin: 0 2px; border-radius: 4px; }
-        input, select { background: #1f1f1f; border: 1px solid #333; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'DM Sans', sans-serif; width: 100%; }
+        .order-card { background: var(--surface-2); border-radius: 14px; padding: 20px; margin-bottom: 15px; }
+        .btn { padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 500; }
+        .btn-primary { background: var(--orange); color: white; }
+        .btn-ready { background: var(--green); color: white; width: 100%; }
+        .btn-pdf { background: #34495e; color: white; width: 100%; margin-bottom: 15px; }
+        input, select { background: var(--surface-2); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
         .hidden { display: none !important; }
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
     </style>
@@ -30,19 +31,26 @@
 <body>
 
     <div id="login-gate">
-        <div style="width:320px; text-align:center;">
-            <h1 style="font-family:'Playfair Display'; font-size:2rem; margin-bottom:20px;">Admin <span>Login</span></h1>
-            <input type="email" id="admin-email" placeholder="Email">
-            <input type="password" id="admin-pass" placeholder="Password">
-            <button class="btn" style="background:var(--orange); width:100%; color:white;" onclick="handleLogin()">Sign In</button>
+        <div style="width:300px; text-align:center;">
+            <h1 class="brand-name">Chips<span>&</span> Admin</h1>
+            <input type="email" id="admin-email" placeholder="Email" style="width:100%">
+            <input type="password" id="admin-pass" placeholder="Password" style="width:100%">
+            <button class="btn btn-primary" onclick="handleLogin()" style="width:100%">Sign In</button>
         </div>
     </div>
 
     <div id="admin-content" class="hidden">
         <header class="app-header">
-            <div class="brand-name">Chips<span>&</span> Admin Panel</div>
+            <div class="brand-name">Chips<span>&</span> Admin</div>
             <button class="btn" style="background:#333; color:white;" onclick="handleLogout()">Logout</button>
         </header>
+
+        <div class="card" style="margin: 20px 32px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>Shop Status: <strong id="status-text">...</strong></div>
+                <button class="btn btn-primary" onclick="toggleShop()">Toggle Status</button>
+            </div>
+        </div>
 
         <nav class="tab-nav">
             <button class="tab-btn active" onclick="showTab('live', this)">Live Orders</button>
@@ -50,33 +58,36 @@
             <button class="tab-btn" onclick="showTab('menu', this)">Inventory</button>
         </nav>
 
-        <div style="padding: 0 32px;">
+        <div class="content-area">
             <div id="tab-live" class="tab-panel"><div id="orders-list"></div></div>
 
             <div id="tab-pies" class="tab-panel hidden">
-                <div class="card">
-                    <button class="btn" style="width:100%; background:var(--orange); color:white; margin-bottom:10px" onclick="generatePiePDF()">Download PDF Prep Sheet</button>
-                    <button class="btn" style="width:100%; background:#333; color:white;" onclick="archivePies()">Archive All Pies</button>
+                <div class="card" style="border-color:var(--orange)">
+                    <h3 style="margin-bottom:15px">Pie Batch Control</h3>
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
+                        <input type="checkbox" id="pie-toggle"> <label>Enable Pie Orders</label>
+                        <input type="number" id="pie-stock" placeholder="Stock" style="width:80px; margin:0">
+                        <button class="btn btn-primary" onclick="updatePieSettings()">Update</button>
+                    </div>
+                    <button class="btn btn-pdf" onclick="generatePiePDF()">Download PDF Prep Sheet</button>
+                    <button class="btn" style="width:100%; background:#444; color:white;" onclick="archivePies()">Archive Current Pie Batch</button>
                 </div>
                 <div id="pie-list"></div>
             </div>
 
             <div id="tab-menu" class="tab-panel hidden">
-                <div class="card" style="border-color: var(--orange);">
-                    <h3>Add New Item</h3>
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:15px;">
-                        <input type="text" id="new-name" placeholder="Item Name">
-                        <input type="number" id="new-price" placeholder="Price" step="0.01">
+                <div class="card">
+                    <h3>Add Item</h3>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                        <input type="text" id="new-name" placeholder="Name">
+                        <input type="number" id="new-price" placeholder="Price">
                         <select id="new-cat">
                             <option value="CHIPS">CHIPS</option>
                             <option value="PIES">PIES</option>
-                            <option value="TOASTIES">TOASTIES</option>
-                            <option value="PASTA POTS">PASTA POTS</option>
                             <option value="SIDES">SIDES</option>
-                            <option value="DRINKS">DRINKS</option>
                         </select>
                     </div>
-                    <button class="btn" style="background:var(--orange); color:white; width:100%; margin-top:10px;" onclick="addItem()">Add to Menu</button>
+                    <button class="btn btn-primary" onclick="addItem()">Add to Menu</button>
                 </div>
                 <div id="menu-list"></div>
             </div>
@@ -90,88 +101,50 @@
 
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app); const db = getFirestore(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
         window.handleLogin = () => signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-pass').value).catch(e => alert(e.message));
         window.handleLogout = () => signOut(auth);
 
         onAuthStateChanged(auth, user => {
             if(user) { document.getElementById('login-gate').classList.add('hidden'); document.getElementById('admin-content').classList.remove('hidden'); initAdmin(); }
-            else { document.getElementById('login-gate').classList.remove('hidden'); document.getElementById('admin-content').classList.add('hidden'); }
+            else document.getElementById('login-gate').classList.remove('hidden');
         });
 
         function initAdmin() {
-            // Live & Pie Orders
+            onSnapshot(doc(db, "settings", "truck_status"), s => {
+                const data = s.data();
+                window.masterClosed = data?.is_closed;
+                document.getElementById('status-text').innerText = data?.is_closed ? "CLOSED" : "OPEN";
+                document.getElementById('pie-toggle').checked = data?.pies_enabled;
+                document.getElementById('pie-stock').value = data?.pie_inventory;
+            });
+
             onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc")), snap => {
                 const live = document.getElementById('orders-list'); const pie = document.getElementById('pie-list');
                 live.innerHTML = ""; pie.innerHTML = "";
                 snap.forEach(d => {
-                    const data = d.data(); const div = document.createElement('div'); div.className = 'order-card';
-                    div.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                        <strong>#${d.id.slice(-4).toUpperCase()}</strong>
-                        <span style="color:var(--orange); font-size:0.8rem">${data.type}</span>
-                        </div>
-                        <div style="font-weight:700; color:white;">${data.customer?.name || 'Walk-up'}</div>
-                        <p style="margin:10px 0;">${data.items.map(i => i.name).join(', ')}</p>
-                        ${data.customer?.msg ? `<div style="background:#333; padding:8px; font-size:0.85rem; border-radius:4px; margin-bottom:10px;">Note: ${data.customer.msg}</div>` : ''}
-                        ${data.type === 'PICKUP' ? `<button class="btn btn-ready" onclick="updateStatus('${d.id}', 'ready')">MARK READY</button>` : ''}
-                        <button class="btn btn-cancel" onclick="cancelOrder('${d.id}')">CANCEL ORDER</button>`;
+                    const data = d.data();
+                    const div = document.createElement('div'); div.className = 'order-card';
+                    div.innerHTML = `<div style="display:flex; justify-content:space-between;"><strong>#${d.id.slice(-4).toUpperCase()}</strong><span>${data.type}</span></div>
+                        ${data.customer ? `<div style="background:#222; padding:10px; margin:10px 0;">${data.customer.name} - ${data.customer.phone}</div>` : ''}
+                        <ul>${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul>
+                        ${data.type === 'PICKUP' ? `<button class="btn btn-ready" onclick="updateStatus('${d.id}', 'ready')">MARK READY</button>` : ''}`;
                     data.type === 'PRE-ORDER' ? pie.appendChild(div) : live.appendChild(div);
                 });
             });
 
-            // Inventory Sorting (Client-side sort to prevent hiding items)
             onSnapshot(collection(db, "menu"), snap => {
-                const list = document.getElementById('menu-list');
-                list.innerHTML = "";
-                
-                let items = [];
-                snap.forEach(docSnap => {
-                    items.push({ id: docSnap.id, ...docSnap.data() });
-                });
-
-                // Sort by Category, then by SortOrder
-                items.sort((a, b) => {
-                    if (a.category !== b.category) return a.category > b.category ? 1 : -1;
-                    return (a.sortOrder || 99) - (b.sortOrder || 99);
-                });
-
-                items.forEach(item => {
-                    const div = document.createElement('div');
-                    div.style = "display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #333; background:var(--surface); margin-bottom:5px; border-radius:8px;";
-                    div.innerHTML = `<div><span style="color:var(--orange); font-size:0.7rem; font-weight:900;">${item.category || 'NO CAT'}</span><br><strong>${item.name}</strong></div>
-                        <div style="display:flex; align-items:center;">
-                            <button class="sort-btn" onclick="moveItem('${item.id}', ${item.sortOrder || 0}, -1)">↑</button>
-                            <button class="sort-btn" onclick="moveItem('${item.id}', ${item.sortOrder || 0}, 1)">↓</button>
-                            <button onclick="handleDelete('${item.id}')" style="color:var(--red); background:none; border:none; font-size:1.5rem; margin-left:15px; cursor:pointer;">×</button>
-                        </div>`;
+                const list = document.getElementById('menu-list'); list.innerHTML = "";
+                snap.forEach(d => {
+                    const item = d.data();
+                    const div = document.createElement('div'); div.style = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #333";
+                    div.innerHTML = `<span>${item.name} (£${item.price})</span><button onclick="deleteDoc(doc(db, 'menu', '${d.id}'))" style="color:red; background:none; border:none;">Remove</button>`;
                     list.appendChild(div);
                 });
             });
         }
-
-        window.moveItem = async (id, currentSort, direction) => {
-            await updateDoc(doc(db, "menu", id), { sortOrder: currentSort + direction });
-        };
-
-        window.addItem = async () => {
-            const name = document.getElementById('new-name').value;
-            const price = parseFloat(document.getElementById('new-price').value);
-            const cat = document.getElementById('new-cat').value;
-            if(!name || isNaN(price)) return alert("Fill in name and valid price");
-            await addDoc(collection(db, "menu"), { name, price, category: cat, is_available: true, sortOrder: 99 });
-            document.getElementById('new-name').value = ""; document.getElementById('new-price').value = "";
-        };
-
-        window.updateStatus = async (id, status) => await updateDoc(doc(db, "orders", id), { status });
-        window.cancelOrder = async (id) => { if(confirm("Cancel this order?")) await deleteDoc(doc(db, "orders", id)); };
-        window.handleDelete = async (id) => { if(confirm("Delete this item permanently?")) await deleteDoc(doc(db, "menu", id)); };
-
-        window.archivePies = async () => {
-            if(!confirm("Clear all pies from screen?")) return;
-            const s = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
-            const b = writeBatch(db); s.forEach(d => b.update(d.ref, { status: "archived" })); await b.commit();
-        };
 
         window.showTab = (name, btn) => {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
@@ -179,15 +152,28 @@
             document.getElementById(`tab-${name}`).classList.remove('hidden'); btn.classList.add('active');
         };
 
+        window.toggleShop = async () => await updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window.masterClosed });
+        window.updatePieSettings = async () => await updateDoc(doc(db, "settings", "truck_status"), { pies_enabled: document.getElementById('pie-toggle').checked, pie_inventory: parseInt(document.getElementById('pie-stock').value) });
+        window.updateStatus = async (id, status) => await updateDoc(doc(db, "orders", id), { status });
+        window.archivePies = async () => {
+            if(!confirm("Archive all?")) return;
+            const s = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
+            const b = writeBatch(db); s.forEach(d => b.update(d.ref, { status: "archived" })); await b.commit();
+        };
+
         window.generatePiePDF = async () => {
             const { jsPDF } = window.jspdf; const docPDF = new jsPDF();
             const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
-            const rows = []; snap.forEach(d => { const data = d.data(); rows.push([data.customer?.name || 'N/A', data.customer?.phone || 'N/A', data.items.map(i => i.name).join(", "), data.customer?.msg || '-']); });
-            docPDF.text("Pie Prep Sheet", 14, 15); docPDF.autoTable({ startY: 20, head: [['Customer', 'Phone', 'Items', 'Notes']], body: rows });
-            docPDF.save("Pie_Prep_Sheet.pdf");
+            const rows = []; snap.forEach(d => { const data = d.data(); rows.push([data.customer.name, data.customer.phone, data.items.map(i => i.name).join(", "), data.customer.msg || '-']); });
+            docPDF.text("Pie Batch Prep", 14, 15); docPDF.autoTable({ startY: 20, head: [['Customer', 'Phone', 'Items', 'Notes']], body: rows });
+            docPDF.save("Pie_Prep.pdf");
         };
 
-        window.doc = doc;
+        window.addItem = async () => await addDoc(collection(db, "menu"), { name: document.getElementById('new-name').value, price: parseFloat(document.getElementById('new-price').value), category: document.getElementById('new-cat').value, is_available: true });
+        
+        // Expose functions globally for the buttons
+        window.updateStatus = updateStatus;
+        window.deleteDoc = deleteDoc;
     </script>
 </body>
 </html>
