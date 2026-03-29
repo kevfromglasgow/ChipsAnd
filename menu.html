@@ -7,32 +7,62 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --surface-2: #1F1F1F; --border: rgba(255,255,255,0.07); --text: #F0EDE8; --muted: #888; }
+        :root {
+            --orange: #F4712B;
+            --bg: #0E0E0E;
+            --surface: #161616;
+            --surface-2: #1F1F1F;
+            --border: rgba(255,255,255,0.07);
+            --text: #F0EDE8;
+            --muted: #888;
+        }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
-        
-        #landing-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 40px; text-align: center; }
-        .choice-btn { width: 100%; max-width: 320px; padding: 24px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: 'Playfair Display', serif; font-size: 1.4rem; cursor: pointer; transition: 0.3s; }
+
+        /* ── LANDING SELECTION ───────────────────── */
+        #landing-screen {
+            position: fixed; inset: 0; background: var(--bg); z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+            padding: 40px; text-align: center;
+        }
+        .choice-btn {
+            width: 100%; max-width: 320px; padding: 24px; border-radius: 16px;
+            border: 1px solid var(--border); background: var(--surface);
+            color: var(--text); font-family: 'Playfair Display', serif; font-size: 1.4rem;
+            cursor: pointer; transition: 0.3s;
+        }
         .choice-btn:hover:not(.btn-disabled) { border-color: var(--orange); background: var(--surface-2); transform: translateY(-3px); }
         .choice-btn span { display: block; font-family: 'DM Sans'; font-size: 0.8rem; color: var(--muted); margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
         .btn-disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
-        
+
+        /* ── HEADER & NAV ────────────────────────── */
         header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(14,14,14,0.9); backdrop-filter: blur(10px); z-index: 900; }
         .brand-name { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; }
         .brand-name span { color: var(--orange); }
-        
+        .cat-nav { display: flex; padding: 0 40px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+        .cat-pill { background: none; border: none; color: var(--muted); padding: 18px 20px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; white-space: nowrap; }
+        .cat-pill.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
+
+        /* ── MENU GRID ───────────────────────────── */
         .container { max-width: 1100px; margin: 0 auto; padding: 40px; }
         .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
         .item-card { background: var(--surface); border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
         .add-btn { background: none; border: 1.5px solid var(--orange); color: var(--orange); width: 35px; height: 35px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
         
-        #cart-bar { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px); max-width: 500px; background: rgba(22,22,22,0.98); border: 1px solid var(--orange); border-radius: 20px; padding: 20px; display: none; z-index: 1000; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .cart-item-list { max-height: 180px; overflow-y: auto; margin-bottom: 15px; }
+        /* ── CART BAR & LIST ─────────────────────── */
+        #cart-bar { 
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); 
+            width: calc(100% - 40px); max-width: 500px; background: rgba(22,22,22,0.98); 
+            border: 1px solid var(--orange); border-radius: 20px; padding: 20px; 
+            display: none; z-index: 1000; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .cart-item-list { max-height: 180px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
         .qty-controls { display: flex; align-items: center; gap: 12px; }
         .qty-btn { background: var(--surface-2); border: 1px solid var(--border); color: white; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; }
         
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: white; outline: none; font-family: 'DM Sans', sans-serif; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: white; outline: none; }
+        input:focus { border-color: var(--orange); }
         .confirm-btn { background: var(--orange); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; }
         .hidden { display: none !important; }
     </style>
@@ -47,20 +77,23 @@
 
     <header>
         <div class="brand-name" onclick="location.reload()" style="cursor:pointer">Chips<span>&</span></div>
+        <div id="header-mode" style="font-size: 0.7rem; color: var(--orange); letter-spacing: 2px; text-transform: uppercase;"></div>
     </header>
 
     <div id="main-content" class="hidden">
+        <nav class="cat-nav" id="cat-tabs"></nav>
         <div class="container"><div id="menu-display"></div></div>
     </div>
 
     <div id="cart-bar">
-        <input type="text" id="cust-name" placeholder="Your Name *" required>
-        <input type="tel" id="cust-phone" placeholder="Phone Number (Required for Pies)">
-        <textarea id="cust-note" placeholder="Comment or special request..."></textarea>
-        
+        <div id="preorder-fields" class="hidden">
+            <input type="text" id="cust-name" placeholder="Full Name *" required>
+            <input type="tel" id="cust-phone" placeholder="Phone Number *" required>
+            <textarea id="cust-note" placeholder="Note for the truck... (Optional)"></textarea>
+        </div>
         <div id="cart-item-list" class="cart-item-list"></div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-            <span style="color: var(--muted);">Total:</span>
+            <span style="color: var(--muted);">Total Amount:</span>
             <span style="font-size: 1.4rem; font-weight: 900;">£<span id="total-price">0.00</span></span>
         </div>
         <button class="confirm-btn" id="submit-order-btn">Confirm Order</button>
@@ -68,31 +101,46 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, collection, addDoc, getDoc, updateDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, addDoc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let cart = {}; let currentMode = '';
+        let cart = {}; 
+        let currentMode = '';
+        let globalStock = 0;
 
         onSnapshot(doc(db, "settings", "truck_status"), (s) => {
             const data = s.data();
-            const mBtn = document.getElementById('menu-choice-btn');
-            if(data?.is_closed) { mBtn.classList.add('btn-disabled'); mBtn.onclick = null; }
-            else { mBtn.classList.remove('btn-disabled'); mBtn.onclick = () => startFlow('MENU'); }
-            
-            const pBtn = document.getElementById('pie-choice-btn');
-            if(data?.pies_enabled && data?.pie_inventory > 0) {
-                pBtn.classList.remove('hidden'); pBtn.onclick = () => startFlow('PIES');
-                document.getElementById('pie-inventory-text').innerText = `${data.pie_inventory} Pies Remaining`;
-            } else { pBtn.classList.add('hidden'); }
+            const menuBtn = document.getElementById('menu-choice-btn');
+            const menuSub = document.getElementById('menu-status-text');
+            if(data?.is_closed) {
+                menuBtn.classList.add('btn-disabled');
+                menuBtn.onclick = null;
+                menuSub.innerText = "Currently Closed";
+            } else {
+                menuBtn.classList.remove('btn-disabled');
+                menuBtn.onclick = () => startFlow('MENU');
+                menuSub.innerText = "Live Kitchen • Collection Only";
+            }
+            const pieBtn = document.getElementById('pie-choice-btn');
+            globalStock = data?.pie_inventory || 0;
+            if(data?.pies_enabled && globalStock > 0) {
+                pieBtn.classList.remove('hidden');
+                pieBtn.onclick = () => startFlow('PIES');
+                document.getElementById('pie-inventory-text').innerText = `${globalStock} Pies Remaining`;
+            } else {
+                pieBtn.classList.add('hidden');
+            }
         });
 
         window.startFlow = (mode) => {
             currentMode = mode;
             document.getElementById('landing-screen').style.display = 'none';
             document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('header-mode').innerText = mode === 'PIES' ? 'Pre-Order Mode' : 'Live Menu';
+            if(mode === 'PIES') document.getElementById('preorder-fields').classList.remove('hidden');
             loadMenu();
         };
 
@@ -103,17 +151,19 @@
         };
 
         window.changeQty = (name, delta) => {
-            if (!cart[name]) return;
             cart[name].qty += delta;
             if (cart[name].qty <= 0) delete cart[name];
             updateUI();
         };
 
         function updateUI() {
-            let total = 0; const list = document.getElementById('cart-item-list'); list.innerHTML = "";
+            let total = 0;
+            const list = document.getElementById('cart-item-list');
+            list.innerHTML = "";
             for (const name in cart) {
                 total += cart[name].price * cart[name].qty;
-                const div = document.createElement('div'); div.className = 'cart-item';
+                const div = document.createElement('div');
+                div.className = 'cart-item';
                 div.innerHTML = `<span>${name}</span>
                     <div class="qty-controls">
                         <button class="qty-btn" onclick="changeQty('${name}', -1)">-</button>
@@ -127,52 +177,71 @@
         }
 
         document.getElementById('submit-order-btn').onclick = async () => {
+            const btn = document.getElementById('submit-order-btn');
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
-            if (!name) return alert("Please enter your name");
-            if (currentMode === 'PIES' && !phone) return alert("Phone number required for Pies");
 
-            let pQty = 0; const items = [];
+            if (currentMode === 'PIES' && (!name || !phone)) return alert("Name/Phone required");
+            
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            let pieQty = 0;
+            const items = [];
             for (const n in cart) { 
-                if (currentMode === 'PIES') pQty += cart[n].qty;
-                for(let i=0; i<cart[n].qty; i++) items.push({ name: n, price: cart[n].price });
+                if (currentMode === 'PIES') pieQty += cart[n].qty;
+                for(let i=0; i<cart[n].qty; i++) items.push({ name: n, price: cart[n].price }); 
             }
 
             try {
                 if (currentMode === 'PIES') {
-                    const snap = await getDoc(doc(db, "settings", "truck_status"));
-                    const stock = snap.data().pie_inventory;
-                    if (stock < pQty) return alert(`Only ${stock} left!`);
-                    await updateDoc(doc(db, "settings", "truck_status"), { pie_inventory: stock - pQty });
+                    const settingsRef = doc(db, "settings", "truck_status");
+                    const snap = await getDoc(settingsRef);
+                    const freshStock = snap.data().pie_inventory || 0;
+                    if (freshStock < pieQty) {
+                        alert(`Only ${freshStock} left!`);
+                        btn.disabled = false;
+                        btn.innerText = "Confirm Order";
+                        return;
+                    }
+                    await updateDoc(settingsRef, { pie_inventory: freshStock - pieQty });
                 }
                 const docRef = await addDoc(collection(db, "orders"), {
-                    items, status: "pending", type: currentMode === 'PIES' ? "PRE-ORDER" : "PICKUP",
-                    customer: { name, phone, msg: document.getElementById('cust-note').value },
+                    items: items,
+                    status: "pending",
+                    type: currentMode === 'PIES' ? "PRE-ORDER" : "PICKUP",
+                    customer: currentMode === 'PIES' ? { name, phone, msg: document.getElementById('cust-note').value } : null,
                     createdAt: serverTimestamp()
                 });
                 window.location.href = `track.html?id=${docRef.id}`;
-            } catch (e) { alert("Order Failed"); }
+            } catch (e) {
+                console.error(e);
+                alert("Order failed. Check database connection.");
+                btn.disabled = false;
+                btn.innerText = "Confirm Order";
+            }
         };
 
         function loadMenu() {
-            // Updated sorting to handle items without sortOrder properly
-            onSnapshot(query(collection(db, "menu"), orderBy("category"), orderBy("sortOrder", "asc")), (snap) => {
-                const display = document.getElementById('menu-display'); display.innerHTML = "";
+            onSnapshot(collection(db, "menu"), (snap) => {
+                const display = document.getElementById('menu-display');
+                display.innerHTML = "";
                 const categories = {};
                 snap.forEach(d => {
-                    const item = d.data(); const cat = item.category || "CHIPS";
+                    const item = d.data();
+                    const cat = item.category || "CHIPS";
                     if ((currentMode === 'PIES' && cat !== 'PIES') || (currentMode === 'MENU' && cat === 'PIES')) return;
                     if (!categories[cat]) categories[cat] = [];
                     categories[cat].push({ ...item });
                 });
                 Object.keys(categories).forEach(cat => {
                     const sec = document.createElement('div');
-                    sec.innerHTML = `<h2 style="margin: 30px 0 15px; font-family:'Playfair Display'; color:var(--orange)">${cat}</h2><div class="items-grid" id="grid-${cat}"></div>`;
+                    sec.innerHTML = `<h2 style="margin: 30px 0 15px; font-family:'Playfair Display';">${cat}</h2><div class="items-grid" id="grid-${cat}"></div>`;
                     display.appendChild(sec);
                     categories[cat].forEach(item => {
                         const card = document.createElement('div');
                         card.className = `item-card ${item.is_available ? '' : 'btn-disabled'}`;
-                        card.innerHTML = `<div><div>${item.name}</div><div style="color:var(--muted); font-size:0.8rem">£${item.price.toFixed(2)}</div></div>
+                        card.innerHTML = `<div><div>${item.name}</div><div style="color:var(--orange)">£${item.price.toFixed(2)}</div></div>
                             <button class="add-btn" onclick="addToCart('${item.name.replace(/'/g, "\\'")}', ${item.price})">+</button>`;
                         document.getElementById(`grid-${cat}`).appendChild(card);
                     });
