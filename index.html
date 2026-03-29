@@ -13,20 +13,16 @@
         .app-header { background: var(--surface); padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .brand-name { font-family: 'Playfair Display'; font-size: 1.4rem; font-weight: 900; }
         .brand-name span { color: var(--orange); }
-        
         .tab-nav { display: flex; margin: 20px 32px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .tab-btn { background: none; border: none; color: var(--muted); padding: 14px 22px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
         .tab-btn.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
-
         .content-area { padding: 0 32px; max-width: 900px; }
         .card { background: var(--surface); border-radius: 16px; padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
         .order-card { background: var(--surface-2); border-radius: 14px; padding: 20px; margin-bottom: 15px; }
-        
         .btn { padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 500; }
         .btn-primary { background: var(--orange); color: white; }
         .btn-ready { background: var(--green); color: white; width: 100%; }
         .btn-pdf { background: #34495e; color: white; width: 100%; margin-bottom: 15px; }
-
         input, select { background: var(--surface-2); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
         .hidden { display: none !important; }
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
@@ -45,8 +41,8 @@
 
     <div id="admin-content" class="hidden">
         <header class="app-header">
-            <div class="brand-name">Chips<span>&</span> <span>Admin</span></div>
-            <button class="btn" style="background:#333; color:white;" onclick="signOut(auth)">Logout</button>
+            <div class="brand-name">Chips<span>&</span> Admin</div>
+            <button class="btn" style="background:#333; color:white;" onclick="handleLogout()">Logout</button>
         </header>
 
         <div class="card" style="margin: 20px 32px;">
@@ -109,6 +105,8 @@
         const db = getFirestore(app);
 
         window.handleLogin = () => signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-pass').value).catch(e => alert(e.message));
+        window.handleLogout = () => signOut(auth);
+
         onAuthStateChanged(auth, user => {
             if(user) { document.getElementById('login-gate').classList.add('hidden'); document.getElementById('admin-content').classList.remove('hidden'); initAdmin(); }
             else document.getElementById('login-gate').classList.remove('hidden');
@@ -117,10 +115,10 @@
         function initAdmin() {
             onSnapshot(doc(db, "settings", "truck_status"), s => {
                 const data = s.data();
-                window.masterClosed = data.is_closed;
-                document.getElementById('status-text').innerText = data.is_closed ? "CLOSED" : "OPEN";
-                document.getElementById('pie-toggle').checked = data.pies_enabled;
-                document.getElementById('pie-stock').value = data.pie_inventory;
+                window.masterClosed = data?.is_closed;
+                document.getElementById('status-text').innerText = data?.is_closed ? "CLOSED" : "OPEN";
+                document.getElementById('pie-toggle').checked = data?.pies_enabled;
+                document.getElementById('pie-stock').value = data?.pie_inventory;
             });
 
             onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc")), snap => {
@@ -172,6 +170,10 @@
         };
 
         window.addItem = async () => await addDoc(collection(db, "menu"), { name: document.getElementById('new-name').value, price: parseFloat(document.getElementById('new-price').value), category: document.getElementById('new-cat').value, is_available: true });
+        
+        // Expose functions globally for the buttons
+        window.updateStatus = updateStatus;
+        window.deleteDoc = deleteDoc;
     </script>
 </body>
 </html>
