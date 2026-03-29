@@ -48,23 +48,28 @@
         .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
         .item-card { background: var(--surface); border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
         .add-btn { background: none; border: 1.5px solid var(--orange); color: var(--orange); width: 35px; height: 35px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
-        
+
         /* ── CART BAR & LIST ─────────────────────── */
-        #cart-bar { 
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); 
-            width: calc(100% - 40px); max-width: 500px; background: rgba(22,22,22,0.98); 
-            border: 1px solid var(--orange); border-radius: 20px; padding: 20px; 
+        #cart-bar {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            width: calc(100% - 40px); max-width: 500px; background: rgba(22,22,22,0.98);
+            border: 1px solid var(--orange); border-radius: 20px; padding: 20px;
             display: none; z-index: 1000; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
         .cart-item-list { max-height: 180px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        .qty-controls { display: flex; align-items: center; gap: 12px; }
+        .qty-controls { display: flex; align-items: center; gap: 8px; }
         .qty-btn { background: var(--surface-2); border: 1px solid var(--border); color: white; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; }
-        
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: white; outline: none; }
-        input:focus { border-color: var(--orange); }
-        .confirm-btn { background: var(--orange); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .remove-btn { background: none; border: 1px solid rgba(231,76,60,0.4); color: #e74c3c; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; line-height: 1; }
+
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: white; outline: none; font-family: 'DM Sans', sans-serif; }
+        input:focus, textarea:focus { border-color: var(--orange); }
+        textarea { resize: none; height: 70px; }
+        .confirm-btn { background: var(--orange); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .hidden { display: none !important; }
+
+        .customer-fields { margin-bottom: 5px; }
+        .field-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -72,7 +77,7 @@
     <div id="landing-screen">
         <div class="brand-name" style="font-size: 2.5rem; margin-bottom: 10px;">Chips<span>&</span></div>
         <button id="pie-choice-btn" class="choice-btn hidden">Pre-Order Pies<span id="pie-inventory-text">Weekly Batch</span></button>
-        <button id="menu-choice-btn" class="choice-btn">Order From Menu<span id="menu-status-text">Live Kitchen</span></button>
+        <button id="menu-choice-btn" class="choice-btn">Order From Menu<span id="menu-status-text">Collection Only</span></button>
     </div>
 
     <header>
@@ -85,11 +90,15 @@
         <div class="container"><div id="menu-display"></div></div>
     </div>
 
+    <!-- Extra space so cart bar doesn't cover last items -->
+    <div style="height: 160px;"></div>
+
     <div id="cart-bar">
-        <div id="preorder-fields" class="hidden">
-            <input type="text" id="cust-name" placeholder="Full Name *" required>
-            <input type="tel" id="cust-phone" placeholder="Phone Number *" required>
-            <textarea id="cust-note" placeholder="Note for the truck... (Optional)"></textarea>
+        <div id="customer-fields" class="customer-fields">
+            <div class="field-label">Your Details</div>
+            <input type="text" id="cust-name" placeholder="Name *" required>
+            <input type="tel" id="cust-phone" placeholder="Phone Number (Pie pre-orders only)" id="cust-phone">
+            <textarea id="cust-note" placeholder="Any notes for the kitchen? (Optional)"></textarea>
         </div>
         <div id="cart-item-list" class="cart-item-list"></div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
@@ -107,7 +116,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let cart = {}; 
+        let cart = {};
         let currentMode = '';
         let globalStock = 0;
 
@@ -115,18 +124,18 @@
             const data = s.data();
             const menuBtn = document.getElementById('menu-choice-btn');
             const menuSub = document.getElementById('menu-status-text');
-            if(data?.is_closed) {
+            if (data?.is_closed) {
                 menuBtn.classList.add('btn-disabled');
                 menuBtn.onclick = null;
                 menuSub.innerText = "Currently Closed";
             } else {
                 menuBtn.classList.remove('btn-disabled');
                 menuBtn.onclick = () => startFlow('MENU');
-                menuSub.innerText = "Live Kitchen • Collection Only";
+                menuSub.innerText = "Collection Only";
             }
             const pieBtn = document.getElementById('pie-choice-btn');
             globalStock = data?.pie_inventory || 0;
-            if(data?.pies_enabled && globalStock > 0) {
+            if (data?.pies_enabled && globalStock > 0) {
                 pieBtn.classList.remove('hidden');
                 pieBtn.onclick = () => startFlow('PIES');
                 document.getElementById('pie-inventory-text').innerText = `${globalStock} Pies Remaining`;
@@ -139,8 +148,16 @@
             currentMode = mode;
             document.getElementById('landing-screen').style.display = 'none';
             document.getElementById('main-content').classList.remove('hidden');
-            document.getElementById('header-mode').innerText = mode === 'PIES' ? 'Pre-Order Mode' : 'Live Menu';
-            if(mode === 'PIES') document.getElementById('preorder-fields').classList.remove('hidden');
+            document.getElementById('header-mode').innerText = mode === 'PIES' ? 'Pre-Order Mode' : '';
+
+            // Phone only required for pie pre-orders
+            const phoneField = document.getElementById('cust-phone');
+            if (mode === 'PIES') {
+                phoneField.placeholder = "Phone Number *";
+            } else {
+                phoneField.placeholder = "Phone Number (Optional)";
+            }
+
             loadMenu();
         };
 
@@ -156,6 +173,11 @@
             updateUI();
         };
 
+        window.removeFromCart = (name) => {
+            delete cart[name];
+            updateUI();
+        };
+
         function updateUI() {
             let total = 0;
             const list = document.getElementById('cart-item-list');
@@ -164,33 +186,36 @@
                 total += cart[name].price * cart[name].qty;
                 const div = document.createElement('div');
                 div.className = 'cart-item';
-                div.innerHTML = `<span>${name}</span>
+                div.innerHTML = `<span style="flex:1; padding-right:10px;">${name}</span>
                     <div class="qty-controls">
-                        <button class="qty-btn" onclick="changeQty('${name}', -1)">-</button>
+                        <button class="qty-btn" onclick="changeQty('${name.replace(/'/g, "\\'")}', -1)">-</button>
                         <span>${cart[name].qty}</span>
-                        <button class="qty-btn" onclick="changeQty('${name}', 1)">+</button>
+                        <button class="qty-btn" onclick="changeQty('${name.replace(/'/g, "\\'")}', 1)">+</button>
+                        <button class="remove-btn" onclick="removeFromCart('${name.replace(/'/g, "\\'")}')">×</button>
                     </div>`;
                 list.appendChild(div);
             }
             document.getElementById('total-price').innerText = total.toFixed(2);
-            document.getElementById('cart-bar').style.display = total > 0 ? 'block' : 'none';
+            document.getElementById('cart-bar').style.display = Object.keys(cart).length > 0 ? 'block' : 'none';
         }
 
         document.getElementById('submit-order-btn').onclick = async () => {
             const btn = document.getElementById('submit-order-btn');
-            const name = document.getElementById('cust-name').value;
-            const phone = document.getElementById('cust-phone').value;
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const note = document.getElementById('cust-note').value.trim();
 
-            if (currentMode === 'PIES' && (!name || !phone)) return alert("Name/Phone required");
-            
+            if (!name) return alert("Please enter your name");
+            if (currentMode === 'PIES' && !phone) return alert("Phone number required for pie pre-orders");
+
             btn.disabled = true;
             btn.innerText = "Processing...";
 
             let pieQty = 0;
             const items = [];
-            for (const n in cart) { 
+            for (const n in cart) {
                 if (currentMode === 'PIES') pieQty += cart[n].qty;
-                for(let i=0; i<cart[n].qty; i++) items.push({ name: n, price: cart[n].price }); 
+                for (let i = 0; i < cart[n].qty; i++) items.push({ name: n, price: cart[n].price });
             }
 
             try {
@@ -210,7 +235,7 @@
                     items: items,
                     status: "pending",
                     type: currentMode === 'PIES' ? "PRE-ORDER" : "PICKUP",
-                    customer: currentMode === 'PIES' ? { name, phone, msg: document.getElementById('cust-note').value } : null,
+                    customer: { name, phone: phone || null, msg: note || null },
                     createdAt: serverTimestamp()
                 });
                 window.location.href = `track.html?id=${docRef.id}`;
@@ -234,6 +259,12 @@
                     if (!categories[cat]) categories[cat] = [];
                     categories[cat].push({ ...item });
                 });
+
+                // Sort items within each category by sortOrder
+                Object.keys(categories).forEach(cat => {
+                    categories[cat].sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
+                });
+
                 Object.keys(categories).forEach(cat => {
                     const sec = document.createElement('div');
                     sec.innerHTML = `<h2 style="margin: 30px 0 15px; font-family:'Playfair Display';">${cat}</h2><div class="items-grid" id="grid-${cat}"></div>`;
@@ -242,7 +273,7 @@
                         const card = document.createElement('div');
                         card.className = `item-card ${item.is_available ? '' : 'btn-disabled'}`;
                         card.innerHTML = `<div><div>${item.name}</div><div style="color:var(--orange)">£${item.price.toFixed(2)}</div></div>
-                            <button class="add-btn" onclick="addToCart('${item.name.replace(/'/g, "\\'")}', ${item.price})">+</button>`;
+                            <button class="add-btn" ${!item.is_available ? 'disabled' : ''} onclick="addToCart('${item.name.replace(/'/g, "\\'")}', ${item.price})">+</button>`;
                         document.getElementById(`grid-${cat}`).appendChild(card);
                     });
                 });
