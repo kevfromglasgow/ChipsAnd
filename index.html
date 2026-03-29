@@ -19,23 +19,60 @@
         .content-area { padding: 0 32px; max-width: 900px; }
         .card { background: var(--surface); border-radius: 16px; padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
         .order-card { background: var(--surface-2); border-radius: 14px; padding: 20px; margin-bottom: 15px; }
-        .btn { padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 500; }
+        .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; }
         .btn-primary { background: var(--orange); color: white; }
-        .btn-ready { background: var(--green); color: white; width: 100%; }
+        .btn-ready { background: var(--green); color: white; }
+        .btn-cancel { background: var(--red); color: white; }
         .btn-pdf { background: #34495e; color: white; width: 100%; margin-bottom: 15px; }
-        input, select { background: var(--surface-2); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+        input, select { background: var(--surface-2); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 12px; border-radius: 8px; margin-bottom: 10px; font-family: 'DM Sans', sans-serif; }
+        input:focus, select:focus { outline: none; border-color: var(--orange); }
         .hidden { display: none !important; }
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+
+        /* Inventory list */
+        .menu-item-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: var(--surface-2); border-radius: 8px; margin-bottom: 6px;
+        }
+        .menu-item-row:last-child { border-bottom: none; }
+        .item-move-btns { display: flex; flex-direction: column; gap: 2px; margin-right: 12px; }
+        .move-btn {
+            background: rgba(255,255,255,0.07); border: none; color: var(--muted);
+            width: 24px; height: 20px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .move-btn:hover { background: var(--orange); color: white; }
+        .move-btn:disabled { opacity: 0.2; cursor: default; }
+
+        .cat-section { margin-bottom: 24px; }
+        .cat-section-header {
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;
+            color: var(--orange); margin-bottom: 10px; padding: 0 4px;
+        }
+
+        .order-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .customer-info { background: rgba(255,255,255,0.04); padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 0.9rem; }
+        .order-items { list-style: none; margin: 8px 0; font-size: 0.9rem; color: var(--muted); }
+        .order-items li::before { content: "· "; color: var(--orange); }
+
+        /* Category management */
+        .cat-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--surface-2); border: 1px solid rgba(255,255,255,0.1);
+            padding: 6px 12px; border-radius: 20px; margin: 4px;
+        }
+        .cat-tag-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; padding: 0; line-height: 1; }
     </style>
 </head>
 <body>
 
     <div id="login-gate">
-        <div style="width:300px; text-align:center;">
-            <h1 class="brand-name">Chips<span>&</span> Admin</h1>
+        <div style="width:320px; text-align:center;">
+            <h1 class="brand-name" style="margin-bottom:24px;">Chips<span>&</span> Admin</h1>
             <input type="email" id="admin-email" placeholder="Email" style="width:100%">
             <input type="password" id="admin-pass" placeholder="Password" style="width:100%">
-            <button class="btn btn-primary" onclick="handleLogin()" style="width:100%">Sign In</button>
+            <button class="btn btn-primary" onclick="handleLogin()" style="width:100%; padding:14px;">Sign In</button>
         </div>
     </div>
 
@@ -64,9 +101,9 @@
             <div id="tab-pies" class="tab-panel hidden">
                 <div class="card" style="border-color:var(--orange)">
                     <h3 style="margin-bottom:15px">Pie Batch Control</h3>
-                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
-                        <input type="checkbox" id="pie-toggle"> <label>Enable Pie Orders</label>
-                        <input type="number" id="pie-stock" placeholder="Stock" style="width:80px; margin:0">
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px; flex-wrap:wrap;">
+                        <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="pie-toggle"> Enable Pie Orders</label>
+                        <input type="number" id="pie-stock" placeholder="Stock qty" style="width:100px; margin:0">
                         <button class="btn btn-primary" onclick="updatePieSettings()">Update</button>
                     </div>
                     <button class="btn btn-pdf" onclick="generatePiePDF()">Download PDF Prep Sheet</button>
@@ -76,19 +113,30 @@
             </div>
 
             <div id="tab-menu" class="tab-panel hidden">
+                <!-- Category Management -->
+                <div class="card" style="margin-bottom:16px;">
+                    <h3 style="margin-bottom:14px;">Manage Categories</h3>
+                    <div id="cat-tags-list" style="margin-bottom:12px;"></div>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="new-cat-name" placeholder="New category name" style="flex:1; margin:0;">
+                        <button class="btn btn-primary" onclick="addCategory()">Add Category</button>
+                    </div>
+                </div>
+
+                <!-- Add Item -->
                 <div class="card">
-                    <h3>Add Item</h3>
+                    <h3 style="margin-bottom:14px;">Add Menu Item</h3>
                     <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
-                        <input type="text" id="new-name" placeholder="Name">
-                        <input type="number" id="new-price" placeholder="Price">
+                        <input type="text" id="new-name" placeholder="Item name">
+                        <input type="number" id="new-price" placeholder="Price (£)" step="0.01">
                         <select id="new-cat">
-                            <option value="CHIPS">CHIPS</option>
-                            <option value="PIES">PIES</option>
-                            <option value="SIDES">SIDES</option>
+                            <option value="">Select category...</option>
                         </select>
                     </div>
                     <button class="btn btn-primary" onclick="addItem()">Add to Menu</button>
                 </div>
+
+                <!-- Menu Items by Category -->
                 <div id="menu-list"></div>
             </div>
         </div>
@@ -97,83 +145,296 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, collection, query, where, orderBy, getDocs, writeBatch, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, collection, query, where, orderBy, getDocs, writeBatch, addDoc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // In-memory state
+        let allMenuItems = []; // { id, ...data }
+        let allCategories = []; // string[]
+
         window.handleLogin = () => signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-pass').value).catch(e => alert(e.message));
         window.handleLogout = () => signOut(auth);
 
         onAuthStateChanged(auth, user => {
-            if(user) { document.getElementById('login-gate').classList.add('hidden'); document.getElementById('admin-content').classList.remove('hidden'); initAdmin(); }
-            else document.getElementById('login-gate').classList.remove('hidden');
+            if (user) {
+                document.getElementById('login-gate').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                initAdmin();
+            } else {
+                document.getElementById('login-gate').classList.remove('hidden');
+                document.getElementById('admin-content').classList.add('hidden');
+            }
         });
 
         function initAdmin() {
+            // Settings / shop status
             onSnapshot(doc(db, "settings", "truck_status"), s => {
                 const data = s.data();
                 window.masterClosed = data?.is_closed;
                 document.getElementById('status-text').innerText = data?.is_closed ? "CLOSED" : "OPEN";
-                document.getElementById('pie-toggle').checked = data?.pies_enabled;
-                document.getElementById('pie-stock').value = data?.pie_inventory;
+                document.getElementById('pie-toggle').checked = data?.pies_enabled || false;
+                document.getElementById('pie-stock').value = data?.pie_inventory || 0;
             });
 
+            // Categories from Firestore (stored as a doc with array field)
+            onSnapshot(doc(db, "settings", "categories"), snap => {
+                const data = snap.data();
+                allCategories = data?.list || ["CHIPS", "PIES", "SIDES"];
+                renderCategoryTags();
+                renderCategoryDropdown();
+                renderMenuList();
+            });
+
+            // Live + pre-orders
             onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc")), snap => {
-                const live = document.getElementById('orders-list'); const pie = document.getElementById('pie-list');
-                live.innerHTML = ""; pie.innerHTML = "";
+                const live = document.getElementById('orders-list');
+                const pie = document.getElementById('pie-list');
+                live.innerHTML = "";
+                pie.innerHTML = "";
+
+                if (snap.empty) {
+                    live.innerHTML = '<p style="color:var(--muted); padding:20px 0;">No pending orders.</p>';
+                }
+
                 snap.forEach(d => {
                     const data = d.data();
-                    const div = document.createElement('div'); div.className = 'order-card';
-                    div.innerHTML = `<div style="display:flex; justify-content:space-between;"><strong>#${d.id.slice(-4).toUpperCase()}</strong><span>${data.type}</span></div>
-                        ${data.customer ? `<div style="background:#222; padding:10px; margin:10px 0;">${data.customer.name} - ${data.customer.phone}</div>` : ''}
-                        <ul>${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul>
-                        ${data.type === 'PICKUP' ? `<button class="btn btn-ready" onclick="updateStatus('${d.id}', 'ready')">MARK READY</button>` : ''}`;
+                    const shortId = d.id.slice(-4).toUpperCase();
+                    const div = document.createElement('div');
+                    div.className = 'order-card';
+
+                    const customerHtml = data.customer
+                        ? `<div class="customer-info">
+                            <strong>${data.customer.name || '–'}</strong>
+                            ${data.customer.phone ? ` · ${data.customer.phone}` : ''}
+                            ${data.customer.msg ? `<br><span style="color:var(--muted)">Note: ${data.customer.msg}</span>` : ''}
+                           </div>`
+                        : '';
+
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong>#${shortId}</strong>
+                            <span style="font-size:0.75rem; background:rgba(244,113,43,0.15); color:var(--orange); padding:4px 10px; border-radius:20px;">${data.type}</span>
+                        </div>
+                        ${customerHtml}
+                        <ul class="order-items">${data.items.map(i => `<li>${i.name} — £${i.price.toFixed(2)}</li>`).join('')}</ul>
+                        <div class="order-actions">
+                            ${data.type === 'PICKUP' ? `<button class="btn btn-ready" onclick="updateStatus('${d.id}', 'ready')">Mark Ready</button>` : ''}
+                            <button class="btn btn-cancel" onclick="cancelOrder('${d.id}')">Cancel Order</button>
+                        </div>`;
+
                     data.type === 'PRE-ORDER' ? pie.appendChild(div) : live.appendChild(div);
                 });
             });
 
+            // Menu items
             onSnapshot(collection(db, "menu"), snap => {
-                const list = document.getElementById('menu-list'); list.innerHTML = "";
-                snap.forEach(d => {
-                    const item = d.data();
-                    const div = document.createElement('div'); div.style = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #333";
-                    div.innerHTML = `<span>${item.name} (£${item.price})</span><button onclick="deleteDoc(doc(db, 'menu', '${d.id}'))" style="color:red; background:none; border:none;">Remove</button>`;
-                    list.appendChild(div);
-                });
+                allMenuItems = [];
+                snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
+                // Sort by sortOrder
+                allMenuItems.sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
+                renderMenuList();
             });
         }
+
+        function renderCategoryTags() {
+            const container = document.getElementById('cat-tags-list');
+            container.innerHTML = "";
+            allCategories.forEach(cat => {
+                const tag = document.createElement('span');
+                tag.className = 'cat-tag';
+                tag.innerHTML = `${cat} <button class="cat-tag-del" onclick="deleteCategory('${cat}')" title="Delete category">×</button>`;
+                container.appendChild(tag);
+            });
+        }
+
+        function renderCategoryDropdown() {
+            const sel = document.getElementById('new-cat');
+            const current = sel.value;
+            sel.innerHTML = '<option value="">Select category...</option>';
+            allCategories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat;
+                if (cat === current) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        function renderMenuList() {
+            const list = document.getElementById('menu-list');
+            if (!list) return;
+            list.innerHTML = "";
+
+            // Group by category
+            const byCat = {};
+            allCategories.forEach(c => byCat[c] = []);
+
+            allMenuItems.forEach(item => {
+                const cat = item.category || "CHIPS";
+                if (!byCat[cat]) byCat[cat] = [];
+                byCat[cat].push(item);
+            });
+
+            allCategories.forEach(cat => {
+                const items = byCat[cat] || [];
+                const sec = document.createElement('div');
+                sec.className = 'cat-section';
+
+                let rowsHtml = "";
+                items.forEach((item, idx) => {
+                    rowsHtml += `
+                        <div class="menu-item-row">
+                            <div style="display:flex;align-items:center;flex:1;">
+                                <div class="item-move-btns">
+                                    <button class="move-btn" ${idx === 0 ? 'disabled' : ''} onclick="moveItem('${item.id}', '${cat}', -1)" title="Move up">▲</button>
+                                    <button class="move-btn" ${idx === items.length - 1 ? 'disabled' : ''} onclick="moveItem('${item.id}', '${cat}', 1)" title="Move down">▼</button>
+                                </div>
+                                <div>
+                                    <div>${item.name}</div>
+                                    <div style="font-size:0.8rem; color:var(--muted);">£${parseFloat(item.price).toFixed(2)} · ${item.category}</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <label style="font-size:0.8rem; display:flex;align-items:center;gap:6px; cursor:pointer;">
+                                    <input type="checkbox" ${item.is_available ? 'checked' : ''} onchange="toggleAvailability('${item.id}', this.checked)"> Available
+                                </label>
+                                <button onclick="removeItem('${item.id}')" style="color:var(--red); background:none; border:none; cursor:pointer; font-size:1.1rem; padding:4px 8px;">✕</button>
+                            </div>
+                        </div>`;
+                });
+
+                sec.innerHTML = `<div class="cat-section-header">${cat} (${items.length})</div>
+                    <div class="card" style="padding:12px;">${rowsHtml || '<p style="color:var(--muted);font-size:0.85rem;padding:8px 4px;">No items in this category.</p>'}</div>`;
+                list.appendChild(sec);
+            });
+        }
+
+        // ── CATEGORY MANAGEMENT ──────────────────────────────
+
+        window.addCategory = async () => {
+            const input = document.getElementById('new-cat-name');
+            const name = input.value.trim().toUpperCase();
+            if (!name) return alert("Enter a category name");
+            if (allCategories.includes(name)) return alert("Category already exists");
+            const updated = [...allCategories, name];
+            await setDoc(doc(db, "settings", "categories"), { list: updated });
+            input.value = "";
+        };
+
+        window.deleteCategory = async (cat) => {
+            const itemsInCat = allMenuItems.filter(i => i.category === cat);
+            if (itemsInCat.length > 0) {
+                if (!confirm(`"${cat}" has ${itemsInCat.length} item(s). Delete category and all its items?`)) return;
+                const batch = writeBatch(db);
+                itemsInCat.forEach(item => batch.delete(doc(db, "menu", item.id)));
+                await batch.commit();
+            } else {
+                if (!confirm(`Delete category "${cat}"?`)) return;
+            }
+            const updated = allCategories.filter(c => c !== cat);
+            await setDoc(doc(db, "settings", "categories"), { list: updated });
+        };
+
+        // ── ITEM REORDERING ──────────────────────────────────
+
+        window.moveItem = async (itemId, cat, direction) => {
+            // Get items in this category sorted by current sortOrder
+            const catItems = allMenuItems.filter(i => i.category === cat);
+            catItems.sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
+
+            const idx = catItems.findIndex(i => i.id === itemId);
+            const swapIdx = idx + direction;
+            if (swapIdx < 0 || swapIdx >= catItems.length) return;
+
+            // Swap sortOrder values
+            const a = catItems[idx];
+            const b = catItems[swapIdx];
+            const aOrder = a.sortOrder ?? idx;
+            const bOrder = b.sortOrder ?? swapIdx;
+
+            const batch = writeBatch(db);
+            batch.update(doc(db, "menu", a.id), { sortOrder: bOrder });
+            batch.update(doc(db, "menu", b.id), { sortOrder: aOrder });
+            await batch.commit();
+        };
+
+        // ── MENU ITEMS ───────────────────────────────────────
+
+        window.addItem = async () => {
+            const name = document.getElementById('new-name').value.trim();
+            const price = parseFloat(document.getElementById('new-price').value);
+            const category = document.getElementById('new-cat').value;
+
+            if (!name || isNaN(price) || !category) return alert("Fill in all fields and select a category");
+
+            // Set sortOrder to end of category
+            const catItems = allMenuItems.filter(i => i.category === category);
+            const maxOrder = catItems.length > 0 ? Math.max(...catItems.map(i => i.sortOrder ?? 0)) : 0;
+
+            await addDoc(collection(db, "menu"), {
+                name, price, category, is_available: true, sortOrder: maxOrder + 1
+            });
+
+            document.getElementById('new-name').value = "";
+            document.getElementById('new-price').value = "";
+        };
+
+        window.removeItem = async (id) => {
+            if (!confirm("Remove this item?")) return;
+            await deleteDoc(doc(db, "menu", id));
+        };
+
+        window.toggleAvailability = async (id, val) => {
+            await updateDoc(doc(db, "menu", id), { is_available: val });
+        };
+
+        // ── ORDERS ───────────────────────────────────────────
 
         window.showTab = (name, btn) => {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${name}`).classList.remove('hidden'); btn.classList.add('active');
+            document.getElementById(`tab-${name}`).classList.remove('hidden');
+            btn.classList.add('active');
         };
 
         window.toggleShop = async () => await updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window.masterClosed });
         window.updatePieSettings = async () => await updateDoc(doc(db, "settings", "truck_status"), { pies_enabled: document.getElementById('pie-toggle').checked, pie_inventory: parseInt(document.getElementById('pie-stock').value) });
         window.updateStatus = async (id, status) => await updateDoc(doc(db, "orders", id), { status });
+        window.cancelOrder = async (id) => {
+            if (!confirm("Cancel this order?")) return;
+            await updateDoc(doc(db, "orders", id), { status: "cancelled" });
+        };
+
         window.archivePies = async () => {
-            if(!confirm("Archive all?")) return;
+            if (!confirm("Archive all pie pre-orders?")) return;
             const s = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
-            const b = writeBatch(db); s.forEach(d => b.update(d.ref, { status: "archived" })); await b.commit();
+            const b = writeBatch(db);
+            s.forEach(d => b.update(d.ref, { status: "archived" }));
+            await b.commit();
         };
 
         window.generatePiePDF = async () => {
-            const { jsPDF } = window.jspdf; const docPDF = new jsPDF();
+            const { jsPDF } = window.jspdf;
+            const docPDF = new jsPDF();
             const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
-            const rows = []; snap.forEach(d => { const data = d.data(); rows.push([data.customer.name, data.customer.phone, data.items.map(i => i.name).join(", "), data.customer.msg || '-']); });
-            docPDF.text("Pie Batch Prep", 14, 15); docPDF.autoTable({ startY: 20, head: [['Customer', 'Phone', 'Items', 'Notes']], body: rows });
+            const rows = [];
+            snap.forEach(d => {
+                const data = d.data();
+                rows.push([
+                    data.customer?.name || '–',
+                    data.customer?.phone || '–',
+                    data.items.map(i => i.name).join(", "),
+                    data.customer?.msg || '-'
+                ]);
+            });
+            docPDF.text("Pie Batch Prep Sheet", 14, 15);
+            docPDF.autoTable({ startY: 20, head: [['Customer', 'Phone', 'Items', 'Notes']], body: rows });
             docPDF.save("Pie_Prep.pdf");
         };
-
-        window.addItem = async () => await addDoc(collection(db, "menu"), { name: document.getElementById('new-name').value, price: parseFloat(document.getElementById('new-price').value), category: document.getElementById('new-cat').value, is_available: true });
-        
-        // Expose functions globally for the buttons
-        window.updateStatus = updateStatus;
-        window.deleteDoc = deleteDoc;
     </script>
 </body>
 </html>
