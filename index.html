@@ -183,7 +183,20 @@
             // Categories from Firestore (stored as a doc with array field)
             onSnapshot(doc(db, "settings", "categories"), snap => {
                 const data = snap.data();
-                allCategories = data?.list || ["CHIPS", "PIES", "SIDES"];
+                const savedCats = data?.list || [];
+
+                // Always merge with categories that actually exist in menu items
+                // so items are never invisible due to a missing/empty categories doc
+                const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
+                const merged = [...new Set([...savedCats, ...fromItems])];
+
+                allCategories = merged.length > 0 ? merged : ["CHIPS", "PIES", "SIDES"];
+
+                // If the doc was missing or incomplete, persist the merged list back
+                if (savedCats.length !== allCategories.length || allCategories.some(c => !savedCats.includes(c))) {
+                    setDoc(doc(db, "settings", "categories"), { list: allCategories }).catch(() => {});
+                }
+
                 renderCategoryTags();
                 renderCategoryDropdown();
                 renderMenuList();
@@ -234,8 +247,18 @@
             onSnapshot(collection(db, "menu"), snap => {
                 allMenuItems = [];
                 snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
-                // Sort by sortOrder
                 allMenuItems.sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
+
+                // Merge any categories found in items that aren't in allCategories yet
+                const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
+                const newCats = fromItems.filter(c => !allCategories.includes(c));
+                if (newCats.length > 0) {
+                    allCategories = [...allCategories, ...newCats];
+                    setDoc(doc(db, "settings", "categories"), { list: allCategories }).catch(() => {});
+                    renderCategoryTags();
+                    renderCategoryDropdown();
+                }
+
                 renderMenuList();
             });
         }
