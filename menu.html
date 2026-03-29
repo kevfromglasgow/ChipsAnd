@@ -178,18 +178,65 @@
         }
 
         window.submitOrder = async () => {
-            if (currentMode === 'PIES' && (!document.getElementById('cust-name').value || !document.getElementById('cust-phone').value)) return alert("Name/Phone required");
-            const itemsArray = [];
-            for (const name in cart) { for(let i=0; i<cart[name].qty; i++) itemsArray.push({ name, price: cart[name].price }); }
-            const docRef = await addDoc(collection(db, "orders"), {
-                items: itemsArray,
-                status: "pending",
-                type: currentMode === 'PIES' ? "PRE-ORDER" : "PICKUP",
-                customer: currentMode === 'PIES' ? { name: document.getElementById('cust-name').value, phone: document.getElementById('cust-phone').value, msg: document.getElementById('cust-note').value } : null,
-                createdAt: serverTimestamp()
+    const nameField = document.getElementById('cust-name');
+    const phoneField = document.getElementById('cust-phone');
+
+    if (currentMode === 'PIES') {
+        if (!nameField.value || !phoneField.value) return alert("Name and Phone are required for pre-orders.");
+    }
+
+    // 1. Calculate how many total pies are being ordered
+    let pieCountInCart = 0;
+    const itemsArray = [];
+    for (const name in cart) {
+        if (currentMode === 'PIES') pieCountInCart += cart[name].qty;
+        for (let i = 0; i < cart[name].qty; i++) {
+            itemsArray.push({ name, price: cart[name].price });
+        }
+    }
+
+    try {
+        // 2. If ordering pies, verify and subtract inventory first
+        if (currentMode === 'PIES') {
+            const settingsRef = doc(db, "settings", "truck_status");
+            const settingsSnap = await getDocs(query(collection(db, "settings"))); // Refresh data
+            let currentStock = 0;
+            
+            // Get latest stock directly to prevent overselling
+            const snap = await getDoc(settingsRef);
+            currentStock = snap.data().pie_inventory || 0;
+
+            if (currentStock < pieCountInCart) {
+                return alert(`Sorry! We only have ${currentStock} pies left. Please adjust your cart.`);
+            }
+
+            // Subtract from inventory
+            await updateDoc(settingsRef, {
+                pie_inventory: currentStock - pieCountInCart
             });
-            window.location.href = `track.html?id=${docRef.id}`;
+        }
+
+        // 3. Create the order
+        const orderData = {
+            items: itemsArray,
+            status: "pending",
+            type: currentMode === 'PIES' ? "PRE-ORDER" : "PICKUP",
+            customer: currentMode === 'PIES' ? {
+                name: nameField.value,
+                phone: phoneField.value,
+                msg: document.getElementById('cust-note').value
+            } : null,
+            createdAt: serverTimestamp()
         };
+
+        const docRef = await addDoc(collection(db, "orders"), orderData);
+        window.location.href = `track.html?id=${docRef.id}`;
+
+    } catch (error) {
+        console.error("Order failed:", error);
+        alert("There was an error processing your order. Please try again.");
+    }
+};
 
         function loadMenu() {
             onSnapshot(collection(db, "menu"), (snap) => {
