@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChipsAnd | Dundee</title>
+    <title>ChipsAnd | Dundee Street Food</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -18,7 +18,7 @@
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
         /* ── LANDING SELECTION ───────────────────── */
         #landing-screen {
@@ -27,50 +27,54 @@
             padding: 40px; text-align: center;
         }
         .choice-btn {
-            width: 100%; max-width: 300px; padding: 24px; border-radius: 16px;
+            width: 100%; max-width: 320px; padding: 24px; border-radius: 16px;
             border: 1px solid var(--border); background: var(--surface);
             color: var(--text); font-family: 'Playfair Display', serif; font-size: 1.4rem;
             cursor: pointer; transition: 0.3s;
         }
-        .choice-btn:hover { border-color: var(--orange); background: var(--surface-2); transform: translateY(-3px); }
+        .choice-btn:hover:not(.btn-disabled) { border-color: var(--orange); background: var(--surface-2); transform: translateY(-3px); }
         .choice-btn span { display: block; font-family: 'DM Sans'; font-size: 0.8rem; color: var(--muted); margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .btn-disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
 
-        /* ── PRE-ORDER FORM ─────────────────────── */
-        #preorder-fields { display: none; margin-top: 20px; padding: 20px; background: var(--surface); border-radius: 16px; border: 1px solid var(--orange); }
-        input, textarea { 
-            width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; 
-            border: 1px solid var(--border); background: var(--bg); color: white; font-family: 'DM Sans';
-        }
-
-        /* ── EXISTING STYLES RE-APPLIED ───────────── */
+        /* ── HEADER & NAV ────────────────────────── */
         header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); sticky; top: 0; background: rgba(14,14,14,0.9); backdrop-filter: blur(10px); z-index: 900; }
         .brand-name { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; }
         .brand-name span { color: var(--orange); }
+        
         .cat-nav { display: flex; padding: 0 40px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
-        .cat-pill { background: none; border: none; color: var(--muted); padding: 18px 20px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+        .cat-pill { background: none; border: none; color: var(--muted); padding: 18px 20px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; white-space: nowrap; }
         .cat-pill.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
+
+        /* ── MENU GRID ───────────────────────────── */
         .container { max-width: 1100px; margin: 0 auto; padding: 40px; }
         .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
         .item-card { background: var(--surface); border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
-        .add-btn { background: none; border: 1.5px solid var(--orange); color: var(--orange); width: 35px; height: 35px; border-radius: 8px; cursor: pointer; }
+        .add-btn { background: none; border: 1.5px solid var(--orange); color: var(--orange); width: 35px; height: 35px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
         
+        /* ── CART BAR & LIST ─────────────────────── */
         #cart-bar { 
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); 
-            width: calc(100% - 40px); max-width: 500px; background: rgba(22,22,22,0.95); 
+            width: calc(100% - 40px); max-width: 500px; background: rgba(22,22,22,0.98); 
             border: 1px solid var(--orange); border-radius: 20px; padding: 20px; 
-            display: none; z-index: 1000; backdrop-filter: blur(10px);
+            display: none; z-index: 1000; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .confirm-btn { background: var(--orange); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        .hidden { display: none; }
+        .cart-item-list { max-height: 180px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .qty-controls { display: flex; align-items: center; gap: 12px; }
+        .qty-btn { background: var(--surface-2); border: 1px solid var(--border); color: white; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; }
+        
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: white; }
+        .confirm-btn { background: var(--orange); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- CHOICE SCREEN -->
     <div id="landing-screen">
-        <div class="brand-name" style="margin-bottom: 20px;">Chips<span>&</span></div>
-        <button class="choice-btn" onclick="startFlow('PIES')">Pre-Order Pies<span>Weekly Batch • Limited Stock</span></button>
-        <button class="choice-btn" onclick="startFlow('MENU')">Order From Menu<span>Live Kitchen • Collection Only</span></button>
+        <div class="brand-name" style="font-size: 2.5rem; margin-bottom: 10px;">Chips<span>&</span></div>
+        <button id="pie-choice-btn" class="choice-btn hidden" onclick="startFlow('PIES')">Pre-Order Pies<span id="pie-inventory-text">Weekly Batch</span></button>
+        <button id="menu-choice-btn" class="choice-btn" onclick="startFlow('MENU')">Order From Menu<span id="menu-status-text">Live Kitchen</span></button>
     </div>
 
     <header>
@@ -80,23 +84,21 @@
 
     <div id="main-content" class="hidden">
         <nav class="cat-nav" id="cat-tabs"></nav>
-        <div class="container">
-            <div id="menu-display"></div>
-        </div>
+        <div class="container"><div id="menu-display"></div></div>
     </div>
 
-    <!-- CART / ORDER BAR -->
     <div id="cart-bar">
-        <div id="preorder-fields">
-            <input type="text" id="cust-name" placeholder="Your Full Name *" required>
+        <div id="preorder-fields" class="hidden">
+            <input type="text" id="cust-name" placeholder="Full Name *" required>
             <input type="tel" id="cust-phone" placeholder="Phone Number *" required>
-            <textarea id="cust-note" placeholder="Message to truck (Optional)"></textarea>
+            <textarea id="cust-note" placeholder="Note for the truck..."></textarea>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px; align-items: baseline;">
-            <span style="color: var(--muted); font-size: 0.8rem;">Total Amount:</span>
-            <span style="font-size: 1.5rem; font-family: 'Playfair Display'; font-weight: 900;">£<span id="total-price">0.00</span></span>
+        <div id="cart-item-list" class="cart-item-list"></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <span style="color: var(--muted);">Total Amount:</span>
+            <span style="font-size: 1.4rem; font-weight: 900;">£<span id="total-price">0.00</span></span>
         </div>
-        <button class="confirm-btn" id="main-action-btn" onclick="submitOrder()">Confirm Order</button>
+        <button class="confirm-btn" onclick="submitOrder()">Confirm Order</button>
     </div>
 
     <script type="module">
@@ -107,18 +109,39 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let cart = {};
-        let currentMode = ''; // 'PIES' or 'MENU'
+        let cart = {}; 
+        let currentMode = '';
+
+        // Monitor Truck Status and Pie Inventory
+        onSnapshot(doc(db, "settings", "truck_status"), (s) => {
+            const data = s.data();
+            const menuBtn = document.getElementById('menu-choice-btn');
+            const menuSub = document.getElementById('menu-status-text');
+            if(data?.is_closed) {
+                menuBtn.classList.add('btn-disabled');
+                menuBtn.onclick = null;
+                menuSub.innerText = "Currently Closed";
+            } else {
+                menuBtn.classList.remove('btn-disabled');
+                menuBtn.onclick = () => startFlow('MENU');
+                menuSub.innerText = "Live Kitchen • Collection Only";
+            }
+
+            const pieBtn = document.getElementById('pie-choice-btn');
+            if(data?.pies_enabled && data?.pie_inventory > 0) {
+                pieBtn.classList.remove('hidden');
+                document.getElementById('pie-inventory-text').innerText = `${data.pie_inventory} Pies Remaining`;
+            } else {
+                pieBtn.classList.add('hidden');
+            }
+        });
 
         window.startFlow = (mode) => {
             currentMode = mode;
             document.getElementById('landing-screen').style.display = 'none';
             document.getElementById('main-content').classList.remove('hidden');
-            document.getElementById('header-mode').innerText = mode === 'PIES' ? 'Pre-Order Mode' : 'Live Menu Mode';
-            
-            if(mode === 'PIES') {
-                document.getElementById('preorder-fields').style.display = 'block';
-            }
+            document.getElementById('header-mode').innerText = mode === 'PIES' ? 'Pre-Order Mode' : 'Live Menu';
+            if(mode === 'PIES') document.getElementById('preorder-fields').classList.remove('hidden');
             loadMenu();
         };
 
@@ -128,71 +151,69 @@
             updateUI();
         };
 
+        window.changeQty = (name, delta) => {
+            cart[name].qty += delta;
+            if (cart[name].qty <= 0) delete cart[name];
+            updateUI();
+        };
+
         function updateUI() {
-            let total = 0, count = 0;
-            for (const id in cart) { total += cart[id].price * cart[id].qty; count += cart[id].qty; }
+            let total = 0;
+            const list = document.getElementById('cart-item-list');
+            list.innerHTML = "";
+            for (const name in cart) {
+                total += cart[name].price * cart[name].qty;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `<span>${name}</span>
+                    <div class="qty-controls">
+                        <button class="qty-btn" onclick="changeQty('${name}', -1)">-</button>
+                        <span>${cart[name].qty}</span>
+                        <button class="qty-btn" onclick="changeQty('${name}', 1)">+</button>
+                    </div>`;
+                list.appendChild(div);
+            }
             document.getElementById('total-price').innerText = total.toFixed(2);
-            document.getElementById('cart-bar').style.display = count > 0 ? 'block' : 'none';
+            document.getElementById('cart-bar').style.display = total > 0 ? 'block' : 'none';
         }
 
         window.submitOrder = async () => {
-            if (currentMode === 'PIES') {
-                const name = document.getElementById('cust-name').value;
-                const phone = document.getElementById('cust-phone').value;
-                if (!name || !phone) return alert("Please provide Name and Phone");
-            }
-
+            if (currentMode === 'PIES' && (!document.getElementById('cust-name').value || !document.getElementById('cust-phone').value)) return alert("Name/Phone required");
             const itemsArray = [];
-            for (const name in cart) {
-                for(let i=0; i<cart[name].qty; i++) itemsArray.push({ name, price: cart[name].price });
-            }
-
-            const orderData = {
+            for (const name in cart) { for(let i=0; i<cart[name].qty; i++) itemsArray.push({ name, price: cart[name].price }); }
+            const docRef = await addDoc(collection(db, "orders"), {
                 items: itemsArray,
                 status: "pending",
                 type: currentMode === 'PIES' ? "PRE-ORDER" : "PICKUP",
-                customer: currentMode === 'PIES' ? { 
-                    name: document.getElementById('cust-name').value,
-                    phone: document.getElementById('cust-phone').value,
-                    msg: document.getElementById('cust-note').value
-                } : null,
+                customer: currentMode === 'PIES' ? { name: document.getElementById('cust-name').value, phone: document.getElementById('cust-phone').value, msg: document.getElementById('cust-note').value } : null,
                 createdAt: serverTimestamp()
-            };
-
-            const docRef = await addDoc(collection(db, "orders"), orderData);
+            });
             window.location.href = `track.html?id=${docRef.id}`;
         };
 
         function loadMenu() {
-            onSnapshot(collection(db, "menu"), (snapshot) => {
+            onSnapshot(collection(db, "menu"), (snap) => {
                 const display = document.getElementById('menu-display');
                 const tabs = document.getElementById('cat-tabs');
                 display.innerHTML = ""; tabs.innerHTML = "";
-
                 const categories = {};
-                snapshot.forEach(docSnap => {
-                    const item = docSnap.data();
-                    const cat = item.category || "GENERAL";
-                    // Logic: If PIES mode, only show PIES. If MENU mode, show everything EXCEPT PIES.
-                    if (currentMode === 'PIES' && cat !== 'PIES') return;
-                    if (currentMode === 'MENU' && cat === 'PIES') return;
-
+                snap.forEach(d => {
+                    const item = d.data();
+                    const cat = item.category || "CHIPS";
+                    if ((currentMode === 'PIES' && cat !== 'PIES') || (currentMode === 'MENU' && cat === 'PIES')) return;
                     if (!categories[cat]) categories[cat] = [];
-                    categories[cat].push({ id: docSnap.id, ...item });
+                    categories[cat].push({ id: d.id, ...item });
                 });
-
-                Object.keys(categories).forEach(catName => {
-                    const section = document.createElement('div');
-                    section.id = `section-${catName}`;
-                    section.innerHTML = `<h2 style="font-family:'Playfair Display'; margin: 30px 0 15px;">${catName}</h2><div class="items-grid" id="grid-${catName}"></div>`;
-                    display.appendChild(section);
-
-                    categories[catName].forEach(item => {
+                Object.keys(categories).forEach(cat => {
+                    const sec = document.createElement('div');
+                    sec.innerHTML = `<h2 style="margin: 30px 0 15px; font-family:'Playfair Display';">${cat}</h2><div class="items-grid" id="grid-${cat}"></div>`;
+                    display.appendChild(sec);
+                    categories[cat].forEach(item => {
                         const card = document.createElement('div');
-                        card.className = `item-card ${item.is_available ? '' : 'sold-out'}`;
-                        card.innerHTML = `<div><div style="font-weight:500;">${item.name}</div><div style="color:var(--orange);">£${item.price.toFixed(2)}</div></div>
+                        card.className = `item-card ${item.is_available ? '' : 'btn-disabled'}`;
+                        card.innerHTML = `<div><div>${item.name}</div><div style="color:var(--orange)">£${item.price.toFixed(2)}</div></div>
                             <button class="add-btn" onclick="addToCart('${item.name.replace(/'/g, "\\'")}', ${item.price})">+</button>`;
-                        document.getElementById(`grid-${catName}`).appendChild(card);
+                        document.getElementById(`grid-${cat}`).appendChild(card);
                     });
                 });
             });
