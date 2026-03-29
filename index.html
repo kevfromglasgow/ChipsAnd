@@ -3,205 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChipsAnd Admin | Command Center</title>
+    <title>ChipsAnd | Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- PDF Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    
+
     <style>
-        :root { 
-            --orange: #F4712B; 
-            --bg: #0E0E0E; 
-            --surface: #161616; 
+        :root {
+            --orange: #F4712B;
+            --orange-dim: #c25a20;
+            --bg: #0E0E0E;
+            --surface: #161616;
             --surface-2: #1F1F1F;
-            --text: #F0EDE8; 
-            --muted: #888; 
-            --success: #27ae60;
-            --danger: #c0392b;
-            --border: rgba(255,255,255,0.08);
+            --surface-3: #252525;
+            --border: rgba(255,255,255,0.07);
+            --border-hover: rgba(244,113,43,0.35);
+            --text: #F0EDE8;
+            --muted: #888;
+            --green: #2ecc71;
+            --green-dim: #1a7a42;
+            --red: #e74c3c;
+            --red-dim: #8a1f1f;
+            --blue: #3498db;
         }
 
-        body { 
-            font-family: 'DM Sans', sans-serif; 
-            background: #f4f4f7; 
-            margin: 0; 
-            padding: 20px; 
-            color: #1a1a1a; 
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
 
-        .admin-container { max-width: 1100px; margin: 0 auto; }
-
-        /* HEADER SECTION */
-        header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 25px; 
-            background: var(--bg); 
-            color: white; 
-            padding: 24px 32px; 
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        }
-
-        .brand-name { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; }
-        .brand-name span { color: var(--orange); }
-
-        /* STATUS BAR */
-        .status-bar { 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            background: white; 
-            padding: 18px 24px; 
-            border-radius: 16px; 
-            margin-bottom: 25px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            border: 1px solid #eee;
-        }
-
-        .dot { width: 12px; height: 12px; border-radius: 50%; background: #ccc; }
-
-        /* TABS */
-        .tabs { display: flex; gap: 12px; margin-bottom: 30px; }
-        .tab-btn { 
-            flex: 1; 
-            padding: 18px; 
-            border: none; 
-            border-radius: 14px; 
-            cursor: pointer; 
-            font-weight: 700; 
-            background: #e2e8f0; 
-            color: #64748b; 
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .tab-btn.active { 
-            background: var(--orange); 
-            color: white; 
-            box-shadow: 0 8px 20px rgba(244,113,43,0.3);
-            transform: translateY(-2px);
-        }
-
-        /* ORDER CARDS */
-        .order-card { 
-            background: white; 
-            border-radius: 20px; 
-            padding: 25px; 
-            margin-bottom: 20px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
-            border: 1px solid #edf2f7; 
-            animation: fadeIn 0.4s ease;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .cust-data { 
-            background: #fff9f5; 
-            padding: 16px; 
-            border-radius: 12px; 
-            margin: 15px 0; 
-            border-left: 5px solid var(--orange);
-        }
-
-        .item-list { margin: 15px 0; padding-left: 20px; font-weight: 500; font-size: 1.1rem; }
-
-        /* BUTTONS */
-        .btn { 
-            padding: 14px 24px; 
-            border: none; 
-            border-radius: 12px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            transition: 0.2s; 
+        body {
             font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
         }
-        .btn-ready { width: 100%; background: var(--success); color: white; font-size: 1rem; margin-top: 10px; }
-        .btn-ready:hover { filter: brightness(1.1); }
-        .btn-pdf { background: #334155; color: white; width: 100%; margin-bottom: 25px; font-size: 1rem; }
 
-        /* SETTINGS SECTION */
-        .settings-card { background: white; padding: 30px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        .menu-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f0f0f0; }
-        
-        input, select { 
-            width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 10px; 
-            border: 1px solid #e2e8f0; background: #fff; color: #1a1a1a; font-size: 1rem;
+        /* ── LOGIN ───────────────────────────────── */
+        #login-gate {
+            position: fixed; inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+        .login-wrap {
+            width: 100%;
+            max-width: 380px;
+            padding: 24px;
+        }
+
+        .login-eyebrow { font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; color: var(--orange); margin-bottom: 10px; }
+        .login-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 900; margin-bottom: 36px; line-height: 1.1; }
+        .login-title em { font-style: italic; color: var(--orange); }
+
+        .field { margin-bottom: 14px; }
+        .field label { display: block; font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+        .field input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; color: var(--text); padding: 14px 16px; outline: none; }
+        .field input:focus { border-color: var(--orange); }
+
+        .login-btn { width: 100%; margin-top: 8px; padding: 16px; background: var(--orange); border: none; border-radius: 12px; color: white; font-weight: 500; cursor: pointer; }
+
+        /* ── LAYOUT ──────────────────────────────── */
+        #admin-content { display: none; }
+        .app-header { background: rgba(14,14,14,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 800; }
+        .brand-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 900; }
+        .brand-name span { color: var(--orange); }
+        .brand-tag { font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+
+        .logout-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); font-size: 0.78rem; letter-spacing: 1px; text-transform: uppercase; padding: 10px 18px; border-radius: 10px; cursor: pointer; }
+        .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+        /* ── STATUS BAR ───────────────────── */
+        .status-bar { margin: 28px 32px 0; border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; border: 1px solid; }
+        .status-bar.open { background: rgba(46,204,113,0.08); border-color: rgba(46,204,113,0.25); }
+        .status-bar.closed { background: rgba(231,76,60,0.08); border-color: rgba(231,76,60,0.25); }
+        .status-label { font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+        .status-value { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .open .status-dot { background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 2s infinite; }
+        .closed .status-dot { background: var(--red); box-shadow: 0 0 10px var(--red); }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+        .toggle-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); font-size: 0.8rem; padding: 12px 20px; border-radius: 10px; cursor: pointer; }
+
+        /* ── TABS ────────────────────────────────── */
+        .tab-nav { display: flex; margin: 28px 32px 0; border-bottom: 1px solid var(--border); }
+        .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; color: var(--muted); font-size: 0.78rem; letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 22px; cursor: pointer; }
+        .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+        /* ── CONTENT AREA ────────────────────────── */
+        .content-area { padding: 28px 32px; max-width: 960px; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── CARDS / ORDERS ────────────────────── */
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+        .card-title { font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
+        .order-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 14px; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .order-id { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; }
+        .order-type { font-size: 0.68rem; text-transform: uppercase; color: var(--muted); background: var(--surface-3); padding: 4px 10px; border-radius: 20px; }
+        .cust-box { background: rgba(244,113,43,0.05); border: 1px solid rgba(244,113,43,0.1); border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 0.9rem; }
+        
+        .order-items { list-style: none; margin-bottom: 16px; }
+        .order-items li { font-size: 0.9rem; padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+        .order-items li::before { content: '—'; color: var(--orange); font-size: 0.7rem; }
+
+        .btn { font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.8rem; padding: 11px 18px; border-radius: 10px; border: none; cursor: pointer; }
+        .btn-primary { background: var(--orange); color: white; }
+        .btn-ready { background: var(--green); color: white; width: 100%; }
+        .btn-danger { background: none; color: var(--red); font-size: 0.75rem; cursor: pointer; }
+        .btn-ghost { background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); }
+        .btn-pdf { background: #34495e; color: white; width: 100%; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* ── INVENTORY ───────────────────────────── */
+        .menu-item-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border); gap: 16px; }
+        .menu-item-info { flex: 1; }
+        .menu-item-name { font-weight: 500; font-size: 0.95rem; margin-bottom: 3px; }
+        .menu-item-meta { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+        .menu-item-price { color: var(--orange); font-weight: 500; }
+        .menu-item-cat { background: var(--surface-3); padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; text-transform: uppercase; }
+        .stock-toggle { font-size: 0.72rem; text-transform: uppercase; padding: 7px 14px; border-radius: 20px; border: 1px solid; cursor: pointer; }
+        .stock-toggle.in-stock { background: rgba(46,204,113,0.1); color: var(--green); border-color: rgba(46,204,113,0.3); }
+        .stock-toggle.sold-out { background: rgba(231,76,60,0.1); color: var(--red); border-color: rgba(231,76,60,0.3); }
+
+        .add-form { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .add-form input, .add-form select { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); padding: 13px 16px; outline: none; }
 
         .hidden { display: none !important; }
-        
-        #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-        .login-box { background: var(--surface); padding: 50px; border-radius: 30px; text-align: center; color: white; width: 90%; max-width: 400px; }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN GATE -->
+    <!-- LOGIN -->
     <div id="login-gate">
-        <div class="login-box">
-            <h1 class="brand-name" style="font-size: 2.2rem; margin-bottom: 10px;">Chips<span>&</span></h1>
-            <p style="color:var(--muted); margin-bottom: 30px;">Dundee Admin Portal</p>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="pass" placeholder="Password">
-            <button class="btn" id="login-btn" style="width:100%; background:var(--orange); color:white;">Access Dashboard</button>
+        <div class="login-wrap">
+            <p class="login-eyebrow">Staff Access</p>
+            <h1 class="login-title">ChipsAnd<br><em>Admin.</em></h1>
+            <form onsubmit="event.preventDefault(); handleLogin();">
+                <div class="field">
+                    <label>Email</label>
+                    <input type="email" id="admin-email" placeholder="you@chipsand.co.uk" required>
+                </div>
+                <div class="field">
+                    <label>Password</label>
+                    <input type="password" id="admin-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="login-btn">Sign In →</button>
+            </form>
         </div>
     </div>
 
-    <!-- MAIN ADMIN CONTENT -->
-    <div id="admin-content" class="hidden">
-        <div class="admin-container">
-            <header>
-                <div class="brand-name">Chips<span>&</span> Admin</div>
-                <button id="logout-btn" class="btn" style="background:rgba(255,255,255,0.1); color:white; border: 1px solid rgba(255,255,255,0.2);">Logout</button>
-            </header>
-
-            <div class="status-bar">
-                <div id="status-dot" class="dot"></div>
-                <div style="flex:1"><strong id="status-text" style="text-transform: uppercase; letter-spacing: 1px;">Checking...</strong></div>
-                <button class="btn" id="toggle-truck-btn" style="background:#f1f5f9; color:#475569; border: 1px solid #e2e8f0;">Toggle Shop Status</button>
+    <!-- ADMIN CONTENT -->
+    <div id="admin-content">
+        <header class="app-header">
+            <div>
+                <div class="brand-name">Chips<span>&</span></div>
+                <div class="brand-tag">Manager Panel</div>
             </div>
+            <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
+        </header>
 
-            <div class="tabs">
-                <button class="tab-btn active" id="tab-live-btn">🍟 Menu Orders</button>
-                <button class="tab-btn" id="tab-pies-btn">🥧 Pie Batch</button>
-                <button class="tab-btn" id="tab-settings-btn">⚙️ Settings</button>
+        <div class="status-bar open" id="master-panel">
+            <div>
+                <div class="status-label">Shop Status</div>
+                <div class="status-value"><span class="status-dot"></span><span id="status-text">Open for Orders</span></div>
             </div>
+            <button class="toggle-btn" onclick="toggleMasterStatus()">Toggle Status</button>
+        </div>
 
+        <nav class="tab-nav">
+            <button class="tab-btn active" onclick="showTab('live', this)">Live Menu Orders</button>
+            <button class="tab-btn" onclick="showTab('pies', this)">Pie Batch</button>
+            <button class="tab-btn" onclick="showTab('menu', this)">Inventory</button>
+        </nav>
+
+        <div class="content-area">
             <!-- TAB: LIVE ORDERS -->
-            <div id="tab-live" class="tab-pane">
-                <div id="live-list">Connecting to live feed...</div>
+            <div id="tab-live" class="tab-panel active">
+                <div id="orders-list"></div>
             </div>
 
             <!-- TAB: PIE BATCH -->
-            <div id="tab-pies" class="tab-pane hidden">
-                <button class="btn btn-pdf" id="pdf-gen-btn">📄 Download PDF Production Sheet</button>
-                <div id="pie-list">No pre-orders found.</div>
+            <div id="tab-pies" class="tab-panel">
+                <button class="btn btn-pdf" onclick="generatePiePDF()">📄 Download PDF Prep Sheet</button>
+                <div id="pie-list"></div>
             </div>
 
-            <!-- TAB: SETTINGS -->
-            <div id="tab-settings" class="tab-pane hidden">
-                <div class="settings-card">
-                    <h3 style="margin-top:0; margin-bottom:20px;">➕ Add New Menu Item</h3>
-                    <input type="text" id="new-name" placeholder="Item Name">
-                    <input type="number" id="new-price" placeholder="Price (£)">
-                    <select id="new-cat">
-                        <option value="CHIPS">CHIPS</option>
-                        <option value="PIES">PIES</option>
-                        <option value="TOASTIES">TOASTIES</option>
-                        <option value="PASTA POTS">PASTA POTS</option>
-                        <option value="SIDES">SIDES</option>
-                        <option value="DRINKS">DRINKS</option>
-                    </select>
-                    <button class="btn" id="add-item-btn" style="width:100%; background:var(--orange); color:white;">Save Item to Database</button>
+            <!-- TAB: INVENTORY -->
+            <div id="tab-menu" class="tab-panel">
+                <div class="card">
+                    <div class="card-title">Add New Item</div>
+                    <div class="add-form">
+                        <input type="text" id="new-item-name" placeholder="Item name">
+                        <input type="number" id="new-item-price" placeholder="Price" step="0.01">
+                        <select id="new-item-category">
+                            <option value="CHIPS">Chips</option>
+                            <option value="PIES">Pies</option>
+                            <option value="TOASTIES">Toasties</option>
+                            <option value="PASTA POTS">Pasta Pots</option>
+                            <option value="SIDES">Sides</option>
+                            <option value="DRINKS">Drinks</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="addNewItem()">Add to Menu</button>
                 </div>
-                
-                <div class="settings-card">
-                    <h3 style="margin-top:0; margin-bottom:20px;">📜 Current Inventory</h3>
-                    <div id="inventory-list"></div>
-                </div>
+                <div class="card"><div class="card-title">Current Menu</div><div id="menu-list"></div></div>
             </div>
         </div>
     </div>
@@ -209,112 +218,116 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, orderBy, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, collection, query, where, orderBy, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- AUTH LOGIC ---
-        document.getElementById('login-btn').addEventListener('click', () => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
-            signInWithEmailAndPassword(auth, email, pass).catch(err => alert("Login Error: " + err.message));
-        });
-
-        document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+        // --- AUTH ---
+        window.handleLogin = () => {
+            const e = document.getElementById('admin-email').value;
+            const p = document.getElementById('admin-password').value;
+            signInWithEmailAndPassword(auth, e, p).catch(() => alert("Access Denied"));
+        };
+        window.handleLogout = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
-            // EMERGENCY ACCESS OVERRIDE
-            document.getElementById('login-gate').classList.add('hidden');
-            document.getElementById('admin-content').classList.remove('hidden');
-            startAdmin();
+            // EMERGENCY ACCESS OVERRIDE - If quota still hit, use lines below:
+            // document.getElementById('login-gate').style.display = 'none'; document.getElementById('admin-content').style.display = 'block';
+            if (user) {
+                document.getElementById('login-gate').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                initDashboard();
+            } else {
+                document.getElementById('login-gate').style.display = 'flex';
+                document.getElementById('admin-content').style.display = 'none';
+            }
         });
 
-        function startAdmin() {
-            // Status Toggle Listener
+        function initDashboard() {
+            // Status
             onSnapshot(doc(db, "settings", "truck_status"), (s) => {
                 const closed = s.data()?.is_closed;
-                window.truckClosed = closed;
-                document.getElementById('status-dot').style.background = closed ? 'var(--danger)' : 'var(--success)';
-                document.getElementById('status-text').innerText = closed ? 'Status: Closed' : 'Status: Accepting Orders';
+                window.masterClosed = closed;
+                document.getElementById('master-panel').className = `status-bar ${closed ? 'closed' : 'open'}`;
+                document.getElementById('status-text').innerText = closed ? 'Closed for Orders' : 'Open for Orders';
             });
 
-            // Orders Listener
+            // Orders
             onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc")), (snap) => {
-                const live = document.getElementById('live-list');
+                const live = document.getElementById('orders-list');
                 const pie = document.getElementById('pie-list');
                 live.innerHTML = ""; pie.innerHTML = "";
                 
-                if(snap.empty) { live.innerHTML = "<p style='text-align:center; padding:40px; color:#999;'>No pending orders.</p>"; }
-
                 snap.forEach(d => {
                     const data = d.data();
                     const card = document.createElement('div');
                     card.className = 'order-card';
+                    const cust = data.customer;
                     card.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.7rem; color:#94a3b8; font-weight:bold; letter-spacing:1px;">#${d.id.slice(-6).toUpperCase()}</span>
-                            <span style="font-size:0.65rem; padding:4px 8px; border-radius:6px; background:#f1f5f9; font-weight:700;">${data.type}</span>
+                        <div class="order-header">
+                            <div class="order-id">#${d.id.slice(-4).toUpperCase()}</div>
+                            <div class="order-type">${data.type}</div>
                         </div>
-                        ${data.customer ? `
-                            <div class="cust-data">
-                                <strong style="font-size:1.1rem; color:#1e293b;">${data.customer.name}</strong><br>
-                                <a href="tel:${data.customer.phone}" style="color:var(--orange); text-decoration:none; font-weight:bold;">📞 ${data.customer.phone}</a>
-                                ${data.customer.msg ? `<p style="margin:10px 0 0; padding-top:10px; border-top:1px solid #f9731633; font-style:italic; font-size:0.9rem;">"${data.customer.msg}"</p>` : ''}
-                            </div>
-                        ` : '<div style="margin:15px 0; font-weight:700;">Live Menu Selection:</div>'}
-                        <ul class="item-list">${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul>
-                        <button class="btn btn-ready" data-id="${d.id}">MARK AS READY</button>
+                        ${cust ? `<div class="cust-box"><strong>${cust.name}</strong> • ${cust.phone}<br><small>${cust.msg || ''}</small></div>` : ''}
+                        <ul class="order-items">${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul>
+                        <button class="btn btn-ready" onclick="markOrderReady('${d.id}')">MARK READY</button>
                     `;
                     data.type === 'PRE-ORDER' ? pie.appendChild(card) : live.appendChild(card);
                 });
             });
 
-            // Inventory Listener
+            // Inventory
             onSnapshot(collection(db, "menu"), (snap) => {
-                const list = document.getElementById('inventory-list');
+                const list = document.getElementById('menu-list');
                 list.innerHTML = "";
                 snap.forEach(d => {
                     const item = d.data();
                     const row = document.createElement('div');
-                    row.className = 'menu-row';
+                    row.className = 'menu-item-row';
                     row.innerHTML = `
-                        <div><strong>${item.name}</strong> <span style="color:var(--orange); margin-left:10px;">£${item.price.toFixed(2)}</span></div>
-                        <button class="btn btn-del" data-id="${d.id}" style="background:none; color:var(--danger); padding:5px; font-size:1.2rem;">🗑️</button>
+                        <div class="menu-item-info">
+                            <div class="menu-item-name">${item.name}</div>
+                            <div class="menu-item-meta">
+                                <span class="menu-item-price">£${item.price.toFixed(2)}</span>
+                                <span class="menu-item-cat">${item.category}</span>
+                            </div>
+                        </div>
+                        <div class="menu-item-actions">
+                            <button class="stock-toggle ${item.is_available ? 'in-stock' : 'sold-out'}" onclick="toggleStock('${d.id}', ${item.is_available})">
+                                ${item.is_available ? 'In Stock' : 'Sold Out'}
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteItem('${d.id}')">Remove</button>
+                        </div>
                     `;
                     list.appendChild(row);
                 });
             });
         }
 
-        // --- INTERACTION LOGIC ---
-        document.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('btn-ready')) {
-                const id = e.target.dataset.id;
-                e.target.innerText = "UPDATING...";
-                await updateDoc(doc(db, "orders", id), { status: "ready" });
-            }
-            if (e.target.classList.contains('btn-del')) {
-                if(confirm("Delete this item permanently?")) await deleteDoc(doc(db, "menu", e.target.dataset.id));
-            }
-        });
+        // --- ACTIONS ---
+        window.showTab = (name, btn) => {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${name}`).classList.add('active');
+            btn.classList.add('active');
+        };
 
-        document.getElementById('toggle-truck-btn').addEventListener('click', async () => {
-            await updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window.truckClosed });
-        });
+        window.toggleMasterStatus = async () => await updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window.masterClosed });
+        window.markOrderReady = async (id) => await updateDoc(doc(db, "orders", id), { status: "ready" });
+        window.toggleStock = async (id, cur) => await updateDoc(doc(db, "menu", id), { is_available: !cur });
+        window.deleteItem = async (id) => { if(confirm("Remove item?")) await deleteDoc(doc(db, "menu", id)); };
+        
+        window.addNewItem = async () => {
+            const name = document.getElementById('new-item-name').value;
+            const price = parseFloat(document.getElementById('new-item-price').value);
+            const cat = document.getElementById('new-item-category').value;
+            await addDoc(collection(db, "menu"), { name, price, category: cat, is_available: true });
+        };
 
-        document.getElementById('add-item-btn').addEventListener('click', async () => {
-            const name = document.getElementById('new-name').value;
-            const price = parseFloat(document.getElementById('new-price').value);
-            const category = document.getElementById('new-cat').value;
-            if(!name || !price) return alert("Enter name and price!");
-            await addDoc(collection(db, "menu"), { name, price, category, is_available: true });
-            document.getElementById('new-name').value = ""; document.getElementById('new-price').value = "";
-        });
-
-        document.getElementById('pdf-gen-btn').addEventListener('click', async () => {
+        window.generatePiePDF = async () => {
             const { jsPDF } = window.jspdf;
             const docPDF = new jsPDF();
             const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
@@ -323,23 +336,10 @@
                 const data = d.data();
                 rows.push([data.customer.name, data.customer.phone, data.items.map(i => i.name).join(", "), data.customer.msg || '-']);
             });
-            docPDF.setFontSize(18);
-            docPDF.text("ChipsAnd | Pie Production Report", 14, 20);
-            docPDF.autoTable({ startY: 28, head: [['Customer', 'Phone', 'Items', 'Notes']], body: rows, headStyles: { fillColor: [244, 113, 43] } });
-            docPDF.save(`Pie_Production_${new Date().toLocaleDateString()}.pdf`);
-        });
-
-        // Tabs
-        const tabs = ['live', 'pies', 'settings'];
-        tabs.forEach(t => {
-            document.getElementById(`tab-${t}-btn`).addEventListener('click', (e) => {
-                document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
-                document.getElementById(`tab-${t}`).classList.remove('hidden');
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-            });
-        });
-
+            docPDF.text("Pie Batch Prep Sheet", 14, 15);
+            docPDF.autoTable({ startY: 20, head: [['Customer', 'Phone', 'Pies', 'Notes']], body: rows, headStyles: { fillColor: [244, 113, 43] } });
+            docPDF.save("Pie_Report.pdf");
+        };
     </script>
 </body>
 </html>
