@@ -3,519 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track Order | ChipsAnd</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
+    <title>Track My Order | ChipsAnd</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --orange: #F4712B;
-            --bg: #0E0E0E;
-            --surface: #161616;
-            --surface-2: #1F1F1F;
-            --border: rgba(255,255,255,0.07);
-            --text: #F0EDE8;
-            --muted: #888;
-            --green: #2ecc71;
-            --red: #e74c3c;
-            --amber: #f39c12;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* ── HEADER ─────────────────────────────── */
-        header {
-            padding: 28px 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            background: rgba(14,14,14,0.95);
-            backdrop-filter: blur(16px);
-        }
-
-        .brand-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            font-weight: 900;
-            letter-spacing: -0.5px;
-            color: var(--text);
-        }
-
+        :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --text: #F0EDE8; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); text-align: center; padding: 60px 20px; }
+        .track-card { background: var(--surface); border: 1px solid rgba(255,255,255,0.1); padding: 40px 20px; border-radius: 24px; max-width: 450px; margin: 0 auto; }
+        .brand-name { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 30px; }
         .brand-name span { color: var(--orange); }
-
-        .brand-sub {
-            font-size: 0.72rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--muted);
-            font-weight: 300;
-            margin-top: 2px;
-        }
-
-        .back-link {
-            font-size: 0.78rem;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--muted);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: color 0.2s;
-        }
-
-        .back-link:hover { color: var(--orange); }
-
-        /* ── MAIN ────────────────────────────────── */
-        main {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 24px;
-        }
-
-        .track-wrap {
-            width: 100%;
-            max-width: 480px;
-            animation: fadeUp 0.5s ease both;
-        }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ── EYEBROW / TITLE ─────────────────────── */
-        .track-eyebrow {
-            font-size: 0.68rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--orange);
-            margin-bottom: 10px;
-        }
-
-        .track-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.4rem;
-            font-weight: 900;
-            line-height: 1.05;
-            margin-bottom: 6px;
-        }
-
-        .track-title em {
-            font-style: italic;
-            color: var(--orange);
-        }
-
-        .order-ref {
-            font-size: 0.78rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 40px;
-        }
-
-        /* ── STATUS CARD ─────────────────────────── */
-        .status-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 32px;
-            margin-bottom: 16px;
-            transition: border-color 0.4s;
-        }
-
-        .status-card.is-ready {
-            border-color: rgba(46,204,113,0.3);
-            background: rgba(46,204,113,0.04);
-        }
-
-        .status-card.is-cancelled {
-            border-color: rgba(231,76,60,0.3);
-            background: rgba(231,76,60,0.04);
-        }
-
-        /* Status indicator row */
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 28px;
-        }
-
-        .status-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            background: var(--surface-2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            flex-shrink: 0;
-        }
-
-        .status-label {
-            font-size: 0.68rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 4px;
-        }
-
-        .status-value {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .status-value.cooking { color: var(--amber); }
-        .status-value.ready   { color: var(--green); }
-        .status-value.cancelled { color: var(--red); }
-
-        /* Live dot */
-        .live-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.72rem;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        .live-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-        }
-
-        .live-dot.cooking {
-            background: var(--amber);
-            box-shadow: 0 0 8px var(--amber);
-            animation: pulse 1.5s infinite;
-        }
-
-        .live-dot.ready {
-            background: var(--green);
-            box-shadow: 0 0 8px var(--green);
-            animation: pulse 1.5s infinite;
-        }
-
-        .live-dot.cancelled {
-            background: var(--red);
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        /* Progress steps */
-        .progress-steps {
-            display: flex;
-            align-items: center;
-            gap: 0;
-            margin-top: 28px;
-        }
-
-        .step {
-            flex: 1;
-            text-align: center;
-        }
-
-        .step-dot {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px solid var(--border);
-            background: var(--surface-2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 8px;
-            font-size: 0.85rem;
-            transition: border-color 0.4s, background 0.4s;
-        }
-
-        .step-dot.done {
-            border-color: var(--green);
-            background: rgba(46,204,113,0.15);
-        }
-
-        .step-dot.active {
-            border-color: var(--amber);
-            background: rgba(243,156,18,0.15);
-            animation: pulse 1.5s infinite;
-        }
-
-        .step-label {
-            font-size: 0.65rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        .step-label.done { color: var(--green); }
-        .step-label.active { color: var(--amber); }
-
-        .step-line {
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-            margin-bottom: 28px;
-            transition: background 0.4s;
-        }
-
-        .step-line.done { background: rgba(46,204,113,0.4); }
-
-        /* ── NOTE CARD ───────────────────────────── */
-        .note-card {
-            background: var(--surface);
-            border: 1px solid rgba(244,113,43,0.2);
-            border-left: 3px solid var(--orange);
-            border-radius: 14px;
-            padding: 20px 24px;
-            margin-bottom: 16px;
-            animation: fadeUp 0.3s ease both;
-        }
-
-        .note-label {
-            font-size: 0.65rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--orange);
-            margin-bottom: 8px;
-        }
-
-        .note-text {
-            font-size: 0.95rem;
-            color: var(--text);
-            font-weight: 300;
-            line-height: 1.5;
-        }
-
-        /* ── FOOTER NOTE ─────────────────────────── */
-        .footer-note {
-            text-align: center;
-            font-size: 0.78rem;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        /* ── LOADING STATE ───────────────────────── */
-        .connecting {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.8rem;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        .connecting-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: var(--muted);
-            animation: blink 1.2s infinite;
-        }
-
-        .connecting-dot:nth-child(2) { animation-delay: 0.2s; }
-        .connecting-dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes blink {
-            0%, 80%, 100% { opacity: 0.2; }
-            40% { opacity: 1; }
-        }
-
-        .hidden { display: none !important; }
-
-        @media (max-width: 480px) {
-            header { padding: 20px; }
-            .track-title { font-size: 2rem; }
-        }
+        
+        /* Status Badges */
+        .status-badge { display: inline-block; padding: 15px 30px; border-radius: 40px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin: 20px 0; font-size: 1.1rem; }
+        
+        .pending-pickup { background: rgba(244,113,43,0.15); color: var(--orange); border: 1px solid var(--orange); animation: pulse 2s infinite; }
+        .pending-preorder { background: rgba(52, 152, 219, 0.15); color: #3498db; border: 1px solid #3498db; }
+        .ready { background: #2ecc71; color: white; box-shadow: 0 0 20px rgba(46, 204, 113, 0.4); }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        .nav-btn { background: none; border: 1px solid #444; color: #888; padding: 12px 24px; border-radius: 12px; cursor: pointer; margin-top: 40px; transition: 0.3s; font-family: 'DM Sans', sans-serif; }
+        .nav-btn:hover { border-color: var(--orange); color: var(--orange); }
     </style>
 </head>
 <body>
 
-    <header>
-        <div>
-            <div class="brand-name">Chips<span>&</span></div>
-            <div class="brand-sub">Dundee Street Food</div>
+    <div class="brand-name">Chips<span>&</span></div>
+
+    <div class="track-card">
+        <div id="order-id" style="color: var(--orange); font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 10px;">CONNECTING...</div>
+        <h2 style="font-family: 'Playfair Display'; font-size: 1.8rem; margin-bottom: 10px;">Order Status</h2>
+        
+        <div id="status-container">
+            <div class="status-badge" style="color:#444">Locating Order...</div>
         </div>
-        <a href="index.html" class="back-link">← Menu</a>
-    </header>
 
-    <main>
-        <div class="track-wrap">
-            <p class="track-eyebrow">Live Tracking</p>
-            <h1 class="track-title">Your order<br>has <em>been received.</em></h1>
-            <p class="order-ref" id="track-id-display">
-                <span class="connecting">
-                    <span class="connecting-dot"></span>
-                    <span class="connecting-dot"></span>
-                    <span class="connecting-dot"></span>
-                    Connecting
-                </span>
-            </p>
-
-            <div class="status-card" id="status-card">
-                <div class="status-indicator">
-                    <div class="status-icon" id="status-icon">⏳</div>
-                    <div>
-                        <div class="status-label">Status</div>
-                        <div class="status-value cooking" id="status-value">Waiting…</div>
-                    </div>
-                </div>
-
-                <div class="live-row">
-                    <span class="live-dot cooking" id="live-dot"></span>
-                    <span id="live-label">Live update</span>
-                </div>
-
-                <div class="progress-steps" id="progress-steps">
-                    <div class="step">
-                        <div class="step-dot done" id="step-placed">✓</div>
-                        <div class="step-label done">Placed</div>
-                    </div>
-                    <div class="step-line" id="line-1"></div>
-                    <div class="step">
-                        <div class="step-dot active" id="step-cooking">🍳</div>
-                        <div class="step-label active" id="step-cooking-label">Cooking</div>
-                    </div>
-                    <div class="step-line" id="line-2"></div>
-                    <div class="step">
-                        <div class="step-dot" id="step-ready">○</div>
-                        <div class="step-label" id="step-ready-label">Ready</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="note-card hidden" id="note-card">
-                <div class="note-label">Note from the truck</div>
-                <div class="note-text" id="note-text"></div>
-            </div>
-
-            <p class="footer-note">This page updates in real time.<br>We'll let you know when it's time to collect.</p>
+        <div id="order-details-msg" style="color: #888; font-size: 0.9rem; margin-top: 20px; line-height: 1.4;">
+            Keep this page open. We'll update you as soon as your order is ready for collection.
         </div>
-    </main>
+        
+        <button class="nav-btn" onclick="window.location.href='index.html'">Return to Home</button>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", 
+            authDomain: "chipsand-13831.firebaseapp.com", 
+            projectId: "chipsand-13831", 
+            storageBucket: "chipsand-13831.firebasestorage.app", 
+            messagingSenderId: "105749630976", 
+            appId: "1:105749630976:web:038ab2c3ce81612064c8e5" 
+        };
+        
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
         const params = new URLSearchParams(window.location.search);
         const orderId = params.get('id');
 
-        const idDisplay    = document.getElementById('track-id-display');
-        const statusCard   = document.getElementById('status-card');
-        const statusIcon   = document.getElementById('status-icon');
-        const statusValue  = document.getElementById('status-value');
-        const liveDot      = document.getElementById('live-dot');
-        const liveLabel    = document.getElementById('live-label');
-        const stepCooking  = document.getElementById('step-cooking');
-        const stepCookingLabel = document.getElementById('step-cooking-label');
-        const stepReady    = document.getElementById('step-ready');
-        const stepReadyLabel = document.getElementById('step-ready-label');
-        const line1        = document.getElementById('line-1');
-        const line2        = document.getElementById('line-2');
-        const noteCard     = document.getElementById('note-card');
-        const noteText     = document.getElementById('note-text');
-
-        if (!orderId) {
-            idDisplay.textContent = 'No order ID found.';
-        } else {
-            idDisplay.textContent = `Order #${orderId.slice(-4).toUpperCase()}`;
-
+        if (orderId) {
+            document.getElementById('order-id').innerText = `ORDER ID: #${orderId.slice(-6).toUpperCase()}`;
+            
             onSnapshot(doc(db, "orders", orderId), (docSnap) => {
+                const container = document.getElementById('status-container');
+                const msgBox = document.getElementById('order-details-msg');
+
                 if (!docSnap.exists()) {
-                    statusIcon.textContent = '❌';
-                    statusValue.className = 'status-value cancelled';
-                    statusValue.textContent = 'Order not found';
-                    liveDot.className = 'live-dot cancelled';
-                    liveLabel.textContent = 'No data';
-                    statusCard.className = 'status-card is-cancelled';
+                    container.innerHTML = `<div class="status-badge" style="color:#666">Order Not Found</div>`;
                     return;
                 }
 
                 const data = docSnap.data();
+                const isPreOrder = data.type === 'PRE-ORDER';
                 const status = data.status || 'pending';
-                const note = data.note || '';
 
                 if (status === 'pending') {
-                    statusIcon.textContent = '👨‍🍳';
-                    statusValue.className = 'status-value cooking';
-                    statusValue.textContent = 'Cooking Now';
-                    liveDot.className = 'live-dot cooking';
-                    liveLabel.textContent = 'Live — updates automatically';
-                    statusCard.className = 'status-card';
-
-                    // Progress: placed ✓, cooking active, ready pending
-                    stepCooking.className = 'step-dot active';
-                    stepCooking.textContent = '🍳';
-                    stepCookingLabel.className = 'step-label active';
-                    stepReady.className = 'step-dot';
-                    stepReady.textContent = '○';
-                    stepReadyLabel.className = 'step-label';
-                    line1.className = 'step-line done';
-                    line2.className = 'step-line';
-                }
-
-                if (status === 'ready') {
-                    statusIcon.textContent = '✅';
-                    statusValue.className = 'status-value ready';
-                    statusValue.textContent = 'Ready for Collection';
-                    liveDot.className = 'live-dot ready';
-                    liveLabel.textContent = 'Come and collect your order!';
-                    statusCard.className = 'status-card is-ready';
-
-                    // Progress: all done
-                    stepCooking.className = 'step-dot done';
-                    stepCooking.textContent = '✓';
-                    stepCookingLabel.className = 'step-label done';
-                    stepReady.className = 'step-dot done';
-                    stepReady.textContent = '✓';
-                    stepReadyLabel.className = 'step-label done';
-                    line1.className = 'step-line done';
-                    line2.className = 'step-line done';
-
-                    // Chirp on ready
-                    try { new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3').play(); } catch(e) {}
-                }
-
-                if (status === 'cancelled') {
-                    statusIcon.textContent = '❌';
-                    statusValue.className = 'status-value cancelled';
-                    statusValue.textContent = 'Order Cancelled';
-                    liveDot.className = 'live-dot cancelled';
-                    liveLabel.textContent = 'This order has been cancelled';
-                    statusCard.className = 'status-card is-cancelled';
-                }
-
-                // Note
-                if (note) {
-                    noteText.textContent = note;
-                    noteCard.classList.remove('hidden');
-                } else {
-                    noteCard.classList.add('hidden');
+                    if (isPreOrder) {
+                        container.innerHTML = `<div class="status-badge pending-preorder">📅 Order Confirmed</div>`;
+                        msgBox.innerText = "Your pre-order is logged in our system. We will see you at the truck for collection!";
+                    } else {
+                        container.innerHTML = `<div class="status-badge pending-pickup">👨‍🍳 Cooking Now</div>`;
+                        msgBox.innerText = "Our team is preparing your fresh order. It won't be long now!";
+                    }
+                } else if (status === 'ready') {
+                    container.innerHTML = `<div class="status-badge ready">✅ Ready for Collection!</div>`;
+                    msgBox.innerHTML = "<strong style='color:#2ecc71'>Your order is ready!</strong> Please head to the truck and show this screen.";
+                    
+                    // Trigger haptic feedback for mobile devices
+                    if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
                 }
             });
+        } else {
+            document.getElementById('order-id').innerText = "ERROR: NO ID";
         }
     </script>
 </body>
