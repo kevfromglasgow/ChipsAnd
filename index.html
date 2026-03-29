@@ -28,40 +28,18 @@
         input:focus, select:focus { outline: none; border-color: var(--orange); }
         .hidden { display: none !important; }
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-
-        /* Inventory list */
-        .menu-item-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
-            background: var(--surface-2); border-radius: 8px; margin-bottom: 6px;
-        }
-        .menu-item-row:last-child { border-bottom: none; }
+        .menu-item-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); background: var(--surface-2); border-radius: 8px; margin-bottom: 6px; }
         .item-move-btns { display: flex; flex-direction: column; gap: 2px; margin-right: 12px; }
-        .move-btn {
-            background: rgba(255,255,255,0.07); border: none; color: var(--muted);
-            width: 24px; height: 20px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .move-btn:hover { background: var(--orange); color: white; }
+        .move-btn { background: rgba(255,255,255,0.07); border: none; color: var(--muted); width: 24px; height: 20px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
+        .move-btn:hover:not(:disabled) { background: var(--orange); color: white; }
         .move-btn:disabled { opacity: 0.2; cursor: default; }
-
         .cat-section { margin-bottom: 24px; }
-        .cat-section-header {
-            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;
-            color: var(--orange); margin-bottom: 10px; padding: 0 4px;
-        }
-
+        .cat-section-header { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--orange); margin-bottom: 10px; padding: 0 4px; }
         .order-actions { display: flex; gap: 8px; margin-top: 12px; }
         .customer-info { background: rgba(255,255,255,0.04); padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 0.9rem; }
         .order-items { list-style: none; margin: 8px 0; font-size: 0.9rem; color: var(--muted); }
         .order-items li::before { content: "· "; color: var(--orange); }
-
-        /* Category management */
-        .cat-tag {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: var(--surface-2); border: 1px solid rgba(255,255,255,0.1);
-            padding: 6px 12px; border-radius: 20px; margin: 4px;
-        }
+        .cat-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 20px; margin: 4px; }
         .cat-tag-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; padding: 0; line-height: 1; }
     </style>
 </head>
@@ -113,7 +91,6 @@
             </div>
 
             <div id="tab-menu" class="tab-panel hidden">
-                <!-- Category Management -->
                 <div class="card" style="margin-bottom:16px;">
                     <h3 style="margin-bottom:14px;">Manage Categories</h3>
                     <div id="cat-tags-list" style="margin-bottom:12px;"></div>
@@ -122,21 +99,15 @@
                         <button class="btn btn-primary" onclick="addCategory()">Add Category</button>
                     </div>
                 </div>
-
-                <!-- Add Item -->
                 <div class="card">
                     <h3 style="margin-bottom:14px;">Add Menu Item</h3>
                     <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
                         <input type="text" id="new-name" placeholder="Item name">
                         <input type="number" id="new-price" placeholder="Price (£)" step="0.01">
-                        <select id="new-cat">
-                            <option value="">Select category...</option>
-                        </select>
+                        <select id="new-cat"><option value="">Select category...</option></select>
                     </div>
                     <button class="btn btn-primary" onclick="addItem()">Add to Menu</button>
                 </div>
-
-                <!-- Menu Items by Category -->
                 <div id="menu-list"></div>
             </div>
         </div>
@@ -145,16 +116,15 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, collection, query, where, orderBy, getDocs, writeBatch, addDoc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, collection, query, where, orderBy, getDocs, writeBatch, addDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // In-memory state
-        let allMenuItems = []; // { id, ...data }
-        let allCategories = []; // string[]
+        let allMenuItems = [];
+        let allCategories = [];
 
         window.handleLogin = () => signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-pass').value).catch(e => alert(e.message));
         window.handleLogout = () => signOut(auth);
@@ -171,7 +141,7 @@
         });
 
         function initAdmin() {
-            // Settings / shop status
+            // Shop status
             onSnapshot(doc(db, "settings", "truck_status"), s => {
                 const data = s.data();
                 window.masterClosed = data?.is_closed;
@@ -180,65 +150,48 @@
                 document.getElementById('pie-stock').value = data?.pie_inventory || 0;
             });
 
-            // Categories from Firestore (stored as a doc with array field)
+            // Categories
             onSnapshot(doc(db, "settings", "categories"), snap => {
-                const data = snap.data();
-                const savedCats = data?.list || [];
-
-                // Always merge with categories that actually exist in menu items
-                // so items are never invisible due to a missing/empty categories doc
+                const savedCats = snap.data()?.list || [];
                 const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
                 const merged = [...new Set([...savedCats, ...fromItems])];
-
                 allCategories = merged.length > 0 ? merged : ["CHIPS", "PIES", "SIDES"];
-
-                // If the doc was missing or incomplete, persist the merged list back
-                if (savedCats.length !== allCategories.length || allCategories.some(c => !savedCats.includes(c))) {
+                if (allCategories.some(c => !savedCats.includes(c))) {
                     setDoc(doc(db, "settings", "categories"), { list: allCategories }).catch(() => {});
                 }
-
                 renderCategoryTags();
                 renderCategoryDropdown();
                 renderMenuList();
             });
 
-            // Live + pre-orders
+            // Orders
             onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc")), snap => {
                 const live = document.getElementById('orders-list');
                 const pie = document.getElementById('pie-list');
                 live.innerHTML = "";
                 pie.innerHTML = "";
-
-                if (snap.empty) {
-                    live.innerHTML = '<p style="color:var(--muted); padding:20px 0;">No pending orders.</p>';
-                }
-
+                if (snap.empty) live.innerHTML = '<p style="color:var(--muted); padding:20px 0;">No pending orders.</p>';
                 snap.forEach(d => {
                     const data = d.data();
                     const shortId = d.id.slice(-4).toUpperCase();
                     const div = document.createElement('div');
                     div.className = 'order-card';
 
-                    const customerHtml = data.customer
-                        ? `<div class="customer-info">
-                            <strong>${data.customer.name || '–'}</strong>
-                            ${data.customer.phone ? ` · ${data.customer.phone}` : ''}
-                            ${data.customer.msg ? `<br><span style="color:var(--muted)">Note: ${data.customer.msg}</span>` : ''}
-                           </div>`
-                        : '';
+                    let html = '<div style="display:flex;justify-content:space-between;align-items:center;">';
+                    html += '<strong>#' + shortId + '</strong>';
+                    html += '<span style="font-size:0.75rem;background:rgba(244,113,43,0.15);color:var(--orange);padding:4px 10px;border-radius:20px;">' + data.type + '</span></div>';
+                    if (data.customer) {
+                        html += '<div class="customer-info"><strong>' + (data.customer.name || '-') + '</strong>';
+                        if (data.customer.phone) html += ' &middot; ' + data.customer.phone;
+                        if (data.customer.msg) html += '<br><span style="color:var(--muted)">Note: ' + data.customer.msg + '</span>';
+                        html += '</div>';
+                    }
+                    html += '<ul class="order-items">' + data.items.map(i => '<li>' + i.name + ' &mdash; &pound;' + i.price.toFixed(2) + '</li>').join('') + '</ul>';
+                    html += '<div class="order-actions">';
+                    if (data.type === 'PICKUP') html += '<button class="btn btn-ready" onclick="updateStatus(\'' + d.id + '\',\'ready\')">Mark Ready</button>';
+                    html += '<button class="btn btn-cancel" onclick="cancelOrder(\'' + d.id + '\')">Cancel Order</button></div>';
 
-                    div.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <strong>#${shortId}</strong>
-                            <span style="font-size:0.75rem; background:rgba(244,113,43,0.15); color:var(--orange); padding:4px 10px; border-radius:20px;">${data.type}</span>
-                        </div>
-                        ${customerHtml}
-                        <ul class="order-items">${data.items.map(i => `<li>${i.name} — £${i.price.toFixed(2)}</li>`).join('')}</ul>
-                        <div class="order-actions">
-                            ${data.type === 'PICKUP' ? `<button class="btn btn-ready" onclick="updateStatus('${d.id}', 'ready')">Mark Ready</button>` : ''}
-                            <button class="btn btn-cancel" onclick="cancelOrder('${d.id}')">Cancel Order</button>
-                        </div>`;
-
+                    div.innerHTML = html;
                     data.type === 'PRE-ORDER' ? pie.appendChild(div) : live.appendChild(div);
                 });
             });
@@ -247,9 +200,8 @@
             onSnapshot(collection(db, "menu"), snap => {
                 allMenuItems = [];
                 snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
-                allMenuItems.sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
+                allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
 
-                // Merge any categories found in items that aren't in allCategories yet
                 const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
                 const newCats = fromItems.filter(c => !allCategories.includes(c));
                 if (newCats.length > 0) {
@@ -258,24 +210,32 @@
                     renderCategoryTags();
                     renderCategoryDropdown();
                 }
-
                 renderMenuList();
             });
         }
 
+        // ── CATEGORIES ───────────────────────────────────────
+
         function renderCategoryTags() {
             const container = document.getElementById('cat-tags-list');
+            if (!container) return;
             container.innerHTML = "";
             allCategories.forEach(cat => {
                 const tag = document.createElement('span');
                 tag.className = 'cat-tag';
-                tag.innerHTML = `${cat} <button class="cat-tag-del" onclick="deleteCategory('${cat}')" title="Delete category">×</button>`;
+                tag.appendChild(document.createTextNode(cat + ' '));
+                const del = document.createElement('button');
+                del.className = 'cat-tag-del';
+                del.innerText = '×';
+                del.addEventListener('click', () => deleteCategory(cat));
+                tag.appendChild(del);
                 container.appendChild(tag);
             });
         }
 
         function renderCategoryDropdown() {
             const sel = document.getElementById('new-cat');
+            if (!sel) return;
             const current = sel.value;
             sel.innerHTML = '<option value="">Select category...</option>';
             allCategories.forEach(cat => {
@@ -287,15 +247,38 @@
             });
         }
 
+        window.addCategory = async () => {
+            const input = document.getElementById('new-cat-name');
+            const name = input.value.trim().toUpperCase();
+            if (!name) return alert("Enter a category name");
+            if (allCategories.includes(name)) return alert("Category already exists");
+            await setDoc(doc(db, "settings", "categories"), { list: [...allCategories, name] });
+            input.value = "";
+        };
+
+        window.deleteCategory = async (cat) => {
+            const inCat = allMenuItems.filter(i => i.category === cat);
+            const msg = inCat.length > 0
+                ? '"' + cat + '" has ' + inCat.length + ' item(s). Delete category and all its items?'
+                : 'Delete category "' + cat + '"?';
+            if (!confirm(msg)) return;
+            if (inCat.length > 0) {
+                const batch = writeBatch(db);
+                inCat.forEach(item => batch.delete(doc(db, "menu", item.id)));
+                await batch.commit();
+            }
+            await setDoc(doc(db, "settings", "categories"), { list: allCategories.filter(c => c !== cat) });
+        };
+
+        // ── INVENTORY RENDER ─────────────────────────────────
+
         function renderMenuList() {
             const list = document.getElementById('menu-list');
             if (!list) return;
             list.innerHTML = "";
 
-            // Group by category
             const byCat = {};
-            allCategories.forEach(c => byCat[c] = []);
-
+            allCategories.forEach(c => { byCat[c] = []; });
             allMenuItems.forEach(item => {
                 const cat = item.category || "CHIPS";
                 if (!byCat[cat]) byCat[cat] = [];
@@ -304,115 +287,138 @@
 
             allCategories.forEach(cat => {
                 const items = byCat[cat] || [];
+
                 const sec = document.createElement('div');
                 sec.className = 'cat-section';
 
-                let rowsHtml = "";
-                items.forEach((item, idx) => {
-                    rowsHtml += `
-                        <div class="menu-item-row">
-                            <div style="display:flex;align-items:center;flex:1;">
-                                <div class="item-move-btns">
-                                    <button class="move-btn" ${idx === 0 ? 'disabled' : ''} onclick="moveItem('${item.id}', '${cat}', -1)" title="Move up">▲</button>
-                                    <button class="move-btn" ${idx === items.length - 1 ? 'disabled' : ''} onclick="moveItem('${item.id}', '${cat}', 1)" title="Move down">▼</button>
-                                </div>
-                                <div>
-                                    <div>${item.name}</div>
-                                    <div style="font-size:0.8rem; color:var(--muted);">£${parseFloat(item.price).toFixed(2)} · ${item.category}</div>
-                                </div>
-                            </div>
-                            <div style="display:flex;gap:8px;align-items:center;">
-                                <label style="font-size:0.8rem; display:flex;align-items:center;gap:6px; cursor:pointer;">
-                                    <input type="checkbox" ${item.is_available ? 'checked' : ''} onchange="toggleAvailability('${item.id}', this.checked)"> Available
-                                </label>
-                                <button onclick="removeItem('${item.id}')" style="color:var(--red); background:none; border:none; cursor:pointer; font-size:1.1rem; padding:4px 8px;">✕</button>
-                            </div>
-                        </div>`;
-                });
+                const hdr = document.createElement('div');
+                hdr.className = 'cat-section-header';
+                hdr.innerText = cat + ' (' + items.length + ')';
+                sec.appendChild(hdr);
 
-                sec.innerHTML = `<div class="cat-section-header">${cat} (${items.length})</div>
-                    <div class="card" style="padding:12px;">${rowsHtml || '<p style="color:var(--muted);font-size:0.85rem;padding:8px 4px;">No items in this category.</p>'}</div>`;
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.padding = '12px';
+
+                if (items.length === 0) {
+                    const empty = document.createElement('p');
+                    empty.style.cssText = 'color:var(--muted);font-size:0.85rem;padding:8px 4px;';
+                    empty.innerText = 'No items in this category.';
+                    card.appendChild(empty);
+                } else {
+                    items.forEach((item, idx) => {
+                        const row = document.createElement('div');
+                        row.className = 'menu-item-row';
+
+                        // Move buttons
+                        const moveBtns = document.createElement('div');
+                        moveBtns.className = 'item-move-btns';
+
+                        const upBtn = document.createElement('button');
+                        upBtn.className = 'move-btn';
+                        upBtn.innerText = '▲';
+                        upBtn.title = 'Move up';
+                        upBtn.disabled = (idx === 0);
+                        upBtn.addEventListener('click', () => moveItem(item.id, cat, -1, items));
+
+                        const downBtn = document.createElement('button');
+                        downBtn.className = 'move-btn';
+                        downBtn.innerText = '▼';
+                        downBtn.title = 'Move down';
+                        downBtn.disabled = (idx === items.length - 1);
+                        downBtn.addEventListener('click', () => moveItem(item.id, cat, 1, items));
+
+                        moveBtns.appendChild(upBtn);
+                        moveBtns.appendChild(downBtn);
+
+                        // Info
+                        const nameEl = document.createElement('div');
+                        nameEl.innerText = item.name;
+                        const metaEl = document.createElement('div');
+                        metaEl.style.cssText = 'font-size:0.8rem;color:var(--muted);';
+                        metaEl.innerText = '£' + parseFloat(item.price).toFixed(2) + ' · ' + item.category;
+
+                        const info = document.createElement('div');
+                        info.appendChild(nameEl);
+                        info.appendChild(metaEl);
+
+                        const left = document.createElement('div');
+                        left.style.cssText = 'display:flex;align-items:center;flex:1;';
+                        left.appendChild(moveBtns);
+                        left.appendChild(info);
+
+                        // Availability checkbox — closure captures item.id at this point
+                        const itemId = item.id;
+                        const cb = document.createElement('input');
+                        cb.type = 'checkbox';
+                        cb.checked = !!item.is_available;
+                        cb.style.cursor = 'pointer';
+                        cb.addEventListener('change', function() {
+                            updateDoc(doc(db, "menu", itemId), { is_available: this.checked });
+                        });
+
+                        const cbLabel = document.createElement('label');
+                        cbLabel.style.cssText = 'font-size:0.8rem;display:flex;align-items:center;gap:6px;cursor:pointer;';
+                        cbLabel.appendChild(cb);
+                        cbLabel.appendChild(document.createTextNode(' Available'));
+
+                        // Remove button
+                        const rmBtn = document.createElement('button');
+                        rmBtn.innerText = '✕';
+                        rmBtn.style.cssText = 'color:var(--red);background:none;border:none;cursor:pointer;font-size:1.1rem;padding:4px 8px;';
+                        const itemName = item.name;
+                        rmBtn.addEventListener('click', function() {
+                            if (confirm('Remove "' + itemName + '"?')) deleteDoc(doc(db, "menu", itemId));
+                        });
+
+                        const right = document.createElement('div');
+                        right.style.cssText = 'display:flex;gap:8px;align-items:center;';
+                        right.appendChild(cbLabel);
+                        right.appendChild(rmBtn);
+
+                        row.appendChild(left);
+                        row.appendChild(right);
+                        card.appendChild(row);
+                    });
+                }
+
+                sec.appendChild(card);
                 list.appendChild(sec);
             });
         }
 
-        // ── CATEGORY MANAGEMENT ──────────────────────────────
-
-        window.addCategory = async () => {
-            const input = document.getElementById('new-cat-name');
-            const name = input.value.trim().toUpperCase();
-            if (!name) return alert("Enter a category name");
-            if (allCategories.includes(name)) return alert("Category already exists");
-            const updated = [...allCategories, name];
-            await setDoc(doc(db, "settings", "categories"), { list: updated });
-            input.value = "";
-        };
-
-        window.deleteCategory = async (cat) => {
-            const itemsInCat = allMenuItems.filter(i => i.category === cat);
-            if (itemsInCat.length > 0) {
-                if (!confirm(`"${cat}" has ${itemsInCat.length} item(s). Delete category and all its items?`)) return;
-                const batch = writeBatch(db);
-                itemsInCat.forEach(item => batch.delete(doc(db, "menu", item.id)));
-                await batch.commit();
-            } else {
-                if (!confirm(`Delete category "${cat}"?`)) return;
-            }
-            const updated = allCategories.filter(c => c !== cat);
-            await setDoc(doc(db, "settings", "categories"), { list: updated });
-        };
-
         // ── ITEM REORDERING ──────────────────────────────────
+        // Normalises all items in the category to clean 0-based sortOrders,
+        // then swaps the two positions. This handles items with no sortOrder field.
 
-        window.moveItem = async (itemId, cat, direction) => {
-            // Get items in this category sorted by current sortOrder
-            const catItems = allMenuItems.filter(i => i.category === cat);
-            catItems.sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
-
-            const idx = catItems.findIndex(i => i.id === itemId);
+        async function moveItem(itemId, cat, direction, currentItems) {
+            const idx = currentItems.findIndex(i => i.id === itemId);
             const swapIdx = idx + direction;
-            if (swapIdx < 0 || swapIdx >= catItems.length) return;
-
-            // Swap sortOrder values
-            const a = catItems[idx];
-            const b = catItems[swapIdx];
-            const aOrder = a.sortOrder ?? idx;
-            const bOrder = b.sortOrder ?? swapIdx;
+            if (swapIdx < 0 || swapIdx >= currentItems.length) return;
 
             const batch = writeBatch(db);
-            batch.update(doc(db, "menu", a.id), { sortOrder: bOrder });
-            batch.update(doc(db, "menu", b.id), { sortOrder: aOrder });
+            // First normalise all to sequential integers
+            currentItems.forEach((item, i) => {
+                batch.update(doc(db, "menu", item.id), { sortOrder: i });
+            });
+            // Then swap the two
+            batch.update(doc(db, "menu", currentItems[idx].id), { sortOrder: swapIdx });
+            batch.update(doc(db, "menu", currentItems[swapIdx].id), { sortOrder: idx });
             await batch.commit();
-        };
+        }
 
-        // ── MENU ITEMS ───────────────────────────────────────
+        // ── ADD ITEM ─────────────────────────────────────────
 
         window.addItem = async () => {
             const name = document.getElementById('new-name').value.trim();
             const price = parseFloat(document.getElementById('new-price').value);
             const category = document.getElementById('new-cat').value;
-
             if (!name || isNaN(price) || !category) return alert("Fill in all fields and select a category");
-
-            // Set sortOrder to end of category
             const catItems = allMenuItems.filter(i => i.category === category);
-            const maxOrder = catItems.length > 0 ? Math.max(...catItems.map(i => i.sortOrder ?? 0)) : 0;
-
-            await addDoc(collection(db, "menu"), {
-                name, price, category, is_available: true, sortOrder: maxOrder + 1
-            });
-
+            const maxOrder = catItems.length > 0 ? Math.max(...catItems.map(i => i.sortOrder ?? 0)) : -1;
+            await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: maxOrder + 1 });
             document.getElementById('new-name').value = "";
             document.getElementById('new-price').value = "";
-        };
-
-        window.removeItem = async (id) => {
-            if (!confirm("Remove this item?")) return;
-            await deleteDoc(doc(db, "menu", id));
-        };
-
-        window.toggleAvailability = async (id, val) => {
-            await updateDoc(doc(db, "menu", id), { is_available: val });
         };
 
         // ── ORDERS ───────────────────────────────────────────
@@ -420,7 +426,7 @@
         window.showTab = (name, btn) => {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${name}`).classList.remove('hidden');
+            document.getElementById('tab-' + name).classList.remove('hidden');
             btn.classList.add('active');
         };
 
@@ -447,12 +453,7 @@
             const rows = [];
             snap.forEach(d => {
                 const data = d.data();
-                rows.push([
-                    data.customer?.name || '–',
-                    data.customer?.phone || '–',
-                    data.items.map(i => i.name).join(", "),
-                    data.customer?.msg || '-'
-                ]);
+                rows.push([data.customer?.name || '-', data.customer?.phone || '-', data.items.map(i => i.name).join(", "), data.customer?.msg || '-']);
             });
             docPDF.text("Pie Batch Prep Sheet", 14, 15);
             docPDF.autoTable({ startY: 20, head: [['Customer', 'Phone', 'Items', 'Notes']], body: rows });
