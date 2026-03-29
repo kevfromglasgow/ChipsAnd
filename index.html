@@ -3,64 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChipsAnd Admin | Manager</title>
-    <!-- Library for PDF Generation -->
+    <title>ChipsAnd Admin | Command Center</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --text: #F0EDE8; --muted: #888; }
+        :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --text: #F0EDE8; --muted: #888; --success: #27ae60; --danger: #c0392b; }
         body { font-family: -apple-system, sans-serif; background: #f4f4f5; margin: 0; padding: 20px; color: #333; }
         .admin-container { max-width: 1100px; margin: 0 auto; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: var(--bg); color: white; padding: 20px 30px; border-radius: 16px; }
+        
+        /* Status Toggle Bar */
+        .status-bar { display: flex; align-items: center; gap: 15px; background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+
         .tabs { display: flex; gap: 10px; margin-bottom: 25px; }
         .tab-btn { flex: 1; padding: 16px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; background: #e2e8f0; color: #64748b; }
         .tab-btn.active { background: var(--orange); color: white; }
+
         .order-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #edf2f7; }
-        .cust-data { background: #f8fafc; padding: 12px; border-radius: 10px; margin: 10px 0; border-left: 4px solid var(--orange); font-size: 0.9rem; }
+        .cust-data { background: #f8fafc; padding: 12px; border-radius: 10px; margin: 10px 0; border-left: 4px solid var(--orange); }
         .btn { padding: 12px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-pdf { background: #c0392b; color: white; margin-bottom: 20px; width: 100%; font-size: 1rem; }
+        .btn-pdf { background: var(--danger); color: white; width: 100%; margin-bottom: 20px; }
+        
+        .menu-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
         .hidden { display: none; }
+        
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 10000; }
         .login-box { background: var(--surface); padding: 40px; border-radius: 24px; text-align: center; color: white; width: 90%; max-width: 400px; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; }
     </style>
 </head>
 <body>
 
     <div id="login-gate">
-        <form class="login-box" onsubmit="event.preventDefault(); handleLogin();">
+        <div class="login-box">
             <h1 style="color:var(--orange)">Chips<span>&</span> Admin</h1>
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="pass" placeholder="Password" required>
-            <button type="submit" class="btn" style="width:100%; background:var(--orange); color:white;">Login</button>
-        </form>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="pass" placeholder="Password">
+            <button class="btn" style="width:100%; background:var(--orange); color:white;" onclick="handleLogin()">Access Dashboard</button>
+        </div>
     </div>
 
     <div id="admin-content" class="hidden">
         <div class="admin-container">
             <header>
-                <div style="font-size: 1.5rem; font-weight: 900;">ChipsAnd Command</div>
+                <div style="font-size: 1.5rem; font-weight: 900;">Admin Master</div>
                 <button onclick="signOut(auth)" class="btn" style="background:#333; color:white;">Logout</button>
             </header>
 
+            <div class="status-bar">
+                <div id="status-dot" class="dot"></div>
+                <div style="flex:1"><strong id="status-text">Checking truck...</strong></div>
+                <button class="btn" style="border:1px solid #ddd" onclick="toggleTruck()">Toggle Open/Closed</button>
+            </div>
+
             <div class="tabs">
-                <button class="tab-btn active" onclick="showTab('live')">🍔 Live Menu</button>
+                <button class="tab-btn active" onclick="showTab('live')">🍔 Live Orders</button>
                 <button class="tab-btn" onclick="showTab('pies')">🥧 Pie Batch</button>
                 <button class="tab-btn" onclick="showTab('settings')">⚙️ Settings</button>
             </div>
 
-            <div id="tab-live" class="tab-pane"><div id="live-list">Fetching orders...</div></div>
+            <div id="tab-live" class="tab-pane"><div id="live-list"></div></div>
 
             <div id="tab-pies" class="tab-pane hidden">
                 <button class="btn btn-pdf" onclick="generatePiePDF()">📄 Download PDF Prep Sheet</button>
-                <div id="pie-list">No pie orders.</div>
+                <div id="pie-list"></div>
             </div>
 
             <div id="tab-settings" class="tab-pane hidden">
-                <div style="background:white; padding:20px; border-radius:15px;">
-                    <h3>Inventory Control</h3>
-                    <div id="inventory-list"></div>
+                <div style="background:white; padding:20px; border-radius:15px; margin-bottom:20px;">
+                    <h3>Add New Item</h3>
+                    <input type="text" id="new-name" placeholder="Name">
+                    <input type="number" id="new-price" placeholder="Price">
+                    <select id="new-cat">
+                        <option value="CHIPS">CHIPS</option>
+                        <option value="PIES">PIES</option>
+                        <option value="TOASTIES">TOASTIES</option>
+                        <option value="SIDES">SIDES</option>
+                    </select>
+                    <button class="btn" style="width:100%; background:var(--success); color:white;" onclick="addItem()">Add to Menu</button>
                 </div>
+                <div id="inventory-list" style="background:white; padding:20px; border-radius:15px;"></div>
             </div>
         </div>
     </div>
@@ -68,25 +91,42 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, orderBy, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        window.handleLogin = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
+        // FIXED LOGIN FUNCTION
+        window.handleLogin = () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            signInWithEmailAndPassword(auth, email, pass).catch(err => alert("Login Failed: " + err.message));
+        };
         window.signOut = signOut;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('login-gate').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
-                startListeners();
-            } else { document.getElementById('login-gate').classList.remove('hidden'); }
+                startAdmin();
+            } else {
+                document.getElementById('login-gate').classList.remove('hidden');
+                document.getElementById('admin-content').classList.add('hidden');
+            }
         });
 
-        function startListeners() {
+        function startAdmin() {
+            // 1. Truck Status
+            onSnapshot(doc(db, "settings", "truck_status"), (s) => {
+                const closed = s.data()?.is_closed;
+                window.truckClosed = closed;
+                document.getElementById('status-dot').style.background = closed ? 'var(--danger)' : 'var(--success)';
+                document.getElementById('status-text').innerText = closed ? 'TRUCK IS CLOSED' : 'TRUCK IS OPEN';
+            });
+
+            // 2. Orders
             onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc")), (snap) => {
                 const live = document.getElementById('live-list');
                 const pie = document.getElementById('pie-list');
@@ -99,42 +139,57 @@
                         <div style="font-size:0.7rem; color:#999;">#${d.id.slice(-6).toUpperCase()}</div>
                         ${data.customer ? `<div class="cust-data"><strong>${data.customer.name}</strong> • ${data.customer.phone}<br><small>${data.customer.msg || ''}</small></div>` : '<strong>Walk-up</strong>'}
                         <ul style="margin:10px 0;">${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul>
-                        <button class="btn" style="width:100%; background:#27ae60; color:white;" onclick="markReady('${d.id}')">MARK READY</button>
+                        <button class="btn" style="width:100%; background:var(--success); color:white;" onclick="markReady('${d.id}')">MARK READY</button>
                     `;
                     data.type === 'PRE-ORDER' ? pie.appendChild(card) : live.appendChild(card);
                 });
             });
+
+            // 3. Inventory
+            onSnapshot(collection(db, "menu"), (snap) => {
+                const list = document.getElementById('inventory-list');
+                list.innerHTML = "";
+                snap.forEach(d => {
+                    const item = d.data();
+                    const row = document.createElement('div');
+                    row.className = 'menu-row';
+                    row.innerHTML = `
+                        <div><strong>${item.name}</strong> (£${item.price.toFixed(2)})</div>
+                        <button class="btn" style="color:var(--danger)" onclick="deleteItem('${d.id}')">Delete</button>
+                    `;
+                    list.appendChild(row);
+                });
+            });
         }
 
+        window.toggleTruck = async () => await updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window.truckClosed });
         window.markReady = async (id) => await updateDoc(doc(db, "orders", id), { status: "ready" });
+        window.deleteItem = async (id) => { if(confirm("Delete item?")) await deleteDoc(doc(db, "menu", id)); };
+        window.addItem = async () => {
+            const name = document.getElementById('new-name').value;
+            const price = parseFloat(document.getElementById('new-price').value);
+            const category = document.getElementById('new-cat').value;
+            await addDoc(collection(db, "menu"), { name, price, category, is_available: true });
+            document.getElementById('new-name').value = ""; document.getElementById('new-price').value = "";
+        };
 
         window.generatePiePDF = async () => {
             const { jsPDF } = window.jspdf;
             const docPDF = new jsPDF();
             const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
-            
             const rows = [];
             snap.forEach(d => {
                 const data = d.data();
-                const items = data.items.map(i => i.name).join(", ");
-                rows.push([data.customer.name, data.customer.phone, items, data.customer.msg || '-']);
+                rows.push([data.customer.name, data.customer.phone, data.items.map(i => i.name).join(", "), data.customer.msg || '-']);
             });
-
-            docPDF.text("ChipsAnd Pie Production Sheet", 14, 15);
-            docPDF.autoTable({
-                startY: 20,
-                head: [['Customer', 'Phone', 'Pies Ordered', 'Notes']],
-                body: rows,
-                theme: 'grid',
-                headStyles: { fillColor: [244, 113, 43] }
-            });
-
-            docPDF.save(`Pie_Report_${new Date().toLocaleDateString()}.pdf`);
+            docPDF.text("ChipsAnd Pie Batch Report", 14, 15);
+            docPDF.autoTable({ startY: 20, head: [['Customer', 'Phone', 'Pies', 'Notes']], body: rows, headStyles: { fillColor: [244, 113, 43] } });
+            docPDF.save("Pie_Report.pdf");
         };
 
-        window.showTab = (tab) => {
+        window.showTab = (t) => {
             document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
-            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${t}`).classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
         };
