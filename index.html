@@ -234,8 +234,6 @@
         window.handleLogout = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
-            // EMERGENCY ACCESS OVERRIDE - If quota still hit, use lines below:
-            // document.getElementById('login-gate').style.display = 'none'; document.getElementById('admin-content').style.display = 'block';
             if (user) {
                 document.getElementById('login-gate').style.display = 'none';
                 document.getElementById('admin-content').style.display = 'block';
@@ -266,6 +264,12 @@
                     const card = document.createElement('div');
                     card.className = 'order-card';
                     const cust = data.customer;
+                    
+                    // Logic: Add Mark Ready button ONLY for Live PICKUP orders
+                    const actionButton = data.type === 'PICKUP' 
+                        ? `<button class="btn btn-ready" onclick="markOrderReady('${d.id}')">MARK READY</button>`
+                        : '';
+
                     card.innerHTML = `
                         <div class="order-header">
                             <div class="order-id">#${d.id.slice(-4).toUpperCase()}</div>
@@ -273,8 +277,9 @@
                         </div>
                         ${cust ? `<div class="cust-box"><strong>${cust.name}</strong> • ${cust.phone}<br><small>${cust.msg || ''}</small></div>` : ''}
                         <ul class="order-items">${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul>
-                        <button class="btn btn-ready" onclick="markOrderReady('${d.id}')">MARK READY</button>
+                        ${actionButton}
                     `;
+
                     data.type === 'PRE-ORDER' ? pie.appendChild(card) : live.appendChild(card);
                 });
             });
