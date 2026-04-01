@@ -23,7 +23,10 @@
         input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #333; background: #000; color: white; box-sizing: border-box; }
         .confirm-btn { background: var(--orange); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .confirm-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
+        
+        /* Special style for admin preview mode */
+        .admin-mode-btn { border: 1px dashed var(--orange) !important; opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -31,7 +34,7 @@
     <div id="landing-screen">
         <div class="brand">Chips<span>&</span></div>
         <button id="pie-btn" class="choice-btn hidden">Pre-Order Pies</button>
-        <button onclick="startFlow('MENU')" class="choice-btn">Order Food</button>
+        <button id="menu-btn" onclick="startFlow('MENU')" class="choice-btn hidden">Order Food</button>
     </div>
 
     <header>
@@ -68,15 +71,31 @@
         let cart = {}; 
         let currentMode = '';
 
-        // Monitor Shop Status for Pie Button
+        // --- ADMIN PREVIEW LOGIC ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAdmin = urlParams.get('admin') === 'true';
+
+        // Monitor Shop Status
         onSnapshot(doc(db, "settings", "truck_status"), (s) => {
             const d = s.data();
             const pBtn = document.getElementById('pie-btn');
+            const mBtn = document.getElementById('menu-btn');
+
+            // 1. Pies are public if enabled
             if(d?.pies_enabled) {
                 pBtn.classList.remove('hidden'); 
                 pBtn.onclick = () => startFlow('PIES');
             } else {
                 pBtn.classList.add('hidden');
+            }
+
+            // 2. Menu is HIDDEN from public, visible for ?admin=true
+            if (isAdmin) {
+                mBtn.classList.remove('hidden');
+                mBtn.classList.add('admin-mode-btn');
+                mBtn.innerText = "Order Food (Admin Preview)";
+            } else {
+                mBtn.classList.add('hidden');
             }
         });
 
@@ -118,7 +137,6 @@
             }
 
             try {
-                // 1. Log Order in Firebase as UNPAID
                 const docRef = await addDoc(collection(db, "orders"), {
                     items, 
                     customer: { 
@@ -132,7 +150,6 @@
                     createdAt: serverTimestamp()
                 });
 
-                // 2. Request Stripe Checkout Session from Cloud Function
                 const response = await fetch('https://us-central1-chipsand-13831.cloudfunctions.net/createCheckout', {
                     method: 'POST',
                     mode: 'cors',
@@ -145,24 +162,18 @@
                     })
                 });
 
-                if (!response.ok) {
-                    const errorMsg = await response.text();
-                    console.error("Function Error:", errorMsg);
-                    throw new Error("Payment server error.");
-                }
+                if (!response.ok) throw new Error("Server error.");
 
                 const result = await response.json();
-                
                 if (result.data?.url) {
-                    // Redirect to Stripe Secure Checkout
                     window.location.href = result.data.url;
                 } else {
-                    throw new Error("No URL returned from Stripe.");
+                    throw new Error("No URL returned.");
                 }
 
             } catch (e) {
-                console.error("Checkout process failed:", e);
-                alert("Payment connection failed. Please try again or pay at the truck.");
+                console.error(e);
+                alert("Payment connection failed.");
                 btn.disabled = false;
                 btn.innerText = "Pay & Confirm Order";
             }
