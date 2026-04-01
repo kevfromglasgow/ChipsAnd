@@ -7,10 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --text: #F0EDE8; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); text-align: center; padding: 60px 20px; margin: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); text-align: center; padding: 40px 20px; margin: 0; }
         
         .track-card { background: var(--surface); border: 1px solid rgba(255,255,255,0.1); padding: 40px 20px; border-radius: 24px; max-width: 450px; margin: 0 auto; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        .brand-name { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 30px; }
+        .brand-name { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 25px; }
         .brand-name span { color: var(--orange); }
         
         /* Status Badges */
@@ -22,19 +22,21 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         
         /* Payment Section */
-        .payment-card { background: rgba(244, 113, 43, 0.08); border: 1px dashed var(--orange); border-radius: 20px; padding: 25px; margin-top: 25px; }
-        .payment-card h3 { font-size: 1rem; margin-bottom: 8px; color: var(--text); }
-        .pay-btn { display: block; background: var(--orange); color: white; text-decoration: none; padding: 16px; border-radius: 12px; font-weight: bold; margin-top: 15px; transition: 0.2s; }
+        .payment-card { background: rgba(255, 255, 255, 0.03); border: 1px dashed var(--orange); border-radius: 20px; padding: 25px; margin-top: 25px; }
+        .payment-card h3 { font-size: 1rem; margin-bottom: 15px; color: var(--text); font-family: 'Playfair Display'; }
+        
+        .copy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .copy-box { background: #000; padding: 12px; border-radius: 12px; cursor: pointer; border: 1px solid #333; transition: 0.2s; }
+        .copy-box:active { transform: scale(0.95); background: #111; }
+        
+        .label { font-size: 0.6rem; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px; }
+        .value { font-family: monospace; color: var(--orange); font-size: 1.1rem; font-weight: bold; }
+        .hint { font-size: 0.55rem; color: #555; display: block; margin-top: 4px; }
+
+        .pay-btn { display: block; background: var(--orange); color: white; text-decoration: none; padding: 18px; border-radius: 12px; font-weight: bold; margin-top: 5px; transition: 0.2s; font-size: 1.1rem; }
         .pay-btn:hover { filter: brightness(1.1); }
         
-        .copy-ref-box { margin-top: 15px; background: #000; padding: 10px; border-radius: 8px; cursor: pointer; border: 1px solid #333; position: relative; }
-        .copy-ref-box:active { background: #111; }
-        .ref-label { font-size: 0.6rem; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px; }
-        .ref-code { font-family: monospace; color: var(--orange); font-size: 1rem; font-weight: bold; }
-        .copy-hint { font-size: 0.65rem; color: #666; display: block; margin-top: 4px; }
-
         .nav-btn { background: none; border: 1px solid #444; color: #888; padding: 12px 24px; border-radius: 12px; cursor: pointer; margin-top: 40px; transition: 0.3s; font-family: 'DM Sans', sans-serif; }
-        .nav-btn:hover { border-color: var(--orange); color: var(--orange); }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -52,20 +54,27 @@
 
         <div id="payment-area" class="hidden">
             <div class="payment-card">
-                <h3>Instant Payment Required</h3>
-                <p style="font-size: 0.85rem; color: #bbb; line-height: 1.4; margin-bottom: 0;">
-                    To secure your batch of pies, please pay via <strong>Bank Transfer</strong>.
-                </p>
+                <h3>Complete Your Payment</h3>
                 
-                <div class="copy-ref-box" id="copy-ref-btn">
-                    <span class="ref-label">Bank Reference</span>
-                    <span class="ref-code" id="ref-text">PIE-WAITING</span>
-                    <span class="copy-hint">(Tap to Copy)</span>
+                <div class="copy-grid">
+                    <div class="copy-box" id="copy-amount-btn">
+                        <span class="label">Total to Pay</span>
+                        <span class="value">£<span id="pay-total">0.00</span></span>
+                        <span class="hint">Tap to Copy</span>
+                    </div>
+                    <div class="copy-box" id="copy-ref-btn">
+                        <span class="label">Reference</span>
+                        <span class="value" id="ref-text">PIE-REF</span>
+                        <span class="hint">Tap to Copy</span>
+                    </div>
                 </div>
 
-                <a id="crezco-btn" href="https://app.crezco.com/payment/Ssx0PBsu5Eyqq7O-KGPgQw" target="_blank" class="pay-btn">
-                    Pay £<span id="pay-total">0.00</span> Now
+                <a id="crezco-btn" href="https://pay.crezco.com/Ssx0PBsu5Eyqq7O-KGPgQw" target="_blank" class="pay-btn">
+                    Open Banking App
                 </a>
+                <p style="font-size: 0.75rem; color: #666; margin-top: 15px; line-height: 1.4;">
+                    Your order is held pending payment.<br>Please ensure the amount matches exactly.
+                </p>
             </div>
         </div>
 
@@ -114,21 +123,33 @@
                 if (status === 'pending') {
                     if (data.type === 'PRE-ORDER') {
                         container.innerHTML = `<div class="status-badge pending-preorder">📅 Payment Pending</div>`;
-                        msgBox.innerText = "Check the payment details below. Once confirmed, your batch will be reserved.";
+                        msgBox.innerText = "Copy the payment details below, then click the button to open your bank.";
                         
                         // Setup Reference & Amount
-                        const total = (data.items || []).reduce((sum, i) => sum + i.price, 0);
+                        const total = (data.items || []).reduce((sum, i) => sum + i.price, 0).toFixed(2);
                         const cleanName = (data.customer?.name || "CUST").replace(/[^a-z0-9]/gi, '').substring(0, 10).toUpperCase();
                         const refCode = `PIE-${cleanName}-${orderId.slice(-4).toUpperCase()}`;
                         
-                        document.getElementById('pay-total').innerText = total.toFixed(2);
+                        document.getElementById('pay-total').innerText = total;
                         document.getElementById('ref-text').innerText = refCode;
+                        
+                        // BUILD DYNAMIC LINK - Attempting Crezco's deep link format
+                        const baseLink = "https://pay.crezco.com/Ssx0PBsu5Eyqq7O-KGPgQw";
+                        document.getElementById('crezco-btn').href = `${baseLink}?amount=${total}&reference=${refCode}`;
+
                         payArea.classList.remove('hidden');
 
-                        // Copy Logic
+                        // Copy Logic for Amount
+                        document.getElementById('copy-amount-btn').onclick = () => {
+                            navigator.clipboard.writeText(total).then(() => {
+                                alert("Amount £" + total + " copied!");
+                            });
+                        };
+
+                        // Copy Logic for Reference
                         document.getElementById('copy-ref-btn').onclick = () => {
                             navigator.clipboard.writeText(refCode).then(() => {
-                                alert("Reference copied! Paste this in your bank app.");
+                                alert("Reference copied!");
                             });
                         };
 
@@ -140,15 +161,11 @@
                     container.innerHTML = `<div class="status-badge ready">✅ Ready for Collection!</div>`;
                     msgBox.innerHTML = "<strong>Your order is ready!</strong><br>Show this screen to our staff at the truck.";
                     payArea.classList.add('hidden');
-                    if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
                 } else if (status === 'archived') {
                     container.innerHTML = `<div class="status-badge" style="background:#333; color:#888">Order Completed</div>`;
-                    msgBox.innerText = "This order has already been collected. Thanks for visiting Chips&!";
                     payArea.classList.add('hidden');
                 }
             });
-        } else {
-            document.getElementById('order-id').innerText = "ERROR: NO ORDER ID";
         }
     </script>
 </body>
