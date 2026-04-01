@@ -255,9 +255,14 @@ function initAdmin() {
 
     // Orders
     onSnapshot(
-        query(collection(db, "orders"), where("status", "==", "pending"), orderBy("createdAt", "desc")),
+        query(
+            collection(db, "orders"), 
+            where("status", "==", "pending"), 
+            where("paymentStatus", "==", "PAID"), // ONLY SHOW PAID ORDERS
+            orderBy("createdAt", "desc")
+        ),
         snap => renderOrders(snap)
-    );
+);
 
     // Wire static buttons
     document.getElementById('toggle-shop-btn').addEventListener('click', () =>
