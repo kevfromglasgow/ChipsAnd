@@ -12,17 +12,21 @@
         .brand-name { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 30px; }
         .brand-name span { color: var(--orange); }
         
-        /* Status Badges */
         .status-badge { display: inline-block; padding: 15px 30px; border-radius: 40px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin: 20px 0; font-size: 1.1rem; }
-        
         .pending-pickup { background: rgba(244,113,43,0.15); color: var(--orange); border: 1px solid var(--orange); animation: pulse 2s infinite; }
         .pending-preorder { background: rgba(52, 152, 219, 0.15); color: #3498db; border: 1px solid #3498db; }
         .ready { background: #2ecc71; color: white; box-shadow: 0 0 20px rgba(46, 204, 113, 0.4); }
         
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         
+        /* Payment Section */
+        .payment-card { background: rgba(244, 113, 43, 0.08); border: 1px dashed var(--orange); border-radius: 20px; padding: 25px; margin-top: 25px; }
+        .pay-btn { display: block; background: var(--orange); color: white; text-decoration: none; padding: 16px; border-radius: 12px; font-weight: bold; margin-top: 15px; }
+        .copy-ref { font-size: 0.7rem; color: var(--orange); cursor: pointer; margin-top: 10px; text-decoration: underline; background: none; border: none; }
+
         .nav-btn { background: none; border: 1px solid #444; color: #888; padding: 12px 24px; border-radius: 12px; cursor: pointer; margin-top: 40px; transition: 0.3s; font-family: 'DM Sans', sans-serif; }
         .nav-btn:hover { border-color: var(--orange); color: var(--orange); }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -35,6 +39,17 @@
         
         <div id="status-container">
             <div class="status-badge" style="color:#444">Locating Order...</div>
+        </div>
+
+        <div id="payment-area" class="hidden">
+            <div class="payment-card">
+                <h3 style="font-size: 1rem; margin-bottom: 8px;">Instant Payment Required</h3>
+                <p style="font-size: 0.85rem; color: #bbb; margin-bottom: 15px;">
+                    Please pay for your pies now to secure your batch.
+                </p>
+                <a id="crezco-btn" href="#" class="pay-btn">Pay £<span id="pay-total">0.00</span> Now</a>
+                <button id="copy-ref-btn" class="copy-ref">Reference: <span id="ref-text"></span> (Click to Copy)</button>
+            </div>
         </div>
 
         <div id="order-details-msg" style="color: #888; font-size: 0.9rem; margin-top: 20px; line-height: 1.4;">
@@ -69,6 +84,7 @@
             onSnapshot(doc(db, "orders", orderId), (docSnap) => {
                 const container = document.getElementById('status-container');
                 const msgBox = document.getElementById('order-details-msg');
+                const payArea = document.getElementById('payment-area');
 
                 if (!docSnap.exists()) {
                     container.innerHTML = `<div class="status-badge" style="color:#666">Order Not Found</div>`;
@@ -76,27 +92,39 @@
                 }
 
                 const data = docSnap.data();
-                const isPreOrder = data.type === 'PRE-ORDER';
                 const status = data.status || 'pending';
 
                 if (status === 'pending') {
-                    if (isPreOrder) {
-                        container.innerHTML = `<div class="status-badge pending-preorder">📅 Order Confirmed</div>`;
-                        msgBox.innerText = "Your pre-order is logged in our system. We will see you at the truck for collection!";
+                    if (data.type === 'PRE-ORDER') {
+                        container.innerHTML = `<div class="status-badge pending-preorder">📅 Payment Pending</div>`;
+                        msgBox.innerText = "To secure your batch of pies, please complete the bank transfer below.";
+                        
+                        // Setup Payment Link
+                        const total = data.items.reduce((sum, i) => sum + i.price, 0);
+                        const cleanName = data.customer.name.replace(/[^a-z0-9]/gi, '').substring(0, 12);
+                        const ref = `PIE-${cleanName}-${orderId.slice(-4).toUpperCase()}`;
+                        
+                        document.getElementById('pay-total').innerText = total.toFixed(2);
+                        document.getElementById('ref-text').innerText = ref;
+                        document.getElementById('crezco-btn').href = `https://pay.crezco.com/Ssx0PBsu5Eyqq7O-KGPgQw?amount=${total.toFixed(2)}&reference=${ref}`;
+                        
+                        payArea.classList.remove('hidden');
+
+                        document.getElementById('copy-ref-btn').onclick = () => {
+                            navigator.clipboard.writeText(ref);
+                            alert("Reference copied to clipboard!");
+                        };
+
                     } else {
                         container.innerHTML = `<div class="status-badge pending-pickup">👨‍🍳 Cooking Now</div>`;
-                        msgBox.innerText = "Our team is preparing your fresh order. It won't be long now!";
+                        payArea.classList.add('hidden');
                     }
                 } else if (status === 'ready') {
                     container.innerHTML = `<div class="status-badge ready">✅ Ready for Collection!</div>`;
-                    msgBox.innerHTML = "<strong style='color:#2ecc71'>Your order is ready!</strong> Please head to the truck and show this screen.";
-                    
-                    // Trigger haptic feedback for mobile devices
-                    if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
+                    msgBox.innerHTML = "<strong>Your order is ready!</strong> Please head to the truck and show this screen.";
+                    payArea.classList.add('hidden');
                 }
             });
-        } else {
-            document.getElementById('order-id').innerText = "ERROR: NO ID";
         }
     </script>
 </body>
