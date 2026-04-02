@@ -261,7 +261,7 @@ onSnapshot(doc(db, "settings", "truck_status"), snap => {
     if (pieLive && pieStock > 0) {
         pieBtn.classList.remove('hidden');
         pieBtn.disabled = false;
-        pieSub.innerText = pieStock + ' pies remaining';
+        pieSub.innerText = 'Weekly Batch';
         pieBtn.onclick = () => startFlow('PIES');
         if (d.pie_message) { pieMsg.innerText = d.pie_message; pieMsg.classList.remove('hidden'); }
         else pieMsg.classList.add('hidden');
