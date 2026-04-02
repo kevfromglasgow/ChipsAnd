@@ -8,61 +8,164 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --surface-2: #1F1F1F; --text: #F0EDE8; --muted: #888; --green: #2ecc71; --red: #e74c3c; --border: rgba(255,255,255,0.08); }
+        :root {
+            --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --surface-2: #1F1F1F;
+            --text: #F0EDE8; --muted: #777; --green: #2ecc71; --red: #e74c3c;
+            --border: rgba(255,255,255,0.08);
+        }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 60px; }
-        .app-header { background: var(--surface); padding: 10px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        .logo-admin { height: 40px; width: auto; }
-        .tab-nav { display: flex; margin: 20px 32px 0; border-bottom: 1px solid var(--border); }
-        .tab-btn { background: none; border: none; color: var(--muted); padding: 14px 22px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; font-family: 'DM Sans', sans-serif; }
-        .tab-btn.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
-        .content-area { padding: 24px 32px; max-width: 900px; }
-        .card { background: var(--surface); border-radius: 16px; padding: 22px; margin-bottom: 18px; border: 1px solid var(--border); }
-        .order-card { background: var(--surface-2); border-radius: 14px; padding: 18px; margin-bottom: 12px; }
-        .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
-        .btn-primary { background: var(--orange); color: white; }
-        .btn-ready { background: var(--green); color: white; }
-        .btn-cancel { background: var(--red); color: white; }
-        .btn-pdf { background: #34495e; color: white; width: 100%; margin-bottom: 12px; }
-        input[type=text], input[type=email], input[type=password], input[type=number], select { background: var(--surface-2); border: 1px solid var(--border); color: white; padding: 10px 12px; border-radius: 8px; width: 100%; }
-        .hidden { display: none !important; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 60px; font-size: 0.95rem; }
+
+        /* ── HEADER ── */
+        .app-header { background: var(--surface); padding: 12px 28px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .logo-admin { height: 38px; width: auto; }
+
+        /* ── LOGIN ── */
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .status-bar { margin: 20px 32px; background: var(--surface); border-radius: 14px; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
-        .order-items { list-style: none; margin: 8px 0; font-size: 0.88rem; color: var(--muted); }
+
+        /* ── STATUS BAR ── */
+        .status-bar { margin: 18px 28px; background: var(--surface); border-radius: 14px; padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; border: 1px solid var(--border); }
+        .status-indicator { display: flex; align-items: center; gap: 10px; font-size: 1rem; }
+        .status-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; transition: background 0.3s; }
+        .status-dot.open  { background: var(--green); box-shadow: 0 0 10px var(--green); }
+        .status-dot.closed { background: var(--red); box-shadow: 0 0 10px var(--red); }
+        .toggle-pill { display: flex; align-items: center; gap: 10px; }
+        .pill-btn { padding: 9px 20px; border-radius: 30px; border: none; cursor: pointer; font-family: 'DM Sans'; font-size: 0.85rem; font-weight: 600; transition: 0.2s; }
+        .pill-open   { background: var(--red);   color: white; }
+        .pill-closed { background: var(--green);  color: white; }
+
+        /* ── TABS ── */
+        .tab-nav { display: flex; margin: 0 28px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+        .tab-btn { background: none; border: none; color: var(--muted); padding: 13px 20px; cursor: pointer; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 1px; font-family: 'DM Sans'; white-space: nowrap; }
+        .tab-btn.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
+
+        /* ── LAYOUT ── */
+        .content-area { padding: 20px 28px; max-width: 960px; }
+
+        /* ── CARDS ── */
+        .card { background: var(--surface); border-radius: 14px; padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); }
+        .card h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 14px; letter-spacing: 0.3px; }
+
+        /* ── BUTTONS ── */
+        .btn { padding: 9px 16px; border-radius: 9px; border: none; cursor: pointer; font-weight: 500; font-family: 'DM Sans'; font-size: 0.88rem; transition: 0.15s; }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--orange); color: white; }
+        .btn-cancel  { background: var(--red); color: white; }
+        .btn-pdf     { background: #2c3e50; color: white; width: 100%; margin-bottom: 10px; }
+        .btn-grey    { background: #2a2a2a; color: white; }
+        .btn-green   { background: var(--green); color: white; }
+
+        /* ── INPUTS ── */
+        input[type=text], input[type=email], input[type=password], input[type=number], input[type=tel], select, textarea {
+            background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+            padding: 9px 12px; border-radius: 8px; font-family: 'DM Sans'; font-size: 0.88rem; width: 100%;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--orange); }
+        textarea { resize: vertical; min-height: 60px; }
+
+        /* ── ORDER CARDS ── */
+        .order-card { background: var(--surface-2); border-radius: 12px; padding: 16px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .order-id { font-weight: 700; font-size: 1rem; }
+        .order-badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-pickup   { background: rgba(244,113,43,0.15); color: var(--orange); }
+        .badge-preorder { background: rgba(46,204,113,0.15); color: var(--green); }
+        .badge-limited  { background: rgba(241,196,15,0.15);  color: #f1c40f; }
+        .order-customer { font-size: 0.85rem; color: var(--muted); margin: 6px 0; }
+        .order-items { list-style: none; margin: 6px 0 10px; font-size: 0.85rem; }
+        .order-items li { padding: 2px 0; }
         .order-items li::before { content: "· "; color: var(--orange); }
-        .cat-tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-        .cat-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; cursor: grab; font-size: 0.85rem; }
-        .cat-tag.drag-over { border-color: var(--orange); }
-        .inv-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: grab; }
-        .drag-handle { color: var(--muted); margin-right: 12px; }
-        .inv-name { flex: 1; }
-        .inv-price { color: var(--orange); margin-right: 16px; }
+        .order-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .order-pending-badge { display: inline-block; font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; border: 1px solid #f1c40f; color: #f1c40f; margin-bottom: 8px; }
+
+        /* ── PIE CONTROLS ── */
+        .pie-live-toggle { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--surface-2); border-radius: 12px; margin-bottom: 14px; border: 1px solid var(--border); }
+        .live-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .live-dot.on  { background: var(--green); box-shadow: 0 0 8px var(--green); }
+        .live-dot.off { background: var(--red); box-shadow: 0 0 8px var(--red); }
+        .live-label { font-weight: 600; flex: 1; }
+        .live-switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+        .live-switch input { opacity: 0; width: 0; height: 0; }
+        .live-switch .slider { position: absolute; inset: 0; background: #333; border-radius: 26px; cursor: pointer; transition: 0.3s; }
+        .live-switch input:checked + .slider { background: var(--green); }
+        .live-switch .slider::before { content: ""; position: absolute; width: 20px; height: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+        .live-switch input:checked + .slider::before { transform: translateX(20px); }
+
+        /* ── PIE MESSAGE ── */
+        .pie-msg-row { display: flex; gap: 8px; align-items: center; }
+
+        /* ── INVENTORY ── */
+        .cat-tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .cat-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); padding: 5px 12px; border-radius: 20px; cursor: grab; font-size: 0.82rem; user-select: none; }
+        .cat-tag.drag-over { border-color: var(--orange); background: rgba(244,113,43,0.08); }
+        .cat-tag.dragging  { opacity: 0.4; }
+        .cat-del-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.95rem; line-height: 1; padding: 0; }
+        .cat-del-btn:hover { color: var(--red); }
+
+        .inv-section { margin-bottom: 18px; }
+        .inv-section-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 2px; color: var(--orange); margin-bottom: 6px; padding-left: 2px; }
+        .inv-list { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+        .inv-row { display: flex; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--border); cursor: grab; gap: 10px; font-size: 0.88rem; }
+        .inv-row:last-child { border-bottom: none; }
+        .inv-row.dragging  { opacity: 0.35; }
+        .inv-row.drag-over { background: rgba(244,113,43,0.07); border-top: 2px solid var(--orange); }
+        .drag-handle { color: var(--muted); font-size: 1rem; flex-shrink: 0; }
+        .inv-name  { flex: 1; }
+        .inv-price { color: var(--orange); flex-shrink: 0; min-width: 50px; text-align: right; }
+        .inv-avail { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; color: var(--muted); cursor: pointer; flex-shrink: 0; }
+        .inv-avail input { width: auto; cursor: pointer; accent-color: var(--orange); }
+        .inv-del { background: none; border: none; color: var(--muted); cursor: pointer; padding: 3px 6px; font-size: 0.95rem; flex-shrink: 0; }
+        .inv-del:hover { color: var(--red); }
+        .inv-subopts { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+        .empty-cat { padding: 14px; color: var(--muted); font-size: 0.82rem; text-align: center; }
+
+        /* ── SUB-OPTIONS EDITOR ── */
+        .subopt-editor { margin-top: 8px; padding: 10px 14px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid var(--border); }
+        .subopt-editor h5 { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .subopt-row { display: flex; gap: 6px; margin-bottom: 6px; }
+        .subopt-row input { flex: 1; font-size: 0.82rem; padding: 6px 10px; }
+        .subopt-add-row { display: flex; gap: 6px; margin-top: 6px; }
+        .subopt-tag { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-2); border: 1px solid var(--border); padding: 3px 9px; border-radius: 14px; font-size: 0.78rem; margin: 2px; }
+        .subopt-tag button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; padding: 0; line-height: 1; }
+        .subopt-tag button:hover { color: var(--red); }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
+<!-- ── LOGIN ───────────────────────────────────────── -->
 <div id="login-gate">
     <div style="width:320px;text-align:center;">
-        <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" style="width:220px; margin-bottom:30px;">
+        <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" style="width:200px;margin-bottom:28px;">
         <div style="display:flex;flex-direction:column;gap:10px;">
             <input type="email" id="admin-email" placeholder="Email">
             <input type="password" id="admin-pass" placeholder="Password">
-            <button class="btn btn-primary" id="login-btn" style="padding:14px;">Sign In</button>
+            <button class="btn btn-primary" id="login-btn" style="padding:13px;font-size:0.95rem;">Sign In</button>
         </div>
     </div>
 </div>
 
+<!-- ── ADMIN SHELL ──────────────────────────────────── -->
 <div id="admin-content" class="hidden">
     <header class="app-header">
         <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" class="logo-admin">
-        <button class="btn" style="background:#2a2a2a;color:white;" id="logout-btn">Logout</button>
+        <button class="btn btn-grey" id="logout-btn">Logout</button>
     </header>
 
+    <!-- Shop open/close -->
     <div class="status-bar">
-        <div>Shop Status: <strong id="status-text">...</strong></div>
-        <button class="btn btn-primary" id="toggle-shop-btn">Toggle Shop Status</button>
+        <div class="status-indicator">
+            <div class="status-dot" id="shop-dot"></div>
+            <span>Shop is <strong id="status-text">...</strong></span>
+        </div>
+        <div class="toggle-pill">
+            <span style="font-size:0.82rem;color:var(--muted)">Click to toggle:</span>
+            <button class="pill-btn" id="toggle-shop-btn">…</button>
+        </div>
     </div>
 
+    <!-- Tabs -->
     <nav class="tab-nav">
         <button class="tab-btn active" data-tab="live">Live Orders</button>
         <button class="tab-btn" data-tab="pies">Pie Batch</button>
@@ -70,217 +173,643 @@
     </nav>
 
     <div class="content-area">
-        <!-- LIVE ORDERS -->
-        <div id="tab-live" class="tab-panel"><div id="orders-list"></div></div>
 
-        <!-- PIE BATCH -->
+        <!-- ── LIVE ORDERS ── -->
+        <div id="tab-live" class="tab-panel">
+            <div id="orders-list"><p style="color:var(--muted)">Loading orders…</p></div>
+        </div>
+
+        <!-- ── PIE BATCH ── -->
         <div id="tab-pies" class="tab-panel hidden">
-            <div class="card" style="border-color:var(--orange)">
-                <h3 style="margin-bottom:16px">Pie Batch Control</h3>
-                <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
-                    <label><input type="checkbox" id="pie-toggle"> Enable Pie Orders</label>
-                    <input type="number" id="pie-stock" placeholder="Stock" style="width:100px;">
-                    <button class="btn btn-primary" id="pie-update-btn">Update</button>
+
+            <!-- Live toggle -->
+            <div class="card">
+                <h3>Pie Orders</h3>
+                <div class="pie-live-toggle">
+                    <div class="live-dot" id="pie-dot"></div>
+                    <span class="live-label" id="pie-live-label">Loading…</span>
+                    <label class="live-switch">
+                        <input type="checkbox" id="pie-toggle">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <button class="btn btn-pdf" id="pie-pdf-btn">Download PDF Prep Sheet</button>
-                <button class="btn" style="width:100%;background:#333;color:white;" id="pie-archive-btn">Archive Current Batch</button>
+
+                <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
+                    <div style="flex:1;">
+                        <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">STOCK QTY</label>
+                        <input type="number" id="pie-stock" placeholder="0" min="0">
+                    </div>
+                    <div style="align-self:flex-end;">
+                        <button class="btn btn-primary" id="pie-update-btn">Save Stock</button>
+                    </div>
+                </div>
+                <div id="pie-soldout-notice" class="hidden" style="background:rgba(231,76,60,0.12);border:1px solid var(--red);border-radius:8px;padding:10px 14px;font-size:0.85rem;color:var(--red);margin-bottom:12px;">
+                    ⚠ Sold out — pie orders are currently unavailable to customers.
+                </div>
+
+                <!-- Ready message -->
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:6px;">CUSTOMER MESSAGE (shown on site)</label>
+                    <div class="pie-msg-row">
+                        <input type="text" id="pie-message" placeholder="e.g. Pies ready from 5pm Saturday!">
+                        <button class="btn btn-primary" id="pie-msg-btn" style="white-space:nowrap;">Save</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-pdf" id="pie-pdf-btn">⬇ Download PDF Prep Sheet</button>
+                <button class="btn btn-grey" style="width:100%;" id="pie-archive-btn">Archive Current Pie Batch</button>
             </div>
+
             <div id="pie-list"></div>
         </div>
 
-        <!-- INVENTORY -->
+        <!-- ── INVENTORY ── -->
         <div id="tab-menu" class="tab-panel hidden">
+
+            <!-- Categories -->
             <div class="card">
-                <h3>Categories</h3>
+                <h3>Categories <span style="font-weight:400;color:var(--muted);font-size:0.8rem;">— drag to reorder</span></h3>
                 <div class="cat-tags-wrap" id="cat-tags-list"></div>
-                <div style="display:flex;gap:10px;">
-                    <input type="text" id="new-cat-name" placeholder="New category">
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="new-cat-name" placeholder="New category name" style="flex:1;">
                     <button class="btn btn-primary" id="add-cat-btn">Add</button>
                 </div>
             </div>
+
+            <!-- Add item -->
             <div class="card">
                 <h3>Add Item</h3>
-                <div style="display:grid;grid-template-columns:1fr 120px 1fr;gap:10px;margin-bottom:12px;">
+                <div style="display:grid;grid-template-columns:1fr 110px 1fr;gap:10px;margin-bottom:10px;">
                     <input type="text" id="new-name" placeholder="Item name">
-                    <input type="number" id="new-price" placeholder="Price £" step="0.01">
-                    <select id="new-cat"><option value="">Select category…</option></select>
+                    <input type="number" id="new-price" placeholder="£" step="0.01" min="0">
+                    <select id="new-cat"><option value="">Category…</option></select>
                 </div>
                 <button class="btn btn-primary" id="add-item-btn">Add to Menu</button>
             </div>
+
             <div id="menu-list"></div>
         </div>
-    </div>
-</div>
+
+    </div><!-- /content-area -->
+</div><!-- /admin-content -->
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot, updateDoc, setDoc, addDoc, deleteDoc, collection, query, where, orderBy, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, onSnapshot, updateDoc, setDoc, addDoc, deleteDoc,
+         collection, query, where, orderBy, getDocs, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+const FB = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
+const app  = initializeApp(FB);
+const auth = getAuth(app);
+const db   = getFirestore(app);
 
-    let allMenuItems = []; let allCategories = [];
+let allMenuItems  = [];
+let allCategories = [];
+let _isClosed     = false;
+let _pieEnabled   = false;
 
-    onAuthStateChanged(auth, user => {
-        document.getElementById('login-gate').classList.toggle('hidden', !!user);
-        document.getElementById('admin-content').classList.toggle('hidden', !user);
-        if (user) initAdmin();
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+document.getElementById('login-btn').onclick = () =>
+    signInWithEmailAndPassword(auth,
+        document.getElementById('admin-email').value,
+        document.getElementById('admin-pass').value
+    ).catch(e => alert(e.message));
+
+document.getElementById('logout-btn').onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, user => {
+    document.getElementById('login-gate').classList.toggle('hidden', !!user);
+    document.getElementById('admin-content').classList.toggle('hidden', !user);
+    if (user) initAdmin();
+});
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+    };
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function initAdmin() {
+
+    // ── Shop status ──
+    onSnapshot(doc(db, "settings", "truck_status"), snap => {
+        const d = snap.data() || {};
+        _isClosed  = !!d.is_closed;
+        _pieEnabled = !!d.pies_enabled;
+        const stock = d.pie_inventory ?? 0;
+
+        // Shop open/close
+        const dot     = document.getElementById('shop-dot');
+        const txt     = document.getElementById('status-text');
+        const togBtn  = document.getElementById('toggle-shop-btn');
+        dot.className = 'status-dot ' + (_isClosed ? 'closed' : 'open');
+        txt.innerText = _isClosed ? 'CLOSED' : 'OPEN';
+        togBtn.className   = 'pill-btn ' + (_isClosed ? 'pill-closed' : 'pill-open');
+        togBtn.innerText   = _isClosed ? 'Open Shop' : 'Close Shop';
+
+        // Pie toggle
+        const pieDot   = document.getElementById('pie-dot');
+        const pieLabel = document.getElementById('pie-live-label');
+        const pieCB    = document.getElementById('pie-toggle');
+        pieDot.className   = 'live-dot ' + (_pieEnabled ? 'on' : 'off');
+        pieLabel.innerText = _pieEnabled ? 'Pie orders LIVE' : 'Pie orders OFF';
+        pieCB.checked      = _pieEnabled;
+
+        document.getElementById('pie-stock').value = stock;
+
+        // Sold out notice
+        const soldout = document.getElementById('pie-soldout-notice');
+        if (_pieEnabled && stock <= 0) soldout.classList.remove('hidden');
+        else soldout.classList.add('hidden');
+
+        // Pie message
+        document.getElementById('pie-message').value = d.pie_message || '';
     });
 
-    document.getElementById('login-btn').onclick = () => {
-        signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-pass').value).catch(e => alert(e.message));
-    };
-    document.getElementById('logout-btn').onclick = () => signOut(auth);
+    // ── Categories ──
+    onSnapshot(doc(db, "settings", "categories"), snap => {
+        const saved = snap.data()?.list || [];
+        const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
+        const merged = [...new Set([...saved, ...fromItems])];
+        allCategories = merged.length ? merged : ['CHIPS', 'PIES', 'SIDES'];
+        if (allCategories.some(c => !saved.includes(c))) saveCatOrder();
+        renderCatTags();
+        renderCatDropdown();
+        renderMenuList();
+    });
 
-    function initAdmin() {
-        // Shop Status
-        onSnapshot(doc(db, "settings", "truck_status"), snap => {
-            const d = snap.data() || {};
-            window._isClosed = !!d.is_closed;
-            document.getElementById('status-text').innerText = d.is_closed ? "CLOSED" : "OPEN";
-            document.getElementById('pie-toggle').checked = !!d.pies_enabled;
-            document.getElementById('pie-stock').value = d.pie_inventory || 0;
+    // ── Menu items ──
+    onSnapshot(collection(db, "menu"), snap => {
+        allMenuItems = [];
+        snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
+        allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
+        const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
+        const newCats = fromItems.filter(c => !allCategories.includes(c));
+        if (newCats.length) { allCategories = [...allCategories, ...newCats]; saveCatOrder(); renderCatTags(); renderCatDropdown(); }
+        renderMenuList();
+    });
+
+    // ── Orders (PAID pending) ──
+    const q = query(collection(db, "orders"),
+        where("status", "==", "pending"),
+        where("paymentStatus", "==", "PAID"),
+        orderBy("createdAt", "desc"));
+    onSnapshot(q, renderOrders);
+
+    // ── Also show manually-accepted limited orders ──
+    const qLimited = query(collection(db, "orders"),
+        where("status", "==", "accepted"),
+        where("paymentStatus", "==", "PAID"),
+        orderBy("createdAt", "desc"));
+    onSnapshot(qLimited, renderLimitedAccepted);
+
+    // ── Pending approval (limited mode) ──
+    const qApproval = query(collection(db, "orders"),
+        where("status", "==", "awaiting_approval"),
+        orderBy("createdAt", "desc"));
+    onSnapshot(qApproval, renderAwaitingApproval);
+
+    // ── Static button wires ──
+    document.getElementById('toggle-shop-btn').onclick = () =>
+        updateDoc(doc(db, "settings", "truck_status"), { is_closed: !_isClosed });
+
+    document.getElementById('pie-toggle').onchange = (e) =>
+        updateDoc(doc(db, "settings", "truck_status"), { pies_enabled: e.target.checked });
+
+    document.getElementById('pie-update-btn').onclick = () =>
+        updateDoc(doc(db, "settings", "truck_status"), {
+            pie_inventory: parseInt(document.getElementById('pie-stock').value) || 0
         });
 
-        // Categories
-        onSnapshot(doc(db, "settings", "categories"), snap => {
-            allCategories = snap.data()?.list || ["CHIPS", "PIES", "SIDES"];
-            renderCatTags(); renderCatDropdown(); renderMenuList();
+    document.getElementById('pie-msg-btn').onclick = () =>
+        updateDoc(doc(db, "settings", "truck_status"), {
+            pie_message: document.getElementById('pie-message').value.trim()
+        }).then(() => { document.getElementById('pie-msg-btn').innerText = 'Saved ✓'; setTimeout(() => document.getElementById('pie-msg-btn').innerText = 'Save', 1500); });
+
+    document.getElementById('pie-pdf-btn').onclick   = generatePiePDF;
+    document.getElementById('pie-archive-btn').onclick = archivePies;
+    document.getElementById('add-cat-btn').onclick   = addCategory;
+    document.getElementById('add-item-btn').onclick  = addItem;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function saveCatOrder() {
+    return setDoc(doc(db, "settings", "categories"), { list: allCategories });
+}
+
+// ── ORDERS ────────────────────────────────────────────────────────────────────
+let _paidOrders    = [];
+let _acceptedOrders = [];
+let _approvalOrders = [];
+
+function renderOrders(snap) {
+    _paidOrders = [];
+    snap.forEach(d => _paidOrders.push({ id: d.id, ...d.data() }));
+    rebuildOrdersUI();
+}
+function renderLimitedAccepted(snap) {
+    _acceptedOrders = [];
+    snap.forEach(d => _acceptedOrders.push({ id: d.id, ...d.data() }));
+    rebuildOrdersUI();
+}
+function renderAwaitingApproval(snap) {
+    _approvalOrders = [];
+    snap.forEach(d => _approvalOrders.push({ id: d.id, ...d.data() }));
+    rebuildOrdersUI();
+}
+
+function rebuildOrdersUI() {
+    const live = document.getElementById('orders-list');
+    const pie  = document.getElementById('pie-list');
+    live.innerHTML = "";
+    pie.innerHTML  = "";
+
+    // Awaiting approval section
+    if (_approvalOrders.length) {
+        const hdr = document.createElement('div');
+        hdr.innerHTML = '<div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:2px;color:#f1c40f;margin-bottom:8px;">⏳ Awaiting Manual Approval</div>';
+        live.appendChild(hdr);
+        _approvalOrders.forEach(data => {
+            live.appendChild(buildOrderCard(data.id, data, true));
         });
-
-        // Menu items
-        onSnapshot(collection(db, "menu"), snap => {
-            allMenuItems = [];
-            snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
-            allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
-            renderMenuList();
-        });
-
-        // PAID ORDERS ONLY
-        const q = query(collection(db, "orders"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID"), orderBy("createdAt", "desc"));
-        onSnapshot(q, snap => renderOrders(snap));
-
-        // Listeners
-        document.getElementById('toggle-shop-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window._isClosed });
-        document.getElementById('pie-update-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { pies_enabled: document.getElementById('pie-toggle').checked, pie_inventory: parseInt(document.getElementById('pie-stock').value) || 0 });
-        document.getElementById('pie-pdf-btn').onclick = generatePiePDF;
-        document.getElementById('pie-archive-btn').onclick = archivePies;
-        document.getElementById('add-cat-btn').onclick = addCategory;
-        document.getElementById('add-item-btn').onclick = addItem;
-
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-                btn.classList.add('active');
-                document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
-            };
-        });
+        const div = document.createElement('div');
+        div.style.borderBottom = '1px solid var(--border)';
+        div.style.marginBottom = '14px';
+        live.appendChild(div);
     }
 
-    // --- LOGIC FUNCTIONS (Restored from Original) ---
-    function renderOrders(snap) {
-        const live = document.getElementById('orders-list'); const pie = document.getElementById('pie-list');
-        live.innerHTML = ""; pie.innerHTML = "";
-        if (snap.empty) { live.innerHTML = "<p style='color:var(--muted)'>No paid orders.</p>"; return; }
-        snap.forEach(d => {
-            const data = d.data(); const id = d.id;
-            const div = document.createElement('div'); div.className = 'order-card';
-            div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div>
-                <div style='margin:10px 0'><strong>${data.customer.name}</strong><br><ul class='order-items'>${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul></div>
-                <div style='display:flex;gap:10px'><button class='btn btn-ready' onclick="updateStatus('${id}','ready')">Mark Ready</button><button class='btn btn-cancel' onclick="updateStatus('${id}','cancelled')">Cancel</button></div>`;
-            data.type === 'PRE-ORDER' ? pie.appendChild(div) : live.appendChild(div);
+    const allActive = [..._paidOrders, ..._acceptedOrders];
+    if (!allActive.length && !_approvalOrders.length) {
+        live.innerHTML = '<p style="color:var(--muted);padding:20px 0;">No active orders.</p>';
+    }
+    allActive.forEach(data => {
+        const card = buildOrderCard(data.id, data, false);
+        data.type === 'PRE-ORDER' ? pie.appendChild(card) : live.appendChild(card);
+    });
+}
+
+function buildOrderCard(id, data, isApproval) {
+    const div = document.createElement('div');
+    div.className = 'order-card';
+
+    const badgeClass = data.type === 'PRE-ORDER' ? 'badge-preorder' : (data.isLimited ? 'badge-limited' : 'badge-pickup');
+    const shortId = id.slice(-4).toUpperCase();
+
+    let html = `<div class="order-header">
+        <span class="order-id">#${shortId}</span>
+        <span class="order-badge ${badgeClass}">${data.isLimited ? 'Limited' : data.type}</span>
+    </div>`;
+
+    if (isApproval) {
+        html += `<div class="order-pending-badge">⏳ Awaiting your approval</div>`;
+    }
+
+    if (data.customer?.name) {
+        html += `<div class="order-customer"><strong>${data.customer.name}</strong>`;
+        if (data.customer.phone) html += ` · ${data.customer.phone}`;
+        if (data.customer.msg)   html += `<br><span style="color:var(--muted)">Note: ${data.customer.msg}</span>`;
+        html += `</div>`;
+    }
+
+    html += `<ul class="order-items">${data.items.map(i => {
+        let li = `<li>${i.name}`;
+        if (i.subOption) li += ` <span style="color:var(--orange);font-size:0.8rem;">(${i.subOption})</span>`;
+        li += `</li>`;
+        return li;
+    }).join('')}</ul>`;
+
+    html += `<div class="order-actions">`;
+    if (isApproval) {
+        html += `<button class="btn btn-green" data-id="${id}" data-action="accept">✓ Accept</button>`;
+        html += `<button class="btn btn-cancel" data-id="${id}" data-action="reject">✕ Reject</button>`;
+    } else {
+        html += `<button class="btn btn-cancel" data-id="${id}" data-action="cancel">Cancel Order</button>`;
+    }
+    html += `</div>`;
+
+    div.innerHTML = html;
+    div.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const oid = btn.dataset.id;
+            const action = btn.dataset.action;
+            if (action === 'cancel' && confirm('Cancel this order?')) {
+                updateDoc(doc(db, "orders", oid), { status: "cancelled" });
+            } else if (action === 'accept') {
+                updateDoc(doc(db, "orders", oid), { status: "pending" });
+            } else if (action === 'reject' && confirm('Reject this order?')) {
+                updateDoc(doc(db, "orders", oid), { status: "cancelled" });
+            }
         });
-    }
+    });
+    return div;
+}
 
-    window.updateStatus = (id, s) => updateDoc(doc(db, "orders", id), { status: s });
+// ── CATEGORIES ────────────────────────────────────────────────────────────────
+function renderCatTags() {
+    const wrap = document.getElementById('cat-tags-list');
+    wrap.innerHTML = "";
+    allCategories.forEach((cat, idx) => {
+        const tag = document.createElement('div');
+        tag.className = 'cat-tag';
+        tag.draggable = true;
+        tag.dataset.idx = idx;
 
-    function renderCatTags() {
-        const wrap = document.getElementById('cat-tags-list'); wrap.innerHTML = "";
-        allCategories.forEach((cat, idx) => {
-            const tag = document.createElement('div'); tag.className = 'cat-tag'; tag.draggable = true;
-            tag.innerHTML = `${cat} <button onclick="deleteCategory('${cat}')" style='background:none;border:none;color:var(--muted);cursor:pointer'>×</button>`;
-            tag.ondragstart = (e) => e.dataTransfer.setData('idx', idx);
-            tag.ondragover = (e) => { e.preventDefault(); tag.classList.add('drag-over'); };
-            tag.ondragleave = () => tag.classList.remove('drag-over');
-            tag.ondrop = (e) => {
-                const fromIdx = e.dataTransfer.getData('idx');
-                const list = [...allCategories]; const [moved] = list.splice(fromIdx, 1);
-                list.splice(idx, 0, moved); setDoc(doc(db, "settings", "categories"), { list });
-            };
-            wrap.appendChild(tag);
+        const lbl = document.createTextNode(cat + ' ');
+        const del = document.createElement('button');
+        del.className = 'cat-del-btn';
+        del.innerText = '×';
+        del.onclick = (e) => { e.stopPropagation(); deleteCategory(cat); };
+        tag.appendChild(lbl);
+        tag.appendChild(del);
+        wrap.appendChild(tag);
+
+        tag.addEventListener('dragstart', e => { e.dataTransfer.setData('catIdx', idx); tag.classList.add('dragging'); });
+        tag.addEventListener('dragend',   () => tag.classList.remove('dragging'));
+        tag.addEventListener('dragover',  e => { e.preventDefault(); tag.classList.add('drag-over'); });
+        tag.addEventListener('dragleave', () => tag.classList.remove('drag-over'));
+        tag.addEventListener('drop', e => {
+            e.preventDefault(); tag.classList.remove('drag-over');
+            const fromIdx = parseInt(e.dataTransfer.getData('catIdx'));
+            const toIdx   = parseInt(tag.dataset.idx);
+            if (fromIdx === toIdx) return;
+            const list = [...allCategories];
+            const [moved] = list.splice(fromIdx, 1);
+            list.splice(toIdx, 0, moved);
+            allCategories = list;
+            saveCatOrder();
         });
-    }
+    });
+}
 
-    function renderCatDropdown() {
-        const sel = document.getElementById('new-cat'); sel.innerHTML = '<option value="">Select category…</option>';
-        allCategories.forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
-    }
+function renderCatDropdown() {
+    const sel = document.getElementById('new-cat');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Category…</option>';
+    allCategories.forEach(c => {
+        const o = document.createElement('option');
+        o.value = c; o.innerText = c;
+        if (c === cur) o.selected = true;
+        sel.appendChild(o);
+    });
+}
 
-    function renderMenuList() {
-        const list = document.getElementById('menu-list'); list.innerHTML = "";
-        allCategories.forEach(cat => {
-            const items = allMenuItems.filter(i => i.category === cat);
-            const sec = document.createElement('div'); sec.style.marginBottom = "20px";
-            sec.innerHTML = `<div style='color:var(--orange);font-size:0.7rem;letter-spacing:1px;margin-bottom:8px;'>${cat}</div>`;
-            const container = document.createElement('div'); container.className = 'card'; container.style.padding = "0";
+function addCategory() {
+    const input = document.getElementById('new-cat-name');
+    const name  = input.value.trim().toUpperCase();
+    if (!name || allCategories.includes(name)) return;
+    allCategories = [...allCategories, name];
+    saveCatOrder();
+    input.value = "";
+}
+
+function deleteCategory(cat) {
+    const inCat = allMenuItems.filter(i => i.category === cat);
+    if (!confirm(`Delete "${cat}"${inCat.length ? ` and its ${inCat.length} item(s)` : ''}?`)) return;
+    if (inCat.length) {
+        const batch = writeBatch(db);
+        inCat.forEach(item => batch.delete(doc(db, "menu", item.id)));
+        batch.commit();
+    }
+    allCategories = allCategories.filter(c => c !== cat);
+    saveCatOrder();
+}
+
+// ── INVENTORY ─────────────────────────────────────────────────────────────────
+function renderMenuList() {
+    const list = document.getElementById('menu-list');
+    if (!list) return;
+    list.innerHTML = "";
+
+    const byCat = {};
+    allCategories.forEach(c => { byCat[c] = []; });
+    allMenuItems.forEach(item => {
+        const c = item.category || allCategories[0];
+        if (!byCat[c]) byCat[c] = [];
+        byCat[c].push(item);
+    });
+
+    allCategories.forEach(cat => {
+        const items = byCat[cat] || [];
+        const sec   = document.createElement('div');
+        sec.className = 'inv-section';
+        const lbl = document.createElement('div');
+        lbl.className = 'inv-section-label';
+        lbl.innerText = `${cat} (${items.length})`;
+        sec.appendChild(lbl);
+
+        const invList = document.createElement('div');
+        invList.className = 'inv-list';
+
+        if (!items.length) {
+            invList.innerHTML = '<div class="empty-cat">No items — add one above</div>';
+        } else {
             items.forEach((item, idx) => {
-                const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true;
-                row.innerHTML = `<span class='drag-handle'>⠿</span><span class='inv-name'>${item.name}</span><span class='inv-price'>£${item.price.toFixed(2)}</span>
-                                <input type='checkbox' ${item.is_available ? 'checked' : ''} onchange="toggleAvail('${item.id}', this.checked)">
-                                <button onclick="deleteItem('${item.id}')" style='background:none;border:none;color:var(--muted);margin-left:10px;'>✕</button>`;
-                row.ondragstart = (e) => e.dataTransfer.setData('itemId', item.id);
-                row.ondragover = (e) => e.preventDefault();
-                row.ondrop = async (e) => {
-                    const fromId = e.dataTransfer.getData('itemId'); if(fromId === item.id) return;
-                    const ids = items.map(i => i.id); const fIdx = ids.indexOf(fromId); const tIdx = ids.indexOf(item.id);
-                    ids.splice(fIdx, 1); ids.splice(tIdx, 0, fromId);
-                    const batch = writeBatch(db); ids.forEach((id, i) => batch.update(doc(db, "menu", id), { sortOrder: i }));
-                    await batch.commit();
-                };
-                container.appendChild(row);
+                invList.appendChild(makeInvRow(item, idx, items, invList));
             });
-            sec.appendChild(container); list.appendChild(sec);
+        }
+
+        invList.addEventListener('dragover', e => e.preventDefault());
+        sec.appendChild(invList);
+        list.appendChild(sec);
+    });
+}
+
+function makeInvRow(item, idx, siblings, container) {
+    const row = document.createElement('div');
+    row.className = 'inv-row';
+    row.draggable = true;
+    row.dataset.id = item.id;
+
+    // Handle
+    const handle = document.createElement('span');
+    handle.className = 'drag-handle';
+    handle.innerText = '⠿';
+
+    // Name + sub-options summary
+    const nameWrap = document.createElement('div');
+    nameWrap.className = 'inv-name';
+    const nameEl = document.createElement('div');
+    nameEl.innerText = item.name;
+    nameWrap.appendChild(nameEl);
+    if (item.subOptions && item.subOptions.length) {
+        const sub = document.createElement('div');
+        sub.className = 'inv-subopts';
+        sub.innerText = 'Options: ' + item.subOptions.join(', ');
+        nameWrap.appendChild(sub);
+    }
+
+    // Price
+    const priceEl = document.createElement('span');
+    priceEl.className = 'inv-price';
+    priceEl.innerText = '£' + parseFloat(item.price).toFixed(2);
+
+    // Available checkbox
+    const availLabel = document.createElement('label');
+    availLabel.className = 'inv-avail';
+    const cb = document.createElement('input');
+    cb.type    = 'checkbox';
+    cb.checked = !!item.is_available;
+    cb.addEventListener('change', () => updateDoc(doc(db, "menu", item.id), { is_available: cb.checked }));
+    availLabel.appendChild(cb);
+    availLabel.appendChild(document.createTextNode(' Avail'));
+
+    // Edit sub-options button
+    const editSubBtn = document.createElement('button');
+    editSubBtn.className = 'btn';
+    editSubBtn.innerText = '⚙ Options';
+    editSubBtn.style.cssText = 'font-size:0.75rem;padding:4px 9px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border);';
+    editSubBtn.onclick = () => toggleSubEditor(item, row);
+
+    // Delete
+    const delBtn = document.createElement('button');
+    delBtn.className = 'inv-del';
+    delBtn.innerText = '✕';
+    delBtn.onclick = () => confirm(`Remove "${item.name}"?`) && deleteDoc(doc(db, "menu", item.id));
+
+    row.appendChild(handle);
+    row.appendChild(nameWrap);
+    row.appendChild(priceEl);
+    row.appendChild(availLabel);
+    row.appendChild(editSubBtn);
+    row.appendChild(delBtn);
+
+    // Drag events
+    row.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('itemId', item.id);
+        e.dataTransfer.setData('itemCat', item.category);
+        setTimeout(() => row.classList.add('dragging'), 0);
+    });
+    row.addEventListener('dragend', () => row.classList.remove('dragging'));
+    row.addEventListener('dragover', e => { e.preventDefault(); row.classList.add('drag-over'); });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', async e => {
+        e.preventDefault(); row.classList.remove('drag-over');
+        const fromId  = e.dataTransfer.getData('itemId');
+        const fromCat = e.dataTransfer.getData('itemCat');
+        if (fromId === item.id || fromCat !== item.category) return;
+        const rows = [...container.querySelectorAll('.inv-row')];
+        const ids  = rows.map(r => r.dataset.id);
+        const fi   = ids.indexOf(fromId);
+        const ti   = ids.indexOf(item.id);
+        ids.splice(fi, 1); ids.splice(ti, 0, fromId);
+        const batch = writeBatch(db);
+        ids.forEach((id, i) => batch.update(doc(db, "menu", id), { sortOrder: i }));
+        await batch.commit();
+    });
+
+    return row;
+}
+
+// ── SUB-OPTIONS EDITOR ────────────────────────────────────────────────────────
+function toggleSubEditor(item, row) {
+    // Remove any open editor on this row first
+    const existing = row.nextElementSibling;
+    if (existing && existing.classList.contains('subopt-editor')) {
+        existing.remove(); return;
+    }
+    const editor = document.createElement('div');
+    editor.className = 'subopt-editor';
+
+    const title = document.createElement('h5');
+    title.innerText = `Options for "${item.name}"`;
+    editor.appendChild(title);
+
+    const tagsWrap = document.createElement('div');
+    tagsWrap.id = 'subopt-tags-' + item.id;
+
+    function refreshTags(opts) {
+        tagsWrap.innerHTML = "";
+        (opts || []).forEach(opt => {
+            const tag = document.createElement('span');
+            tag.className = 'subopt-tag';
+            tag.innerHTML = `${opt} <button data-opt="${opt}">×</button>`;
+            tag.querySelector('button').onclick = async () => {
+                const snap = await getDoc(doc(db, "menu", item.id));
+                const cur  = snap.data().subOptions || [];
+                await updateDoc(doc(db, "menu", item.id), { subOptions: cur.filter(o => o !== opt) });
+                refreshTags(cur.filter(o => o !== opt));
+            };
+            tagsWrap.appendChild(tag);
         });
     }
+    refreshTags(item.subOptions || []);
+    editor.appendChild(tagsWrap);
 
-    window.toggleAvail = (id, val) => updateDoc(doc(db, "menu", id), { is_available: val });
-    window.deleteItem = (id) => confirm("Delete item?") && deleteDoc(doc(db, "menu", id));
-    window.deleteCategory = (cat) => confirm("Delete category and its items?") && setDoc(doc(db, "settings", "categories"), { list: allCategories.filter(c => c !== cat) });
-    
-    async function addItem() {
-        const name = document.getElementById('new-name').value;
-        const price = parseFloat(document.getElementById('new-price').value);
-        const category = document.getElementById('new-cat').value;
-        if(!name || isNaN(price) || !category) return alert("Fill all fields");
-        await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: 999 });
-        document.getElementById('new-name').value = ""; document.getElementById('new-price').value = "";
-    }
+    const addRow = document.createElement('div');
+    addRow.className = 'subopt-add-row';
+    const input = document.createElement('input');
+    input.type = 'text'; input.placeholder = 'e.g. Mushy Peas';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn btn-primary'; addBtn.innerText = '+ Add';
+    addBtn.style.cssText = 'white-space:nowrap;font-size:0.82rem;padding:6px 12px;';
+    addBtn.onclick = async () => {
+        const val = input.value.trim();
+        if (!val) return;
+        const snap = await getDoc(doc(db, "menu", item.id));
+        const cur  = snap.data().subOptions || [];
+        if (cur.includes(val)) { input.value = ""; return; }
+        const updated = [...cur, val];
+        await updateDoc(doc(db, "menu", item.id), { subOptions: updated });
+        refreshTags(updated);
+        input.value = "";
+    };
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') addBtn.click(); });
+    addRow.appendChild(input); addRow.appendChild(addBtn);
+    editor.appendChild(addRow);
 
-    function addCategory() {
-        const name = document.getElementById('new-cat-name').value.toUpperCase().trim();
-        if(!name || allCategories.includes(name)) return;
-        setDoc(doc(db, "settings", "categories"), { list: [...allCategories, name] });
-        document.getElementById('new-cat-name').value = "";
-    }
+    row.insertAdjacentElement('afterend', editor);
+}
 
-    async function archivePies() {
-        if(!confirm("Archive all?")) return;
-        const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
-        const b = writeBatch(db); snap.forEach(d => b.update(d.ref, { status: "archived" }));
-        await b.commit();
-    }
+// ── ADD ITEM ──────────────────────────────────────────────────────────────────
+async function addItem() {
+    const nameEl  = document.getElementById('new-name');
+    const priceEl = document.getElementById('new-price');
+    const catEl   = document.getElementById('new-cat');
+    const name    = nameEl.value.trim();
+    const price   = parseFloat(priceEl.value);
+    const cat     = catEl.value;
+    if (!name)        return alert("Enter an item name");
+    if (isNaN(price)) return alert("Enter a valid price");
+    if (!cat)         return alert("Select a category");
+    const catItems = allMenuItems.filter(i => i.category === cat);
+    const maxOrder = catItems.length ? Math.max(...catItems.map(i => i.sortOrder ?? 0)) : -1;
+    await addDoc(collection(db, "menu"), { name, price, category: cat, is_available: true, sortOrder: maxOrder + 1, subOptions: [] });
+    nameEl.value = ""; priceEl.value = ""; catEl.value = "";
+}
 
-    async function generatePiePDF() {
-        const { jsPDF } = window.jspdf; const pdf = new jsPDF();
-        const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID")));
-        const rows = []; snap.forEach(d => { const data = d.data(); rows.push([data.customer.name, data.items.map(i => i.name).join(', '), data.customer.msg || '-']); });
-        pdf.text("Pie Prep Sheet", 14, 15); pdf.autoTable({ startY: 20, head: [['Customer', 'Items', 'Note']], body: rows });
-        pdf.save("Pies.pdf");
-    }
+// ── PIE BATCH ─────────────────────────────────────────────────────────────────
+async function archivePies() {
+    if (!confirm("Archive all current pie pre-orders?")) return;
+    const s = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID")));
+    const b = writeBatch(db);
+    s.forEach(d => b.update(d.ref, { status: "archived" }));
+    await b.commit();
+}
+
+async function generatePiePDF() {
+    const { jsPDF } = window.jspdf;
+    const pdf  = new jsPDF();
+    const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID")));
+    const rows = [];
+    snap.forEach(d => {
+        const data = d.data();
+        rows.push([
+            data.customer?.name || '–',
+            data.customer?.phone || '–',
+            data.items.map(i => i.name + (i.subOption ? ' (' + i.subOption + ')' : '')).join(', '),
+            data.customer?.msg || '–'
+        ]);
+    });
+    pdf.text("Pie Prep Sheet", 14, 15);
+    pdf.autoTable({ startY: 20, head: [['Customer', 'Phone', 'Items', 'Note']], body: rows });
+    pdf.save("Pies.pdf");
+}
 </script>
 </body>
 </html>
