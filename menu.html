@@ -248,7 +248,7 @@ onSnapshot(doc(db, "settings", "truck_status"), snap => {
     // Menu button
     if (d.is_closed && !isAdmin) {
         menuBtn.disabled = true;
-        menuSub.innerText = 'Currently Closed';
+        menuSub.innerText = 'COMING SOON';
     } else {
         menuBtn.disabled = false;
         menuSub.innerText = isLimited ? 'Limited — orders need approval' : 'Collection Only';
