@@ -27,56 +27,46 @@
         input[type=text], input[type=email], input[type=password], input[type=number], select { background: var(--surface-2); border: 1px solid var(--border); color: white; padding: 10px 12px; border-radius: 8px; width: 100%; font-family: 'DM Sans', sans-serif; }
         input:focus, select:focus { outline: none; border-color: var(--orange); }
         .hidden { display: none !important; }
+        /* Login gate shown immediately — no flash */
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .status-bar { margin: 20px 32px; background: var(--surface); border-radius: 14px; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
         .order-items { list-style: none; margin: 8px 0; font-size: 0.88rem; color: var(--muted); }
         .order-items li::before { content: "· "; color: var(--orange); }
-
-        /* Categories */
         .cat-tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
         .cat-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; cursor: grab; font-size: 0.85rem; user-select: none; }
-        .cat-tag.drag-over { border-color: var(--orange); background: rgba(244,113,43,0.08); }
-        .cat-tag.dragging { opacity: 0.4; }
-
+        .cat-tag.drag-over { border-color: var(--orange); }
         /* Inventory rows */
-        .inv-section { margin-bottom: 20px; }
-        .inv-section-label { color: var(--orange); font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-        .inv-list { background: var(--surface); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
-        .inv-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 10px; }
+        .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 8px; }
         .inv-row:last-child { border-bottom: none; }
-        .inv-row.dragging { opacity: 0.35; }
-        .inv-row.drag-over { background: rgba(244,113,43,0.07); border-top: 2px solid var(--orange); }
         .drag-handle { color: var(--muted); margin-right: 4px; flex-shrink: 0; }
-        .inv-name { flex: 1; font-size: 0.9rem; }
-        .inv-name small { display: block; color: var(--muted); font-size: 0.75rem; margin-top: 2px; }
-        .inv-price { color: var(--orange); margin-right: 8px; font-size: 0.88rem; white-space: nowrap; }
-        .inv-avail { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; color: var(--muted); cursor: pointer; white-space: nowrap; }
-        .inv-avail input[type=checkbox] { width: auto; cursor: pointer; accent-color: var(--orange); }
-        .inv-del { background: none; border: none; color: var(--muted); cursor: pointer; padding: 2px 6px; font-size: 1rem; }
-        .inv-del:hover { color: var(--red); }
-
+        .inv-name { flex: 1; }
+        /* Inline name edit field */
+        .inv-name-input {
+            flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--border);
+            color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+            padding: 2px 4px; outline: none; width: 100%;
+        }
+        .inv-name-input:focus { border-bottom-color: var(--orange); }
+        .inv-price { color: var(--orange); margin-right: 8px; white-space: nowrap; flex-shrink: 0; }
         /* Options editor */
         .opts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
         .opts-btn:hover { border-color: var(--orange); color: var(--orange); }
         .opts-editor { padding: 12px 16px; background: rgba(0,0,0,0.25); border-bottom: 1px solid var(--border); }
-        .opts-editor h5 { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .opts-editor h5 { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
         .opts-tag { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-2); border: 1px solid var(--border); padding: 3px 8px 3px 10px; border-radius: 14px; font-size: 0.8rem; margin: 2px; }
         .opts-tag button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0; }
         .opts-tag button:hover { color: var(--red); }
-        .opts-add-row { display: flex; gap: 6px; margin-top: 8px; }
-        .opts-add-row input { flex: 1; padding: 7px 10px; font-size: 0.82rem; }
+        .opts-add-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .opts-add-row input { flex: 1; min-width: 120px; padding: 7px 10px; font-size: 0.82rem; }
         .opts-add-row input[type=number] { width: 90px; flex: none; }
-
-        /* Variant tags */
-        .var-section { margin-top: 8px; }
-        .var-section h6 { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .opts-add-row .btn { font-size: 0.82rem; padding: 6px 12px; white-space: nowrap; }
     </style>
 </head>
 <body>
 
 <div id="login-gate">
     <div style="width:320px;text-align:center;">
-        <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" style="width:220px;margin-bottom:30px;">
+        <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" style="width:220px; margin-bottom:30px;">
         <div style="display:flex;flex-direction:column;gap:10px;">
             <input type="email" id="admin-email" placeholder="Email">
             <input type="password" id="admin-pass" placeholder="Password">
@@ -103,13 +93,15 @@
     </nav>
 
     <div class="content-area">
+        <!-- LIVE ORDERS -->
         <div id="tab-live" class="tab-panel"><div id="orders-list"></div></div>
 
+        <!-- PIE BATCH -->
         <div id="tab-pies" class="tab-panel hidden">
             <div class="card" style="border-color:var(--orange)">
                 <h3 style="margin-bottom:16px">Pie Batch Control</h3>
                 <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
-                    <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" id="pie-toggle" style="width:auto;accent-color:var(--orange);"> Enable Pie Orders</label>
+                    <label><input type="checkbox" id="pie-toggle" style="width:auto;accent-color:var(--orange);"> Enable Pie Orders</label>
                     <input type="number" id="pie-stock" placeholder="Stock" style="width:100px;">
                     <button class="btn btn-primary" id="pie-update-btn">Update</button>
                 </div>
@@ -119,9 +111,10 @@
             <div id="pie-list"></div>
         </div>
 
+        <!-- INVENTORY -->
         <div id="tab-menu" class="tab-panel hidden">
             <div class="card">
-                <h3 style="margin-bottom:12px;">Categories <span style="font-weight:400;color:var(--muted);font-size:0.8rem;">— drag to reorder</span></h3>
+                <h3>Categories</h3>
                 <div class="cat-tags-wrap" id="cat-tags-list"></div>
                 <div style="display:flex;gap:10px;">
                     <input type="text" id="new-cat-name" placeholder="New category">
@@ -129,7 +122,7 @@
                 </div>
             </div>
             <div class="card">
-                <h3 style="margin-bottom:12px;">Add Item</h3>
+                <h3>Add Item</h3>
                 <div style="display:grid;grid-template-columns:1fr 120px 1fr;gap:10px;margin-bottom:12px;">
                     <input type="text" id="new-name" placeholder="Item name">
                     <input type="number" id="new-price" placeholder="Price £" step="0.01">
@@ -143,540 +136,391 @@
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, onSnapshot, updateDoc, setDoc, addDoc, deleteDoc,
-         collection, query, where, orderBy, getDocs, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, onSnapshot, updateDoc, setDoc, addDoc, deleteDoc,
+             collection, query, where, orderBy, getDocs, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+    const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-let allMenuItems  = [];
-let allCategories = [];
+    let allMenuItems = []; let allCategories = [];
 
-// ── AUTH ──────────────────────────────────────────────────────────────────────
-document.getElementById('login-btn').addEventListener('click', () =>
-    signInWithEmailAndPassword(auth,
-        document.getElementById('admin-email').value,
-        document.getElementById('admin-pass').value
-    ).catch(e => alert(e.message))
-);
-document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
-
-onAuthStateChanged(auth, user => {
-    document.getElementById('login-gate').classList.toggle('hidden', !!user);
-    document.getElementById('admin-content').classList.toggle('hidden', !user);
-    if (user) initAdmin();
-});
-
-// ── TABS ──────────────────────────────────────────────────────────────────────
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-        btn.classList.add('active');
-        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
-    });
-});
-
-// ── INIT ──────────────────────────────────────────────────────────────────────
-function initAdmin() {
-
-    // Shop status
-    onSnapshot(doc(db, "settings", "truck_status"), snap => {
-        const d = snap.data() || {};
-        window._isClosed = !!d.is_closed;
-        document.getElementById('status-text').innerText = d.is_closed ? "CLOSED" : "OPEN";
-        document.getElementById('pie-toggle').checked = !!d.pies_enabled;
-        document.getElementById('pie-stock').value = d.pie_inventory || 0;
+    // Auth state — login gate is visible by default in HTML, so no flash
+    onAuthStateChanged(auth, user => {
+        document.getElementById('login-gate').classList.toggle('hidden', !!user);
+        document.getElementById('admin-content').classList.toggle('hidden', !user);
+        if (user) initAdmin();
     });
 
-    // Categories — merge with any from actual menu items so nothing is hidden
-    onSnapshot(doc(db, "settings", "categories"), snap => {
-        const saved = snap.data()?.list || [];
-        const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
-        const merged = [...new Set([...saved, ...fromItems])];
-        allCategories = merged.length ? merged : ['CHIPS', 'PIES', 'SIDES'];
-        if (allCategories.some(c => !saved.includes(c))) {
-            setDoc(doc(db, "settings", "categories"), { list: allCategories });
-        }
-        renderCatTags();
-        renderCatDropdown();
-        renderMenuList();
-    });
+    document.getElementById('login-btn').onclick = () => {
+        signInWithEmailAndPassword(auth, document.getElementById('admin-email').value, document.getElementById('admin-pass').value).catch(e => alert(e.message));
+    };
+    document.getElementById('logout-btn').onclick = () => signOut(auth);
 
-    // Menu items
-    onSnapshot(collection(db, "menu"), snap => {
-        allMenuItems = [];
-        snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
-        allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
-        // Auto-add any new categories from items
-        const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
-        const newCats = fromItems.filter(c => !allCategories.includes(c));
-        if (newCats.length) {
-            allCategories = [...allCategories, ...newCats];
-            setDoc(doc(db, "settings", "categories"), { list: allCategories });
-            renderCatTags();
-            renderCatDropdown();
-        }
-        renderMenuList();
-    });
-
-    // Orders (PAID + pending)
-    onSnapshot(
-        query(collection(db, "orders"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID"), orderBy("createdAt", "desc")),
-        renderOrders
-    );
-
-    // Button wires
-    document.getElementById('toggle-shop-btn').addEventListener('click', () =>
-        updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window._isClosed })
-    );
-    document.getElementById('pie-update-btn').addEventListener('click', () =>
-        updateDoc(doc(db, "settings", "truck_status"), {
-            pies_enabled: document.getElementById('pie-toggle').checked,
-            pie_inventory: parseInt(document.getElementById('pie-stock').value) || 0
-        })
-    );
-    document.getElementById('pie-pdf-btn').addEventListener('click', generatePiePDF);
-    document.getElementById('pie-archive-btn').addEventListener('click', archivePies);
-    document.getElementById('add-cat-btn').addEventListener('click', addCategory);
-    document.getElementById('add-item-btn').addEventListener('click', addItem);
-}
-
-// ── ORDERS ────────────────────────────────────────────────────────────────────
-function renderOrders(snap) {
-    const live = document.getElementById('orders-list');
-    const pie  = document.getElementById('pie-list');
-    live.innerHTML = "";
-    pie.innerHTML  = "";
-    if (snap.empty) { live.innerHTML = "<p style='color:var(--muted)'>No paid orders.</p>"; return; }
-
-    snap.forEach(d => {
-        const data = d.data();
-        const div  = document.createElement('div');
-        div.className = 'order-card';
-
-        // Build item list — include variant/option label if present
-        const itemLines = data.items.map(i => {
-            let line = i.name;
-            if (i.variantLabel) line += ' — ' + i.variantLabel;
-            else if (i.subOption) line += ' (' + i.subOption + ')';
-            return '<li>' + line + '</li>';
-        }).join('');
-
-        div.innerHTML = `
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-                <strong>#${d.id.slice(-4).toUpperCase()}</strong>
-                <span style="background:rgba(244,113,43,0.15);color:var(--orange);padding:2px 8px;border-radius:5px;font-size:0.72rem;">${data.type}</span>
-            </div>
-            <div style="margin:8px 0"><strong>${data.customer?.name || ''}</strong></div>
-            <ul class="order-items">${itemLines}</ul>
-            <div style="display:flex;gap:8px;margin-top:10px;">
-                <button class="btn btn-ready" data-id="${d.id}">Mark Ready</button>
-                <button class="btn btn-cancel" data-id="${d.id}">Cancel</button>
-            </div>`;
-
-        div.querySelector('.btn-ready').addEventListener('click', () =>
-            updateDoc(doc(db, "orders", d.id), { status: 'ready' })
-        );
-        div.querySelector('.btn-cancel').addEventListener('click', () => {
-            if (confirm('Cancel this order?')) updateDoc(doc(db, "orders", d.id), { status: 'cancelled' });
+    function initAdmin() {
+        // Shop Status
+        onSnapshot(doc(db, "settings", "truck_status"), snap => {
+            const d = snap.data() || {};
+            window._isClosed = !!d.is_closed;
+            document.getElementById('status-text').innerText = d.is_closed ? "CLOSED" : "OPEN";
+            document.getElementById('pie-toggle').checked = !!d.pies_enabled;
+            document.getElementById('pie-stock').value = d.pie_inventory || 0;
         });
 
-        data.type === 'PRE-ORDER' ? pie.appendChild(div) : live.appendChild(div);
-    });
-}
-
-// ── CATEGORIES ────────────────────────────────────────────────────────────────
-function renderCatTags() {
-    const wrap = document.getElementById('cat-tags-list');
-    wrap.innerHTML = "";
-    allCategories.forEach((cat, idx) => {
-        const tag = document.createElement('div');
-        tag.className = 'cat-tag';
-        tag.draggable = true;
-        tag.dataset.idx = idx;
-        tag.appendChild(document.createTextNode(cat + ' '));
-
-        const del = document.createElement('button');
-        del.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;padding:0;';
-        del.innerText = '×';
-        del.addEventListener('click', e => { e.stopPropagation(); deleteCategory(cat); });
-        tag.appendChild(del);
-        wrap.appendChild(tag);
-
-        tag.addEventListener('dragstart', e => {
-            e.dataTransfer.setData('catIdx', String(idx));
-            tag.classList.add('dragging');
+        // Categories — merge saved list with any categories that exist in menu items
+        onSnapshot(doc(db, "settings", "categories"), snap => {
+            const saved = snap.data()?.list || [];
+            const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
+            const merged = [...new Set([...saved, ...fromItems])];
+            allCategories = merged.length ? merged : ["CHIPS", "PIES", "SIDES"];
+            if (allCategories.some(c => !saved.includes(c))) {
+                setDoc(doc(db, "settings", "categories"), { list: allCategories });
+            }
+            renderCatTags(); renderCatDropdown(); renderMenuList();
         });
-        tag.addEventListener('dragend', () => tag.classList.remove('dragging'));
-        tag.addEventListener('dragover', e => { e.preventDefault(); tag.classList.add('drag-over'); });
-        tag.addEventListener('dragleave', () => tag.classList.remove('drag-over'));
-        tag.addEventListener('drop', e => {
-            e.preventDefault();
-            tag.classList.remove('drag-over');
-            const fromIdx = parseInt(e.dataTransfer.getData('catIdx'));
-            const toIdx   = parseInt(tag.dataset.idx);
-            if (fromIdx === toIdx) return;
-            const list = [...allCategories];
-            const [moved] = list.splice(fromIdx, 1);
-            list.splice(toIdx, 0, moved);
-            allCategories = list;
-            setDoc(doc(db, "settings", "categories"), { list: allCategories });
+
+        // Menu items
+        onSnapshot(collection(db, "menu"), snap => {
+            allMenuItems = [];
+            snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
+            allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
+            // Auto-surface any categories from items not yet in the saved list
+            const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
+            const newCats = fromItems.filter(c => !allCategories.includes(c));
+            if (newCats.length) {
+                allCategories = [...allCategories, ...newCats];
+                setDoc(doc(db, "settings", "categories"), { list: allCategories });
+                renderCatTags(); renderCatDropdown();
+            }
+            renderMenuList();
         });
-    });
-}
 
-function renderCatDropdown() {
-    const sel = document.getElementById('new-cat');
-    const cur = sel.value;
-    sel.innerHTML = '<option value="">Select category…</option>';
-    allCategories.forEach(c => {
-        const o = document.createElement('option');
-        o.value = c; o.innerText = c;
-        if (c === cur) o.selected = true;
-        sel.appendChild(o);
-    });
-}
+        // PAID ORDERS ONLY
+        const q = query(collection(db, "orders"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID"), orderBy("createdAt", "desc"));
+        onSnapshot(q, snap => renderOrders(snap));
 
-function addCategory() {
-    const input = document.getElementById('new-cat-name');
-    const name  = input.value.trim().toUpperCase();
-    if (!name || allCategories.includes(name)) return;
-    allCategories = [...allCategories, name];
-    setDoc(doc(db, "settings", "categories"), { list: allCategories });
-    input.value = "";
-}
+        // Listeners
+        document.getElementById('toggle-shop-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window._isClosed });
+        document.getElementById('pie-update-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { pies_enabled: document.getElementById('pie-toggle').checked, pie_inventory: parseInt(document.getElementById('pie-stock').value) || 0 });
+        document.getElementById('pie-pdf-btn').onclick = generatePiePDF;
+        document.getElementById('pie-archive-btn').onclick = archivePies;
+        document.getElementById('add-cat-btn').onclick = addCategory;
+        document.getElementById('add-item-btn').onclick = addItem;
 
-function deleteCategory(cat) {
-    const inCat = allMenuItems.filter(i => i.category === cat);
-    if (!confirm(`Delete "${cat}"${inCat.length ? ` and its ${inCat.length} item(s)` : ''}?`)) return;
-    if (inCat.length) {
-        const batch = writeBatch(db);
-        inCat.forEach(item => batch.delete(doc(db, "menu", item.id)));
-        batch.commit();
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+            };
+        });
     }
-    allCategories = allCategories.filter(c => c !== cat);
-    setDoc(doc(db, "settings", "categories"), { list: allCategories });
-}
 
-// ── INVENTORY RENDER ──────────────────────────────────────────────────────────
-function renderMenuList() {
-    const list = document.getElementById('menu-list');
-    if (!list) return;
-    list.innerHTML = "";
+    // ── ORDERS ───────────────────────────────────────────────────────────────
+    function renderOrders(snap) {
+        const live = document.getElementById('orders-list'); const pie = document.getElementById('pie-list');
+        live.innerHTML = ""; pie.innerHTML = "";
+        if (snap.empty) { live.innerHTML = "<p style='color:var(--muted)'>No paid orders.</p>"; return; }
+        snap.forEach(d => {
+            const data = d.data(); const id = d.id;
+            const div = document.createElement('div'); div.className = 'order-card';
+            const itemLines = data.items.map(i => {
+                let s = i.name;
+                if (i.variantLabel) s += ' (' + i.variantLabel + ')';
+                else if (i.subOption) s += ' (' + i.subOption + ')';
+                return '<li>' + s + '</li>';
+            }).join('');
+            div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div>
+                <div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong><ul class='order-items'>${itemLines}</ul></div>
+                <div style='display:flex;gap:10px'>
+                    <button class='btn btn-ready'>Mark Ready</button>
+                    <button class='btn btn-cancel'>Cancel</button>
+                </div>`;
+            div.querySelector('.btn-ready').onclick = () => updateDoc(doc(db, "orders", id), { status: 'ready' });
+            div.querySelector('.btn-cancel').onclick = () => confirm('Cancel order?') && updateDoc(doc(db, "orders", id), { status: 'cancelled' });
+            data.type === 'PRE-ORDER' ? pie.appendChild(div) : live.appendChild(div);
+        });
+    }
 
-    const byCat = {};
-    allCategories.forEach(c => { byCat[c] = []; });
-    allMenuItems.forEach(item => {
-        const c = item.category || allCategories[0];
-        if (!byCat[c]) byCat[c] = [];
-        byCat[c].push(item);
-    });
+    // ── CATEGORIES ───────────────────────────────────────────────────────────
+    function renderCatTags() {
+        const wrap = document.getElementById('cat-tags-list'); wrap.innerHTML = "";
+        allCategories.forEach((cat, idx) => {
+            const tag = document.createElement('div'); tag.className = 'cat-tag'; tag.draggable = true;
+            tag.dataset.idx = idx;
+            tag.appendChild(document.createTextNode(cat + ' '));
+            const delBtn = document.createElement('button');
+            delBtn.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;padding:0;';
+            delBtn.innerText = '×';
+            delBtn.onclick = (e) => { e.stopPropagation(); deleteCategory(cat); };
+            tag.appendChild(delBtn);
+            wrap.appendChild(tag);
 
-    allCategories.forEach(cat => {
-        const items = byCat[cat] || [];
-        const sec   = document.createElement('div');
-        sec.className = 'inv-section';
+            tag.ondragstart = (e) => { e.dataTransfer.setData('idx', String(idx)); };
+            tag.ondragover  = (e) => { e.preventDefault(); tag.classList.add('drag-over'); };
+            tag.ondragleave = () => tag.classList.remove('drag-over');
+            tag.ondrop = (e) => {
+                e.preventDefault(); tag.classList.remove('drag-over');
+                const fromIdx = parseInt(e.dataTransfer.getData('idx'));
+                const toIdx = parseInt(tag.dataset.idx);
+                if (fromIdx === toIdx) return;
+                const list = [...allCategories]; const [moved] = list.splice(fromIdx, 1);
+                list.splice(toIdx, 0, moved);
+                allCategories = list;
+                setDoc(doc(db, "settings", "categories"), { list: allCategories });
+            };
+        });
+    }
 
-        const lbl = document.createElement('div');
-        lbl.className = 'inv-section-label';
-        lbl.innerText = `${cat} (${items.length})`;
-        sec.appendChild(lbl);
+    function renderCatDropdown() {
+        const sel = document.getElementById('new-cat');
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">Select category…</option>';
+        allCategories.forEach(c => {
+            const o = document.createElement('option');
+            o.value = c; o.innerText = c;
+            if (c === cur) o.selected = true;
+            sel.appendChild(o);
+        });
+    }
 
-        const invList = document.createElement('div');
-        invList.className = 'inv-list';
+    function addCategory() {
+        const name = document.getElementById('new-cat-name').value.toUpperCase().trim();
+        if (!name || allCategories.includes(name)) return;
+        allCategories = [...allCategories, name];
+        setDoc(doc(db, "settings", "categories"), { list: allCategories });
+        document.getElementById('new-cat-name').value = "";
+    }
 
-        if (!items.length) {
-            invList.innerHTML = '<div style="padding:12px 16px;color:var(--muted);font-size:0.85rem;">No items</div>';
-        } else {
-            items.forEach((item, idx) => {
-                invList.appendChild(makeRow(item, idx, items, invList));
+    function deleteCategory(cat) {
+        if (!confirm("Delete category and its items?")) return;
+        const inCat = allMenuItems.filter(i => i.category === cat);
+        if (inCat.length) {
+            const batch = writeBatch(db);
+            inCat.forEach(item => batch.delete(doc(db, "menu", item.id)));
+            batch.commit();
+        }
+        allCategories = allCategories.filter(c => c !== cat);
+        setDoc(doc(db, "settings", "categories"), { list: allCategories });
+    }
+
+    // ── INVENTORY ────────────────────────────────────────────────────────────
+    function renderMenuList() {
+        const list = document.getElementById('menu-list'); list.innerHTML = "";
+        allCategories.forEach(cat => {
+            const items = allMenuItems.filter(i => i.category === cat);
+            const sec = document.createElement('div'); sec.style.marginBottom = "20px";
+            const catLabel = document.createElement('div');
+            catLabel.style.cssText = 'color:var(--orange);font-size:0.7rem;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;';
+            catLabel.innerText = cat;
+            sec.appendChild(catLabel);
+
+            const container = document.createElement('div'); container.className = 'card'; container.style.padding = "0";
+            container.addEventListener('dragover', e => e.preventDefault());
+
+            items.forEach(item => {
+                container.appendChild(makeRow(item, items, container));
+            });
+
+            sec.appendChild(container); list.appendChild(sec);
+        });
+    }
+
+    function makeRow(item, siblings, container) {
+        const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true; row.dataset.id = item.id;
+
+        // Drag handle
+        const handle = document.createElement('span'); handle.className = 'drag-handle'; handle.innerText = '⠿';
+
+        // ── Editable name ──
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'inv-name-input';
+        nameInput.value = item.name;
+        nameInput.title = 'Click to edit name';
+        // Prevent drag from starting when clicking the input
+        nameInput.addEventListener('mousedown', e => e.stopPropagation());
+        nameInput.addEventListener('blur', () => {
+            const newName = nameInput.value.trim();
+            if (newName && newName !== item.name) {
+                updateDoc(doc(db, "menu", item.id), { name: newName });
+            } else {
+                nameInput.value = item.name; // revert if empty
+            }
+        });
+        nameInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') nameInput.blur();
+            if (e.key === 'Escape') { nameInput.value = item.name; nameInput.blur(); }
+        });
+
+        // Price
+        const priceEl = document.createElement('span'); priceEl.className = 'inv-price';
+        const hasVariants = item.variants && item.variants.length;
+        priceEl.innerText = hasVariants ? 'variants' : '£' + parseFloat(item.price).toFixed(2);
+
+        // Available checkbox — using addEventListener so it works in module scope
+        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!item.is_available; cb.style.cssText = 'width:auto;accent-color:var(--orange);cursor:pointer;';
+        cb.addEventListener('change', () => updateDoc(doc(db, "menu", item.id), { is_available: cb.checked }));
+
+        // Options button
+        const optsBtn = document.createElement('button'); optsBtn.className = 'opts-btn'; optsBtn.innerText = '⚙ Options';
+        optsBtn.addEventListener('click', () => toggleOptsEditor(item, row));
+
+        // Delete button
+        const delBtn = document.createElement('button');
+        delBtn.style.cssText = 'background:none;border:none;color:var(--muted);margin-left:6px;cursor:pointer;font-size:1rem;';
+        delBtn.innerText = '✕';
+        delBtn.addEventListener('click', () => { if (confirm("Delete item?")) deleteDoc(doc(db, "menu", item.id)); });
+
+        row.appendChild(handle); row.appendChild(nameInput); row.appendChild(priceEl);
+        row.appendChild(cb); row.appendChild(optsBtn); row.appendChild(delBtn);
+
+        // ── Drag and drop ──
+        row.ondragstart = (e) => { e.dataTransfer.setData('itemId', item.id); e.dataTransfer.setData('itemCat', item.category); setTimeout(() => row.style.opacity = '0.4', 0); };
+        row.ondragend   = () => { row.style.opacity = '1'; };
+        row.ondragover  = (e) => { e.preventDefault(); row.style.borderTop = '2px solid var(--orange)'; };
+        row.ondragleave = () => { row.style.borderTop = ''; };
+        row.ondrop = async (e) => {
+            e.preventDefault(); row.style.borderTop = '';
+            const fromId  = e.dataTransfer.getData('itemId');
+            const fromCat = e.dataTransfer.getData('itemCat');
+            if (fromId === item.id || fromCat !== item.category) return;
+            const rows = [...container.querySelectorAll('.inv-row')];
+            const ids  = rows.map(r => r.dataset.id);
+            const fi   = ids.indexOf(fromId); const ti = ids.indexOf(item.id);
+            if (fi === -1 || ti === -1) return;
+            ids.splice(fi, 1); ids.splice(ti, 0, fromId);
+            const batch = writeBatch(db); ids.forEach((id, i) => batch.update(doc(db, "menu", id), { sortOrder: i }));
+            await batch.commit();
+        };
+
+        return row;
+    }
+
+    // ── OPTIONS / VARIANTS EDITOR ─────────────────────────────────────────────
+    function toggleOptsEditor(item, row) {
+        const next = row.nextElementSibling;
+        if (next && next.classList.contains('opts-editor')) { next.remove(); return; }
+
+        const editor = document.createElement('div'); editor.className = 'opts-editor';
+
+        // ── Free-choice options (no price) ──
+        const h1 = document.createElement('h5'); h1.innerText = 'Free-Choice Options (e.g. "Mushy Peas or Curry Sauce" — no extra charge)';
+        editor.appendChild(h1);
+
+        const freeWrap = document.createElement('div');
+        editor.appendChild(freeWrap);
+
+        function refreshFree(opts) {
+            freeWrap.innerHTML = '';
+            (opts || []).forEach(opt => {
+                const tag = document.createElement('span'); tag.className = 'opts-tag';
+                tag.appendChild(document.createTextNode(opt));
+                const x = document.createElement('button'); x.innerText = '×';
+                x.onclick = async () => {
+                    const snap = await getDoc(doc(db, "menu", item.id));
+                    const updated = (snap.data().subOptions || []).filter(o => o !== opt);
+                    await updateDoc(doc(db, "menu", item.id), { subOptions: updated });
+                    refreshFree(updated);
+                };
+                tag.appendChild(x); freeWrap.appendChild(tag);
             });
         }
-        invList.addEventListener('dragover', e => e.preventDefault());
+        refreshFree(item.subOptions || []);
 
-        sec.appendChild(invList);
-        list.appendChild(sec);
-    });
-}
+        const freeRow = document.createElement('div'); freeRow.className = 'opts-add-row';
+        const freeIn = document.createElement('input'); freeIn.type = 'text'; freeIn.placeholder = 'e.g. Mushy Peas';
+        const freeBtn = document.createElement('button'); freeBtn.className = 'btn btn-primary'; freeBtn.innerText = '+ Add';
+        freeBtn.onclick = async () => {
+            const val = freeIn.value.trim(); if (!val) return;
+            const snap = await getDoc(doc(db, "menu", item.id));
+            const cur = snap.data().subOptions || [];
+            if (cur.includes(val)) { freeIn.value = ''; return; }
+            const updated = [...cur, val];
+            await updateDoc(doc(db, "menu", item.id), { subOptions: updated });
+            refreshFree(updated); freeIn.value = '';
+        };
+        freeIn.onkeydown = e => { if (e.key === 'Enter') freeBtn.click(); };
+        freeRow.appendChild(freeIn); freeRow.appendChild(freeBtn); editor.appendChild(freeRow);
 
-function makeRow(item, idx, siblings, container) {
-    const row = document.createElement('div');
-    row.className = 'inv-row';
-    row.draggable = true;
-    row.dataset.id = item.id;
+        // spacer
+        editor.appendChild(document.createElement('br'));
 
-    // Handle
-    const handle = document.createElement('span');
-    handle.className = 'drag-handle';
-    handle.innerText = '⠿';
+        // ── Priced variants ──
+        const h2 = document.createElement('h5'); h2.innerText = 'Priced Variants (e.g. Large £3 / Small £2, or 2 for £3.50 / 4 for £6.50)';
+        editor.appendChild(h2);
 
-    // Name (+ variant summary if any)
-    const nameWrap = document.createElement('div');
-    nameWrap.className = 'inv-name';
-    nameWrap.innerText = item.name;
-    if (item.variants && item.variants.length) {
-        const small = document.createElement('small');
-        small.innerText = item.variants.map(v => v.label + ' £' + parseFloat(v.price).toFixed(2)).join(' · ');
-        nameWrap.appendChild(small);
-    } else if (item.subOptions && item.subOptions.length) {
-        const small = document.createElement('small');
-        small.innerText = 'Options: ' + item.subOptions.join(', ');
-        nameWrap.appendChild(small);
-    }
+        const varWrap = document.createElement('div');
+        editor.appendChild(varWrap);
 
-    // Price
-    const priceEl = document.createElement('span');
-    priceEl.className = 'inv-price';
-    priceEl.innerText = item.variants && item.variants.length ? 'variants' : '£' + parseFloat(item.price).toFixed(2);
-
-    // Available checkbox
-    const avLabel = document.createElement('label');
-    avLabel.className = 'inv-avail';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = !!item.is_available;
-    cb.addEventListener('change', () =>
-        updateDoc(doc(db, "menu", item.id), { is_available: cb.checked })
-    );
-    avLabel.appendChild(cb);
-    avLabel.appendChild(document.createTextNode(' Avail'));
-
-    // Options button
-    const optsBtn = document.createElement('button');
-    optsBtn.className = 'opts-btn';
-    optsBtn.innerText = '⚙ Options';
-    optsBtn.addEventListener('click', () => toggleOptsEditor(item, row));
-
-    // Delete
-    const delBtn = document.createElement('button');
-    delBtn.className = 'inv-del';
-    delBtn.innerText = '✕';
-    delBtn.addEventListener('click', () => {
-        if (confirm(`Remove "${item.name}"?`)) deleteDoc(doc(db, "menu", item.id));
-    });
-
-    row.appendChild(handle);
-    row.appendChild(nameWrap);
-    row.appendChild(priceEl);
-    row.appendChild(avLabel);
-    row.appendChild(optsBtn);
-    row.appendChild(delBtn);
-
-    // ── Drag and drop ──
-    row.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('itemId',  item.id);
-        e.dataTransfer.setData('itemCat', item.category);
-        setTimeout(() => row.classList.add('dragging'), 0);
-    });
-    row.addEventListener('dragend', () => row.classList.remove('dragging'));
-    row.addEventListener('dragover', e => { e.preventDefault(); row.classList.add('drag-over'); });
-    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
-    row.addEventListener('drop', async e => {
-        e.preventDefault();
-        row.classList.remove('drag-over');
-        const fromId  = e.dataTransfer.getData('itemId');
-        const fromCat = e.dataTransfer.getData('itemCat');
-        if (fromId === item.id || fromCat !== item.category) return;
-        const rows = [...container.querySelectorAll('.inv-row')];
-        const ids  = rows.map(r => r.dataset.id);
-        const fi   = ids.indexOf(fromId);
-        const ti   = ids.indexOf(item.id);
-        if (fi === -1 || ti === -1) return;
-        ids.splice(fi, 1);
-        ids.splice(ti, 0, fromId);
-        const batch = writeBatch(db);
-        ids.forEach((id, i) => batch.update(doc(db, "menu", id), { sortOrder: i }));
-        await batch.commit();
-    });
-
-    return row;
-}
-
-// ── OPTIONS / VARIANTS EDITOR ─────────────────────────────────────────────────
-// Each item can have:
-//   subOptions: string[]          — free choice add-ons (e.g. "Mushy Peas")
-//   variants:   [{label, price}]  — priced alternatives (e.g. "Large £3", "Small £2")
-//                                   When variants exist, item.price is ignored on menu
-
-function toggleOptsEditor(item, row) {
-    const next = row.nextElementSibling;
-    if (next && next.classList.contains('opts-editor')) { next.remove(); return; }
-
-    const editor = document.createElement('div');
-    editor.className = 'opts-editor';
-
-    // ── Section 1: free-choice options (no price) ──
-    const secFree = document.createElement('div');
-    secFree.style.marginBottom = '14px';
-    const hFree = document.createElement('h5');
-    hFree.innerText = 'Free-Choice Options (e.g. "Mushy Peas or Curry Sauce")';
-    secFree.appendChild(hFree);
-
-    const freeTagsWrap = document.createElement('div');
-    freeTagsWrap.id = 'free-tags-' + item.id;
-    secFree.appendChild(freeTagsWrap);
-
-    function refreshFreeTags(opts) {
-        freeTagsWrap.innerHTML = "";
-        (opts || []).forEach(opt => {
-            const tag = document.createElement('span');
-            tag.className = 'opts-tag';
-            tag.appendChild(document.createTextNode(opt));
-            const x = document.createElement('button');
-            x.innerText = '×';
-            x.addEventListener('click', async () => {
-                const snap = await getDoc(doc(db, "menu", item.id));
-                const cur  = snap.data().subOptions || [];
-                const updated = cur.filter(o => o !== opt);
-                await updateDoc(doc(db, "menu", item.id), { subOptions: updated });
-                refreshFreeTags(updated);
+        function refreshVar(variants) {
+            varWrap.innerHTML = '';
+            (variants || []).forEach(v => {
+                const tag = document.createElement('span'); tag.className = 'opts-tag';
+                tag.appendChild(document.createTextNode(v.label + ' — £' + parseFloat(v.price).toFixed(2)));
+                const x = document.createElement('button'); x.innerText = '×';
+                x.onclick = async () => {
+                    const snap = await getDoc(doc(db, "menu", item.id));
+                    const updated = (snap.data().variants || []).filter(vv => vv.label !== v.label);
+                    await updateDoc(doc(db, "menu", item.id), { variants: updated });
+                    refreshVar(updated);
+                };
+                tag.appendChild(x); varWrap.appendChild(tag);
             });
-            tag.appendChild(x);
-            freeTagsWrap.appendChild(tag);
-        });
+        }
+        refreshVar(item.variants || []);
+
+        const varRow = document.createElement('div'); varRow.className = 'opts-add-row';
+        const varLabel = document.createElement('input'); varLabel.type = 'text'; varLabel.placeholder = 'Label (e.g. Large, 2 for)';
+        const varPrice = document.createElement('input'); varPrice.type = 'number'; varPrice.placeholder = '£'; varPrice.step = '0.01'; varPrice.min = '0';
+        const varBtn = document.createElement('button'); varBtn.className = 'btn btn-primary'; varBtn.innerText = '+ Add';
+        varBtn.onclick = async () => {
+            const lbl = varLabel.value.trim(); const price = parseFloat(varPrice.value);
+            if (!lbl || isNaN(price)) return;
+            const snap = await getDoc(doc(db, "menu", item.id));
+            const cur = snap.data().variants || [];
+            if (cur.some(v => v.label === lbl)) { varLabel.value = ''; varPrice.value = ''; return; }
+            const updated = [...cur, { label: lbl, price }];
+            await updateDoc(doc(db, "menu", item.id), { variants: updated });
+            refreshVar(updated); varLabel.value = ''; varPrice.value = '';
+        };
+        varLabel.onkeydown = e => { if (e.key === 'Enter') varPrice.focus(); };
+        varPrice.onkeydown = e => { if (e.key === 'Enter') varBtn.click(); };
+        varRow.appendChild(varLabel); varRow.appendChild(varPrice); varRow.appendChild(varBtn); editor.appendChild(varRow);
+
+        row.insertAdjacentElement('afterend', editor);
     }
-    refreshFreeTags(item.subOptions || []);
 
-    const freeAddRow = document.createElement('div');
-    freeAddRow.className = 'opts-add-row';
-    const freeInput = document.createElement('input');
-    freeInput.type = 'text'; freeInput.placeholder = 'e.g. Mushy Peas';
-    const freeBtn = document.createElement('button');
-    freeBtn.className = 'btn btn-primary';
-    freeBtn.innerText = '+ Add';
-    freeBtn.style.cssText = 'font-size:0.82rem;padding:6px 12px;white-space:nowrap;';
-    freeBtn.addEventListener('click', async () => {
-        const val = freeInput.value.trim();
-        if (!val) return;
-        const snap = await getDoc(doc(db, "menu", item.id));
-        const cur  = snap.data().subOptions || [];
-        if (cur.includes(val)) { freeInput.value = ''; return; }
-        const updated = [...cur, val];
-        await updateDoc(doc(db, "menu", item.id), { subOptions: updated });
-        refreshFreeTags(updated);
-        freeInput.value = '';
-    });
-    freeInput.addEventListener('keydown', e => { if (e.key === 'Enter') freeBtn.click(); });
-    freeAddRow.appendChild(freeInput);
-    freeAddRow.appendChild(freeBtn);
-    secFree.appendChild(freeAddRow);
-    editor.appendChild(secFree);
-
-    // ── Section 2: priced variants ──
-    const secVar = document.createElement('div');
-    const hVar = document.createElement('h5');
-    hVar.innerText = 'Priced Variants (e.g. "Large £3 / Small £2" or "2 for £3.50 / 4 for £6.50")';
-    secVar.appendChild(hVar);
-
-    const varTagsWrap = document.createElement('div');
-    varTagsWrap.id = 'var-tags-' + item.id;
-    secVar.appendChild(varTagsWrap);
-
-    function refreshVarTags(variants) {
-        varTagsWrap.innerHTML = "";
-        (variants || []).forEach(v => {
-            const tag = document.createElement('span');
-            tag.className = 'opts-tag';
-            tag.appendChild(document.createTextNode(v.label + ' — £' + parseFloat(v.price).toFixed(2)));
-            const x = document.createElement('button');
-            x.innerText = '×';
-            x.addEventListener('click', async () => {
-                const snap = await getDoc(doc(db, "menu", item.id));
-                const cur  = snap.data().variants || [];
-                const updated = cur.filter(vv => vv.label !== v.label);
-                await updateDoc(doc(db, "menu", item.id), { variants: updated });
-                refreshVarTags(updated);
-            });
-            tag.appendChild(x);
-            varTagsWrap.appendChild(tag);
-        });
+    // ── ADD ITEM ─────────────────────────────────────────────────────────────
+    async function addItem() {
+        const name = document.getElementById('new-name').value.trim();
+        const price = parseFloat(document.getElementById('new-price').value);
+        const category = document.getElementById('new-cat').value;
+        if (!name || isNaN(price) || !category) return alert("Fill all fields");
+        const catItems = allMenuItems.filter(i => i.category === category);
+        const maxOrder = catItems.length ? Math.max(...catItems.map(i => i.sortOrder ?? 0)) : -1;
+        await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: maxOrder + 1, subOptions: [], variants: [] });
+        document.getElementById('new-name').value = ""; document.getElementById('new-price').value = "";
     }
-    refreshVarTags(item.variants || []);
 
-    const varAddRow = document.createElement('div');
-    varAddRow.className = 'opts-add-row';
-    const varLabelInput = document.createElement('input');
-    varLabelInput.type = 'text'; varLabelInput.placeholder = 'Label (e.g. Large, 2 for)';
-    const varPriceInput = document.createElement('input');
-    varPriceInput.type = 'number'; varPriceInput.placeholder = '£'; varPriceInput.step = '0.01'; varPriceInput.min = '0';
-    const varBtn = document.createElement('button');
-    varBtn.className = 'btn btn-primary';
-    varBtn.innerText = '+ Add';
-    varBtn.style.cssText = 'font-size:0.82rem;padding:6px 12px;white-space:nowrap;';
-    varBtn.addEventListener('click', async () => {
-        const label = varLabelInput.value.trim();
-        const price = parseFloat(varPriceInput.value);
-        if (!label || isNaN(price)) return;
-        const snap = await getDoc(doc(db, "menu", item.id));
-        const cur  = snap.data().variants || [];
-        if (cur.some(v => v.label === label)) { varLabelInput.value = ''; varPriceInput.value = ''; return; }
-        const updated = [...cur, { label, price }];
-        await updateDoc(doc(db, "menu", item.id), { variants: updated });
-        refreshVarTags(updated);
-        varLabelInput.value = ''; varPriceInput.value = '';
-    });
-    varLabelInput.addEventListener('keydown', e => { if (e.key === 'Enter') varPriceInput.focus(); });
-    varPriceInput.addEventListener('keydown', e => { if (e.key === 'Enter') varBtn.click(); });
-    varAddRow.appendChild(varLabelInput);
-    varAddRow.appendChild(varPriceInput);
-    varAddRow.appendChild(varBtn);
-    secVar.appendChild(varAddRow);
-    editor.appendChild(secVar);
+    // ── PIE BATCH ────────────────────────────────────────────────────────────
+    async function archivePies() {
+        if (!confirm("Archive all?")) return;
+        const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
+        const b = writeBatch(db); snap.forEach(d => b.update(d.ref, { status: "archived" })); await b.commit();
+    }
 
-    row.insertAdjacentElement('afterend', editor);
-}
-
-// ── ADD ITEM ──────────────────────────────────────────────────────────────────
-async function addItem() {
-    const nameEl  = document.getElementById('new-name');
-    const priceEl = document.getElementById('new-price');
-    const catEl   = document.getElementById('new-cat');
-    const name    = nameEl.value.trim();
-    const price   = parseFloat(priceEl.value);
-    const cat     = catEl.value;
-    if (!name) return alert("Enter an item name");
-    if (isNaN(price)) return alert("Enter a valid price");
-    if (!cat) return alert("Select a category");
-    const catItems = allMenuItems.filter(i => i.category === cat);
-    const maxOrder = catItems.length ? Math.max(...catItems.map(i => i.sortOrder ?? 0)) : -1;
-    await addDoc(collection(db, "menu"), {
-        name, price, category: cat, is_available: true,
-        sortOrder: maxOrder + 1, subOptions: [], variants: []
-    });
-    nameEl.value = ""; priceEl.value = ""; catEl.value = "";
-}
-
-// ── PIE BATCH ─────────────────────────────────────────────────────────────────
-async function archivePies() {
-    if (!confirm("Archive all?")) return;
-    const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
-    const b = writeBatch(db);
-    snap.forEach(d => b.update(d.ref, { status: "archived" }));
-    await b.commit();
-}
-
-async function generatePiePDF() {
-    const { jsPDF } = window.jspdf;
-    const pdf  = new jsPDF();
-    const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID")));
-    const rows = [];
-    snap.forEach(d => {
-        const data = d.data();
-        rows.push([
-            data.customer?.name || '–',
-            data.items.map(i => i.name + (i.variantLabel ? ' (' + i.variantLabel + ')' : '')).join(', '),
-            data.customer?.msg || '–'
-        ]);
-    });
-    pdf.text("Pie Prep Sheet", 14, 15);
-    pdf.autoTable({ startY: 20, head: [['Customer', 'Items', 'Note']], body: rows });
-    pdf.save("Pies.pdf");
-}
+    async function generatePiePDF() {
+        const { jsPDF } = window.jspdf; const pdf = new jsPDF();
+        const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID")));
+        const rows = []; snap.forEach(d => { const data = d.data(); rows.push([data.customer?.name || '', data.items.map(i => i.name + (i.variantLabel ? ' (' + i.variantLabel + ')' : '')).join(', '), data.customer?.msg || '-']); });
+        pdf.text("Pie Prep Sheet", 14, 15); pdf.autoTable({ startY: 20, head: [['Customer', 'Items', 'Note']], body: rows });
+        pdf.save("Pies.pdf");
+    }
 </script>
 </body>
 </html>
