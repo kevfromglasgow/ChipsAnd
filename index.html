@@ -147,6 +147,13 @@
     const db = getFirestore(app);
 
     let allMenuItems = []; let allCategories = [];
+    let _suppressRender = false; // prevent re-render while user is editing a name
+    let _renderTimer = null;
+    function scheduleRender() {
+        if (_suppressRender) return;
+        clearTimeout(_renderTimer);
+        _renderTimer = setTimeout(() => { if (!_suppressRender) renderMenuList(); }, 80);
+    }
 
     // Auth state — login gate is visible by default in HTML, so no flash
     onAuthStateChanged(auth, user => {
@@ -179,7 +186,8 @@
             if (allCategories.some(c => !saved.includes(c))) {
                 setDoc(doc(db, "settings", "categories"), { list: allCategories });
             }
-            renderCatTags(); renderCatDropdown(); renderMenuList();
+            renderCatTags(); renderCatDropdown();
+            scheduleRender();
         });
 
         // Menu items
@@ -195,7 +203,7 @@
                 setDoc(doc(db, "settings", "categories"), { list: allCategories });
                 renderCatTags(); renderCatDropdown();
             }
-            renderMenuList();
+            scheduleRender();
         });
 
         // PAID ORDERS ONLY
@@ -344,12 +352,15 @@
         nameInput.title = 'Click to edit name';
         // Prevent drag from starting when clicking the input
         nameInput.addEventListener('mousedown', e => e.stopPropagation());
+        nameInput.addEventListener('focus', () => { _suppressRender = true; });
         nameInput.addEventListener('blur', () => {
             const newName = nameInput.value.trim();
             if (newName && newName !== item.name) {
-                updateDoc(doc(db, "menu", item.id), { name: newName });
+                updateDoc(doc(db, "menu", item.id), { name: newName })
+                    .then(() => { _suppressRender = false; });
             } else {
                 nameInput.value = item.name; // revert if empty
+                _suppressRender = false;
             }
         });
         nameInput.addEventListener('keydown', e => {
