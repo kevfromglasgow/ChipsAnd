@@ -21,8 +21,13 @@
         .item-info { flex: 1; }
         .item-sub-hint { font-size: 0.78rem; color: #666; margin-top: 4px; font-style: italic; }
         .add-btn { background: var(--orange); border: none; color: white; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; flex-shrink: 0; }
-        /* Cart bar — fixed, centred, always on top */
-        #cart-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; background: #1f1f1f; padding: 20px; border-radius: 20px; border: 1px solid var(--orange); display: none; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* FIX: Desktop Right Aligned, Mobile Centered */
+        #cart-bar { position: fixed; bottom: 20px; right: 20px; width: 90%; max-width: 450px; background: #1f1f1f; padding: 20px; border-radius: 20px; border: 1px solid var(--orange); display: none; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        @media (max-width: 800px) {
+            #cart-bar { left: 50%; right: auto; transform: translateX(-50%); }
+        }
+
         input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #333; background: #000; color: white; box-sizing: border-box; font-family: inherit; }
         .confirm-btn { background: var(--orange); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -33,7 +38,7 @@
         .cart-qty-wrap { display: flex; align-items: center; gap: 5px; }
         .qty-btn { background: #2a2a2a; border: 1px solid #444; color: white; width: 22px; height: 22px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; line-height: 1; }
         .rm-btn  { background: none; border: 1px solid rgba(231,76,60,0.4); color: #e74c3c; width: 22px; height: 22px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; line-height: 1; }
-        /* Variant / option modal — fixed, centred overlay */
+        
         #opt-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .opt-sheet { background: var(--surface); border-radius: 16px; padding: 24px; width: 100%; max-width: 380px; }
         .opt-sheet h3 { font-family: 'Playfair Display'; font-size: 1.1rem; margin-bottom: 6px; }
@@ -50,9 +55,8 @@
 
     <div id="landing-screen">
         <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" class="logo-main">
-        <!-- Buttons start visible but disabled while Firebase loads — feels instant -->
         <button id="pie-btn" class="choice-btn hidden">Pre-Order Pies</button>
-        <button id="menu-btn" class="choice-btn" disabled>Order Food</button>
+        <button id="menu-btn" class="choice-btn">Order Food</button>
     </div>
 
     <header>
@@ -71,7 +75,6 @@
         <button class="confirm-btn" id="submit-order-btn">Pay & Confirm Order</button>
     </div>
 
-    <!-- Variant / option picker — fixed centred modal, not inline -->
     <div id="opt-modal" class="hidden">
         <div class="opt-sheet">
             <h3 id="opt-modal-title"></h3>
@@ -92,17 +95,21 @@
         let cart = {}; let currentMode = '';
         const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'true';
 
-        // Category order for correct display sequence
         let catOrder = [];
         onSnapshot(doc(db, "settings", "categories"), snap => { catOrder = snap.data()?.list || []; });
 
+        // FIX: Remove disabled logic from HTML and handle optimistically here
         onSnapshot(doc(db, "settings", "truck_status"), (s) => {
             const d = s.data();
             const pBtn = document.getElementById('pie-btn');
             const mBtn = document.getElementById('menu-btn');
 
-            // Menu button
-            if (d?.is_closed && !isAdmin) {
+            if (isAdmin) {
+                mBtn.disabled = false;
+                mBtn.classList.add('admin-tag');
+                mBtn.innerText = "Order Food (Admin Preview)";
+                mBtn.onclick = () => startFlow('MENU');
+            } else if (d?.is_closed) {
                 mBtn.disabled = true;
                 mBtn.innerText = 'Currently Closed';
             } else {
@@ -110,14 +117,7 @@
                 mBtn.innerText = 'Order Food';
                 mBtn.onclick = () => startFlow('MENU');
             }
-            if (isAdmin) {
-                mBtn.disabled = false;
-                mBtn.classList.add('admin-tag');
-                mBtn.innerText = "Order Food (Admin Preview)";
-                mBtn.onclick = () => startFlow('MENU');
-            }
 
-            // Pie button
             if (d?.pies_enabled && (d?.pie_inventory ?? 0) > 0) {
                 pBtn.classList.remove('hidden');
                 pBtn.disabled = false;
@@ -139,7 +139,6 @@
             loadMenu();
         };
 
-        // ── CART ────────────────────────────────────────────────────────────
         function cartKey(name, variantLabel, subOption) {
             return name + (variantLabel ? '|v:' + variantLabel : '') + (subOption ? '|s:' + subOption : '');
         }
@@ -152,14 +151,12 @@
         }
 
         function updateUI() {
-            const bar      = document.getElementById('cart-bar');
+            const bar = document.getElementById('cart-bar');
             const itemsDiv = document.getElementById('cart-items');
             itemsDiv.innerHTML = "";
-            const keys = Object.keys(cart);
-            keys.forEach(key => {
-                const e   = cart[key];
+            Object.keys(cart).forEach(key => {
+                const e = cart[key];
                 const row = document.createElement('div'); row.className = 'cart-row';
-
                 const nameWrap = document.createElement('div'); nameWrap.className = 'cart-row-name';
                 nameWrap.innerText = e.name;
                 if (e.variantLabel || e.subOption) {
@@ -167,7 +164,6 @@
                     sub.innerText = e.variantLabel || e.subOption;
                     nameWrap.appendChild(sub);
                 }
-
                 const qtyWrap = document.createElement('div'); qtyWrap.className = 'cart-qty-wrap';
                 const minus = document.createElement('button'); minus.className = 'qty-btn'; minus.innerText = '−';
                 minus.onclick = () => { cart[key].qty--; if (cart[key].qty <= 0) delete cart[key]; updateUI(); };
@@ -177,17 +173,15 @@
                 const rm = document.createElement('button'); rm.className = 'rm-btn'; rm.innerText = '×';
                 rm.onclick = () => { delete cart[key]; updateUI(); };
                 qtyWrap.appendChild(minus); qtyWrap.appendChild(qtySpan); qtyWrap.appendChild(plus); qtyWrap.appendChild(rm);
-
                 row.appendChild(nameWrap); row.appendChild(qtyWrap);
                 itemsDiv.appendChild(row);
             });
-            bar.style.display = keys.length > 0 ? 'block' : 'none';
+            bar.style.display = Object.keys(cart).length > 0 ? 'block' : 'none';
         }
 
-        // ── MODAL ────────────────────────────────────────────────────────────
         function showModal(title, sub, choices) {
             document.getElementById('opt-modal-title').innerText = title;
-            document.getElementById('opt-modal-sub').innerText   = sub;
+            document.getElementById('opt-modal-sub').innerText = sub;
             const grid = document.getElementById('opt-modal-grid'); grid.innerHTML = "";
             choices.forEach(c => {
                 const btn = document.createElement('button'); btn.className = 'opt-btn'; btn.innerText = c.label;
@@ -197,27 +191,21 @@
             document.getElementById('opt-modal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('opt-modal').classList.add('hidden'); }
-        document.getElementById('opt-modal-cancel').addEventListener('click', closeModal);
-        document.getElementById('opt-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+        document.getElementById('opt-modal-cancel').onclick = closeModal;
 
-        // ── SUBMIT ───────────────────────────────────────────────────────────
         document.getElementById('submit-order-btn').onclick = async () => {
             const name = document.getElementById('cust-name').value;
             if (!name) return alert("Please enter your name.");
-            const keys = Object.keys(cart);
-            if (!keys.length) return alert("Your cart is empty.");
             const btn = document.getElementById('submit-order-btn');
             btn.disabled = true; btn.innerText = "Securing Payment...";
-
             const items = []; let total = 0;
-            keys.forEach(key => {
+            Object.keys(cart).forEach(key => {
                 const e = cart[key];
                 for (let i = 0; i < e.qty; i++) {
                     items.push({ name: e.name, price: e.price, variantLabel: e.variantLabel || null, subOption: e.subOption || null });
                     total += e.price;
                 }
             });
-
             try {
                 const docRef = await addDoc(collection(db, "orders"), {
                     items, customer: { name, phone: document.getElementById('cust-phone').value, msg: document.getElementById('cust-note').value },
@@ -229,73 +217,35 @@
                 });
                 const result = await response.json();
                 if (result.data?.url) window.location.href = result.data.url;
-                else throw new Error('No URL');
-            } catch (e) {
-                alert("Payment error. Try again.");
-                btn.disabled = false; btn.innerText = "Pay & Confirm Order";
-            }
+            } catch (e) { alert("Payment error. Try again."); btn.disabled = false; }
         };
 
-        // ── MENU LOAD ────────────────────────────────────────────────────────
         function loadMenu() {
             onSnapshot(collection(db, "menu"), (snap) => {
                 const display = document.getElementById('menu-display'); display.innerHTML = "";
                 const items = []; snap.forEach(d => items.push({ id: d.id, ...d.data() }));
                 items.sort((a, b) => (a.sortOrder ?? 99) - (b.sortOrder ?? 99));
-
-                // Respect saved category order, fall back to order in data
-                const orderedCats = catOrder.length
-                    ? [...new Set([...catOrder, ...items.map(i => i.category)])]
-                    : [...new Set(items.map(i => i.category))];
-
+                const orderedCats = catOrder.length ? [...new Set([...catOrder, ...items.map(i => i.category)])] : [...new Set(items.map(i => i.category))];
                 orderedCats.forEach(cat => {
                     const catItems = items.filter(i => i.category === cat && i.is_available);
                     if ((currentMode === 'PIES' && cat !== 'PIES') || (currentMode === 'MENU' && cat === 'PIES')) return;
                     if (!catItems.length) return;
-
                     display.innerHTML += `<div class="cat-title">${cat}</div>`;
                     catItems.forEach(item => {
                         const card = document.createElement('div'); card.className = 'item-card';
-
                         const info = document.createElement('div'); info.className = 'item-info';
-                        const nameEl = document.createElement('strong'); nameEl.innerText = item.name;
-                        info.appendChild(nameEl);
-
-                        const hasVariants   = item.variants   && item.variants.length > 0;
-                        const hasSubOptions = item.subOptions && item.subOptions.length > 0;
-
-                        const priceEl = document.createElement('div');
-                        priceEl.style.cssText = 'font-size:0.9rem;color:var(--orange);margin-top:2px;';
-                        if (hasVariants) {
-                            priceEl.innerText = item.variants.map(v => v.label + ' £' + parseFloat(v.price).toFixed(2)).join(' / ');
-                        } else {
-                            priceEl.innerText = '£' + parseFloat(item.price).toFixed(2);
-                        }
-                        info.appendChild(priceEl);
-
-                        if (hasSubOptions) {
-                            const hint = document.createElement('div'); hint.className = 'item-sub-hint';
-                            hint.innerText = 'Choice of: ' + item.subOptions.join(' or ');
-                            info.appendChild(hint);
-                        }
-
+                        info.innerHTML = `<strong>${item.name}</strong>`;
+                        const hasV = item.variants?.length > 0;
+                        const hasS = item.subOptions?.length > 0;
+                        const priceText = hasV ? item.variants.map(v => v.label + ' £' + parseFloat(v.price).toFixed(2)).join(' / ') : '£' + parseFloat(item.price).toFixed(2);
+                        info.innerHTML += `<div style='font-size:0.9rem;color:var(--orange);margin-top:2px;'>${priceText}</div>`;
+                        if (hasS) info.innerHTML += `<div class='item-sub-hint'>Choice of: ${item.subOptions.join(' or ')}</div>`;
                         const addBtn = document.createElement('button'); addBtn.className = 'add-btn'; addBtn.innerText = '+';
-                        addBtn.addEventListener('click', () => {
-                            if (hasVariants) {
-                                showModal(item.name, 'Choose a size / quantity:', item.variants.map(v => ({
-                                    label: v.label + ' — £' + parseFloat(v.price).toFixed(2),
-                                    onSelect: () => addToCart(item.name, v.price, v.label, null)
-                                })));
-                            } else if (hasSubOptions) {
-                                showModal(item.name, 'Choose one:', item.subOptions.map(opt => ({
-                                    label: opt,
-                                    onSelect: () => addToCart(item.name, item.price, null, opt)
-                                })));
-                            } else {
-                                addToCart(item.name, item.price, null, null);
-                            }
-                        });
-
+                        addBtn.onclick = () => {
+                            if (hasV) showModal(item.name, 'Choose size:', item.variants.map(v => ({ label: v.label + ' — £' + parseFloat(v.price).toFixed(2), onSelect: () => addToCart(item.name, v.price, v.label, null) })));
+                            else if (hasS) showModal(item.name, 'Choose one:', item.subOptions.map(opt => ({ label: opt, onSelect: () => addToCart(item.name, item.price, null, opt) })));
+                            else addToCart(item.name, item.price, null, null);
+                        };
                         card.appendChild(info); card.appendChild(addBtn);
                         display.appendChild(card);
                     });
