@@ -9,8 +9,7 @@
         :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --text: #F0EDE8; --green: #2ecc71; --red: #e74c3c; }
         body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); text-align: center; padding: 60px 20px; }
         .track-card { background: var(--surface); border: 1px solid rgba(255,255,255,0.1); padding: 40px 20px; border-radius: 24px; max-width: 450px; margin: 0 auto; }
-        .brand { font-family: 'Playfair Display'; font-size: 2rem; margin-bottom: 20px; }
-        .brand span { color: var(--orange); }
+        .brand { margin-bottom: 20px; display: flex; justify-content: center; }
         .status-badge { display: inline-block; padding: 14px 28px; border-radius: 40px; font-weight: bold; text-transform: uppercase; margin: 20px 0; border: 1px solid var(--orange); color: var(--orange); font-size: 0.9rem; }
         .badge-paid     { background: var(--green); color: white; border-color: var(--green); }
         .badge-ready    { background: var(--orange); color: white; border-color: var(--orange); }
@@ -22,7 +21,11 @@
     </style>
 </head>
 <body>
-    <div class="brand">Chips<span>&</span></div>
+
+    <div class="brand" onclick="window.location.href='menu.html'" style="cursor:pointer;">
+        <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" style="height:45px; width:auto;">
+    </div>
+
     <div class="track-card">
         <div id="order-id" style="font-size:0.8rem;color:#888;margin-bottom:10px;">LOADING...</div>
         <h2 style="font-family:'Playfair Display';">Order Status</h2>
