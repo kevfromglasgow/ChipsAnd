@@ -86,7 +86,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
@@ -198,15 +198,40 @@
             if (!name) return alert("Please enter your name.");
             const btn = document.getElementById('submit-order-btn');
             btn.disabled = true; btn.innerText = "Securing Payment...";
+            
             const items = []; let total = 0;
+            let piesInCart = 0;
+
             Object.keys(cart).forEach(key => {
                 const e = cart[key];
+                if (e.name.toLowerCase().includes('pie')) {
+                    piesInCart += e.qty;
+                }
                 for (let i = 0; i < e.qty; i++) {
                     items.push({ name: e.name, price: e.price, variantLabel: e.variantLabel || null, subOption: e.subOption || null });
                     total += e.price;
                 }
             });
+
             try {
+                // --- INVENTORY CHECK & ATOMIC DECREMENT ---
+                if (piesInCart > 0) {
+                    const truckRef = doc(db, "settings", "truck_status");
+                    const truckSnap = await getDoc(truckRef);
+                    const currentStock = truckSnap.data().pie_inventory || 0;
+
+                    if (currentStock < piesInCart) {
+                        alert(`Sorry! We only have ${currentStock} pies left in stock. Please adjust your order.`);
+                        btn.disabled = false;
+                        btn.innerText = "Pay & Confirm Order";
+                        return; 
+                    }
+
+                    await updateDoc(truckRef, {
+                        pie_inventory: increment(-piesInCart)
+                    });
+                }
+
                 const docRef = await addDoc(collection(db, "orders"), {
                     items, customer: { name, phone: document.getElementById('cust-phone').value, msg: document.getElementById('cust-note').value },
                     paymentStatus: 'UNPAID', status: 'pending', type: currentMode === 'PIES' ? 'PRE-ORDER' : 'PICKUP', createdAt: serverTimestamp()
@@ -217,7 +242,11 @@
                 });
                 const result = await response.json();
                 if (result.data?.url) window.location.href = result.data.url;
-            } catch (e) { alert("Payment error. Try again."); btn.disabled = false; }
+            } catch (e) { 
+                alert("Inventory error or payment connection failed."); 
+                btn.disabled = false; 
+                btn.innerText = "Pay & Confirm Order";
+            }
         };
 
         function loadMenu() {
