@@ -11,36 +11,51 @@
         :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --surface-2: #1F1F1F; --text: #F0EDE8; --muted: #888; --green: #2ecc71; --red: #e74c3c; --border: rgba(255,255,255,0.08); }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 60px; }
+
         .app-header { background: var(--surface); padding: 10px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .logo-admin { height: 40px; width: auto; }
+
         .tab-nav { display: flex; margin: 20px 32px 0; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; color: var(--muted); padding: 14px 22px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; font-family: 'DM Sans', sans-serif; }
         .tab-btn.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
+
         .content-area { padding: 24px 32px; max-width: 900px; }
         .card { background: var(--surface); border-radius: 16px; padding: 22px; margin-bottom: 18px; border: 1px solid var(--border); }
         .order-card { background: var(--surface-2); border-radius: 14px; padding: 18px; margin-bottom: 12px; }
+
         .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
         .btn-primary { background: var(--orange); color: white; }
         .btn-ready { background: var(--green); color: white; }
         .btn-cancel { background: var(--red); color: white; }
         .btn-pdf { background: #34495e; color: white; width: 100%; margin-bottom: 12px; }
-        input[type=text], input[type=email], input[type=password], input[type=number], select { background: var(--surface-2); border: 1px solid var(--border); color: white; padding: 10px 12px; border-radius: 8px; width: 100%; font-family: 'DM Sans', sans-serif; }
+
+        input[type=text], input[type=email], input[type=password], input[type=number], select {
+            background: var(--surface-2); border: 1px solid var(--border); color: white;
+            padding: 10px 12px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: 100%;
+        }
         input:focus, select:focus { outline: none; border-color: var(--orange); }
+
         .hidden { display: none !important; }
-        /* Login gate shown immediately — no flash */
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+
         .status-bar { margin: 20px 32px; background: var(--surface); border-radius: 14px; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+
         .order-items { list-style: none; margin: 8px 0; font-size: 0.88rem; color: var(--muted); }
         .order-items li::before { content: "· "; color: var(--orange); }
+
         .cat-tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-        .cat-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; cursor: grab; font-size: 0.85rem; user-select: none; }
+        .cat-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--surface-2); border: 1px solid var(--border);
+            padding: 6px 14px; border-radius: 20px;
+            cursor: grab; font-size: 0.85rem; user-select: none;
+        }
         .cat-tag.drag-over { border-color: var(--orange); }
-        /* Inventory rows */
+
         .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 8px; }
         .inv-row:last-child { border-bottom: none; }
         .drag-handle { color: var(--muted); margin-right: 4px; flex-shrink: 0; }
         .inv-name { flex: 1; }
-        /* Inline name edit field */
         .inv-name-input {
             flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--border);
             color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
@@ -48,7 +63,7 @@
         }
         .inv-name-input:focus { border-bottom-color: var(--orange); }
         .inv-price { color: var(--orange); margin-right: 8px; white-space: nowrap; flex-shrink: 0; }
-        /* Options editor */
+
         .opts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
         .opts-btn:hover { border-color: var(--orange); color: var(--orange); }
         .opts-editor { padding: 12px 16px; background: rgba(0,0,0,0.25); border-bottom: 1px solid var(--border); }
@@ -93,10 +108,8 @@
     </nav>
 
     <div class="content-area">
-        <!-- LIVE ORDERS -->
         <div id="tab-live" class="tab-panel"><div id="orders-list"></div></div>
 
-        <!-- PIE BATCH -->
         <div id="tab-pies" class="tab-panel hidden">
             <div class="card" style="border-color:var(--orange)">
                 <h3 style="margin-bottom:16px">Pie Batch Control</h3>
@@ -111,7 +124,6 @@
             <div id="pie-list"></div>
         </div>
 
-        <!-- INVENTORY -->
         <div id="tab-menu" class="tab-panel hidden">
             <div class="card">
                 <h3>Categories</h3>
@@ -138,8 +150,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot, updateDoc, setDoc, addDoc, deleteDoc,
-             collection, query, where, orderBy, getDocs, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, onSnapshot, updateDoc, setDoc, addDoc, deleteDoc, collection, query, where, orderBy, getDocs, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
     const app = initializeApp(firebaseConfig);
@@ -147,15 +158,8 @@
     const db = getFirestore(app);
 
     let allMenuItems = []; let allCategories = [];
-    let _suppressRender = false; // prevent re-render while user is editing a name
-    let _renderTimer = null;
-    function scheduleRender() {
-        if (_suppressRender) return;
-        clearTimeout(_renderTimer);
-        _renderTimer = setTimeout(() => { if (!_suppressRender) renderMenuList(); }, 80);
-    }
+    let _suppressRender = false; 
 
-    // Auth state — login gate is visible by default in HTML, so no flash
     onAuthStateChanged(auth, user => {
         document.getElementById('login-gate').classList.toggle('hidden', !!user);
         document.getElementById('admin-content').classList.toggle('hidden', !user);
@@ -168,7 +172,6 @@
     document.getElementById('logout-btn').onclick = () => signOut(auth);
 
     function initAdmin() {
-        // Shop Status
         onSnapshot(doc(db, "settings", "truck_status"), snap => {
             const d = snap.data() || {};
             window._isClosed = !!d.is_closed;
@@ -177,40 +180,25 @@
             document.getElementById('pie-stock').value = d.pie_inventory || 0;
         });
 
-        // Categories — merge saved list with any categories that exist in menu items
         onSnapshot(doc(db, "settings", "categories"), snap => {
             const saved = snap.data()?.list || [];
             const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
-            const merged = [...new Set([...saved, ...fromItems])];
-            allCategories = merged.length ? merged : ["CHIPS", "PIES", "SIDES"];
-            if (allCategories.some(c => !saved.includes(c))) {
-                setDoc(doc(db, "settings", "categories"), { list: allCategories });
-            }
+            allCategories = [...new Set([...saved, ...fromItems])];
+            if (!allCategories.length) allCategories = ["CHIPS", "PIES", "SIDES"];
             renderCatTags(); renderCatDropdown();
-            scheduleRender();
+            if (!_suppressRender) renderMenuList();
         });
 
-        // Menu items
         onSnapshot(collection(db, "menu"), snap => {
             allMenuItems = [];
             snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
             allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
-            // Auto-surface any categories from items not yet in the saved list
-            const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
-            const newCats = fromItems.filter(c => !allCategories.includes(c));
-            if (newCats.length) {
-                allCategories = [...allCategories, ...newCats];
-                setDoc(doc(db, "settings", "categories"), { list: allCategories });
-                renderCatTags(); renderCatDropdown();
-            }
-            scheduleRender();
+            if (!_suppressRender) renderMenuList();
         });
 
-        // PAID ORDERS ONLY
         const q = query(collection(db, "orders"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID"), orderBy("createdAt", "desc"));
         onSnapshot(q, snap => renderOrders(snap));
 
-        // Listeners
         document.getElementById('toggle-shop-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window._isClosed });
         document.getElementById('pie-update-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { pies_enabled: document.getElementById('pie-toggle').checked, pie_inventory: parseInt(document.getElementById('pie-stock').value) || 0 });
         document.getElementById('pie-pdf-btn').onclick = generatePiePDF;
@@ -228,11 +216,9 @@
         });
     }
 
-    // ── ORDERS ───────────────────────────────────────────────────────────────
     function renderOrders(snap) {
         const live = document.getElementById('orders-list'); const pie = document.getElementById('pie-list');
         live.innerHTML = ""; pie.innerHTML = "";
-        if (snap.empty) { live.innerHTML = "<p style='color:var(--muted)'>No paid orders.</p>"; return; }
         snap.forEach(d => {
             const data = d.data(); const id = d.id;
             const div = document.createElement('div'); div.className = 'order-card';
@@ -244,17 +230,13 @@
             }).join('');
             div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div>
                 <div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong><ul class='order-items'>${itemLines}</ul></div>
-                <div style='display:flex;gap:10px'>
-                    <button class='btn btn-ready'>Mark Ready</button>
-                    <button class='btn btn-cancel'>Cancel</button>
-                </div>`;
+                <div style='display:flex;gap:10px'><button class='btn btn-ready'>Ready</button><button class='btn btn-cancel'>Cancel</button></div>`;
             div.querySelector('.btn-ready').onclick = () => updateDoc(doc(db, "orders", id), { status: 'ready' });
             div.querySelector('.btn-cancel').onclick = () => confirm('Cancel order?') && updateDoc(doc(db, "orders", id), { status: 'cancelled' });
             data.type === 'PRE-ORDER' ? pie.appendChild(div) : live.appendChild(div);
         });
     }
 
-    // ── CATEGORIES ───────────────────────────────────────────────────────────
     function renderCatTags() {
         const wrap = document.getElementById('cat-tags-list'); wrap.innerHTML = "";
         allCategories.forEach((cat, idx) => {
@@ -267,9 +249,8 @@
             delBtn.onclick = (e) => { e.stopPropagation(); deleteCategory(cat); };
             tag.appendChild(delBtn);
             wrap.appendChild(tag);
-
             tag.ondragstart = (e) => { e.dataTransfer.setData('idx', String(idx)); };
-            tag.ondragover  = (e) => { e.preventDefault(); tag.classList.add('drag-over'); };
+            tag.ondragover = (e) => { e.preventDefault(); tag.classList.add('drag-over'); };
             tag.ondragleave = () => tag.classList.remove('drag-over');
             tag.ondrop = (e) => {
                 e.preventDefault(); tag.classList.remove('drag-over');
@@ -277,8 +258,7 @@
                 const toIdx = parseInt(tag.dataset.idx);
                 if (fromIdx === toIdx) return;
                 const list = [...allCategories]; const [moved] = list.splice(fromIdx, 1);
-                list.splice(toIdx, 0, moved);
-                allCategories = list;
+                list.splice(toIdx, 0, moved); allCategories = list;
                 setDoc(doc(db, "settings", "categories"), { list: allCategories });
             };
         });
@@ -289,11 +269,168 @@
         const cur = sel.value;
         sel.innerHTML = '<option value="">Select category…</option>';
         allCategories.forEach(c => {
-            const o = document.createElement('option');
-            o.value = c; o.innerText = c;
+            const o = document.createElement('option'); o.value = c; o.innerText = c;
             if (c === cur) o.selected = true;
             sel.appendChild(o);
         });
+    }
+
+    function renderMenuList() {
+        if (_suppressRender) return;
+        const list = document.getElementById('menu-list'); list.innerHTML = "";
+        allCategories.forEach(cat => {
+            const items = allMenuItems.filter(i => i.category === cat);
+            const sec = document.createElement('div'); sec.style.marginBottom = "20px";
+            const catLabel = document.createElement('div');
+            catLabel.style.cssText = 'color:var(--orange);font-size:0.7rem;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;';
+            catLabel.innerText = cat;
+            sec.appendChild(catLabel);
+            const container = document.createElement('div'); container.className = 'card'; container.style.padding = "0";
+            container.addEventListener('dragover', e => e.preventDefault());
+            items.forEach(item => { container.appendChild(makeRow(item, items, container)); });
+            sec.appendChild(container); list.appendChild(sec);
+        });
+    }
+
+    function makeRow(item, siblings, container) {
+        const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true; row.dataset.id = item.id;
+        const handle = document.createElement('span'); handle.className = 'drag-handle'; handle.innerText = '⠿';
+
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text'; nameInput.className = 'inv-name-input'; nameInput.value = item.name;
+        nameInput.addEventListener('mousedown', e => e.stopPropagation());
+        nameInput.addEventListener('focus', () => { _suppressRender = true; });
+        nameInput.addEventListener('blur', async () => {
+            const newName = nameInput.value.trim();
+            if (newName && newName !== item.name) {
+                await updateDoc(doc(db, "menu", item.id), { name: newName });
+            } else { nameInput.value = item.name; }
+            _suppressRender = false;
+        });
+
+        const priceEl = document.createElement('span'); priceEl.className = 'inv-price';
+        priceEl.innerText = (item.variants && item.variants.length) ? 'variants' : '£' + parseFloat(item.price).toFixed(2);
+
+        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!item.is_available; 
+        cb.style.cssText = 'width:auto;accent-color:var(--orange);cursor:pointer;';
+        cb.addEventListener('change', async () => {
+            _suppressRender = true;
+            await updateDoc(doc(db, "menu", item.id), { is_available: cb.checked });
+            _suppressRender = false;
+        });
+
+        const optsBtn = document.createElement('button'); optsBtn.className = 'opts-btn'; optsBtn.innerText = '⚙ Options';
+        optsBtn.onclick = () => toggleOptsEditor(item, row);
+
+        const delBtn = document.createElement('button');
+        delBtn.style.cssText = 'background:none;border:none;color:var(--muted);margin-left:6px;cursor:pointer;font-size:1rem;';
+        delBtn.innerText = '✕';
+        delBtn.onclick = () => { if (confirm("Delete item?")) deleteDoc(doc(db, "menu", item.id)); };
+
+        row.appendChild(handle); row.appendChild(nameInput); row.appendChild(priceEl);
+        row.appendChild(cb); row.appendChild(optsBtn); row.appendChild(delBtn);
+
+        row.ondragstart = (e) => { e.dataTransfer.setData('itemId', item.id); e.dataTransfer.setData('itemCat', item.category); };
+        row.ondragover = (e) => { e.preventDefault(); row.style.borderTop = '2px solid var(--orange)'; };
+        row.ondragleave = () => { row.style.borderTop = ''; };
+        row.ondrop = async (e) => {
+            e.preventDefault(); row.style.borderTop = '';
+            const fromId = e.dataTransfer.getData('itemId');
+            const fromCat = e.dataTransfer.getData('itemCat');
+            if (fromId === item.id || fromCat !== item.category) return;
+            _suppressRender = true;
+            const rows = [...container.querySelectorAll('.inv-row')];
+            const ids = rows.map(r => r.dataset.id);
+            const fi = ids.indexOf(fromId); const ti = ids.indexOf(item.id);
+            ids.splice(fi, 1); ids.splice(ti, 0, fromId);
+            const batch = writeBatch(db); ids.forEach((id, i) => batch.update(doc(db, "menu", id), { sortOrder: i }));
+            await batch.commit();
+            _suppressRender = false;
+        };
+        return row;
+    }
+
+    function toggleOptsEditor(item, row) {
+        const next = row.nextElementSibling;
+        if (next && next.classList.contains('opts-editor')) { next.remove(); return; }
+        const editor = document.createElement('div'); editor.className = 'opts-editor';
+
+        const h1 = document.createElement('h5'); h1.innerText = 'Free-Choice Options'; editor.appendChild(h1);
+        const freeWrap = document.createElement('div'); editor.appendChild(freeWrap);
+        
+        const refresh = async () => {
+            const snap = await getDoc(doc(db, "menu", item.id));
+            const d = snap.data();
+            freeWrap.innerHTML = '';
+            (d.subOptions || []).forEach(opt => {
+                const tag = document.createElement('span'); tag.className = 'opts-tag';
+                tag.innerText = opt;
+                const x = document.createElement('button'); x.innerText = '×';
+                x.onclick = async () => {
+                    const fresh = await getDoc(doc(db, "menu", item.id));
+                    const updated = (fresh.data().subOptions || []).filter(o => o !== opt);
+                    await updateDoc(doc(db, "menu", item.id), { subOptions: updated });
+                    refresh();
+                };
+                tag.appendChild(x); freeWrap.appendChild(tag);
+            });
+            varWrap.innerHTML = '';
+            (d.variants || []).forEach(v => {
+                const tag = document.createElement('span'); tag.className = 'opts-tag';
+                tag.innerText = v.label + ' — £' + v.price.toFixed(2);
+                const x = document.createElement('button'); x.innerText = '×';
+                x.onclick = async () => {
+                    const fresh = await getDoc(doc(db, "menu", item.id));
+                    const updated = (fresh.data().variants || []).filter(vv => vv.label !== v.label);
+                    await updateDoc(doc(db, "menu", item.id), { variants: updated });
+                    refresh();
+                };
+                tag.appendChild(x); varWrap.appendChild(tag);
+            });
+        };
+
+        const freeRow = document.createElement('div'); freeRow.className = 'opts-add-row';
+        const freeIn = document.createElement('input'); freeIn.type = 'text'; freeIn.placeholder = 'e.g. Mushy Peas';
+        const freeBtn = document.createElement('button'); freeBtn.className = 'btn btn-primary'; freeBtn.innerText = '+ Add';
+        freeBtn.onclick = async () => {
+            _suppressRender = true;
+            const val = freeIn.value.trim();
+            const snap = await getDoc(doc(db, "menu", item.id));
+            await updateDoc(doc(db, "menu", item.id), { subOptions: [...(snap.data().subOptions || []), val] });
+            freeIn.value = ''; refresh(); _suppressRender = false;
+        };
+        freeRow.appendChild(freeIn); freeRow.appendChild(freeBtn); editor.appendChild(freeRow);
+
+        editor.appendChild(document.createElement('br'));
+        const h2 = document.createElement('h5'); h2.innerText = 'Priced Variants'; editor.appendChild(h2);
+        const varWrap = document.createElement('div'); editor.appendChild(varWrap);
+        const varRow = document.createElement('div'); varRow.className = 'opts-add-row';
+        const vL = document.createElement('input'); vL.placeholder = 'Label';
+        const vP = document.createElement('input'); vP.type='number'; vP.placeholder='£'; vP.step='0.01';
+        const vB = document.createElement('button'); vB.className='btn btn-primary'; vB.innerText='+ Add';
+        vB.onclick = async () => {
+            _suppressRender = true;
+            const snap = await getDoc(doc(db, "menu", item.id));
+            await updateDoc(doc(db, "menu", item.id), { variants: [...(snap.data().variants || []), {label: vL.value, price: parseFloat(vP.value)}] });
+            vL.value=''; vP.value=''; refresh(); _suppressRender = false;
+        };
+        varRow.appendChild(vL); varRow.appendChild(vP); varRow.appendChild(vB); editor.appendChild(varRow);
+
+        row.insertAdjacentElement('afterend', editor);
+        refresh();
+    }
+
+    async function addItem() {
+        _suppressRender = true;
+        const name = document.getElementById('new-name').value.trim();
+        const price = parseFloat(document.getElementById('new-price').value);
+        const category = document.getElementById('new-cat').value;
+        if (!name || isNaN(price) || !category) return alert("Fill all fields");
+        const catItems = allMenuItems.filter(i => i.category === category);
+        const maxOrder = catItems.length ? Math.max(...catItems.map(i => i.sortOrder ?? 0)) : -1;
+        await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: maxOrder + 1, subOptions: [], variants: [] });
+        document.getElementById('new-name').value = ""; document.getElementById('new-price').value = "";
+        _suppressRender = false;
     }
 
     function addCategory() {
@@ -305,222 +442,13 @@
     }
 
     function deleteCategory(cat) {
-        if (!confirm("Delete category and its items?")) return;
-        const inCat = allMenuItems.filter(i => i.category === cat);
-        if (inCat.length) {
-            const batch = writeBatch(db);
-            inCat.forEach(item => batch.delete(doc(db, "menu", item.id)));
-            batch.commit();
-        }
+        if (!confirm("Delete?")) return;
         allCategories = allCategories.filter(c => c !== cat);
         setDoc(doc(db, "settings", "categories"), { list: allCategories });
     }
 
-    // ── INVENTORY ────────────────────────────────────────────────────────────
-    function renderMenuList() {
-        const list = document.getElementById('menu-list'); list.innerHTML = "";
-        allCategories.forEach(cat => {
-            const items = allMenuItems.filter(i => i.category === cat);
-            const sec = document.createElement('div'); sec.style.marginBottom = "20px";
-            const catLabel = document.createElement('div');
-            catLabel.style.cssText = 'color:var(--orange);font-size:0.7rem;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;';
-            catLabel.innerText = cat;
-            sec.appendChild(catLabel);
-
-            const container = document.createElement('div'); container.className = 'card'; container.style.padding = "0";
-            container.addEventListener('dragover', e => e.preventDefault());
-
-            items.forEach(item => {
-                container.appendChild(makeRow(item, items, container));
-            });
-
-            sec.appendChild(container); list.appendChild(sec);
-        });
-    }
-
-    function makeRow(item, siblings, container) {
-        const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true; row.dataset.id = item.id;
-
-        // Drag handle
-        const handle = document.createElement('span'); handle.className = 'drag-handle'; handle.innerText = '⠿';
-
-        // ── Editable name ──
-        const nameInput = document.createElement('input');
-        nameInput.type = 'text';
-        nameInput.className = 'inv-name-input';
-        nameInput.value = item.name;
-        nameInput.title = 'Click to edit name';
-        // Prevent drag from starting when clicking the input
-        nameInput.addEventListener('mousedown', e => e.stopPropagation());
-        nameInput.addEventListener('focus', () => { _suppressRender = true; });
-        nameInput.addEventListener('blur', () => {
-            const newName = nameInput.value.trim();
-            if (newName && newName !== item.name) {
-                updateDoc(doc(db, "menu", item.id), { name: newName })
-                    .then(() => { _suppressRender = false; });
-            } else {
-                nameInput.value = item.name; // revert if empty
-                _suppressRender = false;
-            }
-        });
-        nameInput.addEventListener('keydown', e => {
-            if (e.key === 'Enter') nameInput.blur();
-            if (e.key === 'Escape') { nameInput.value = item.name; nameInput.blur(); }
-        });
-
-        // Price
-        const priceEl = document.createElement('span'); priceEl.className = 'inv-price';
-        const hasVariants = item.variants && item.variants.length;
-        priceEl.innerText = hasVariants ? 'variants' : '£' + parseFloat(item.price).toFixed(2);
-
-        // Available checkbox — using addEventListener so it works in module scope
-        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!item.is_available; cb.style.cssText = 'width:auto;accent-color:var(--orange);cursor:pointer;';
-        cb.addEventListener('change', () => updateDoc(doc(db, "menu", item.id), { is_available: cb.checked }));
-
-        // Options button
-        const optsBtn = document.createElement('button'); optsBtn.className = 'opts-btn'; optsBtn.innerText = '⚙ Options';
-        optsBtn.addEventListener('click', () => toggleOptsEditor(item, row));
-
-        // Delete button
-        const delBtn = document.createElement('button');
-        delBtn.style.cssText = 'background:none;border:none;color:var(--muted);margin-left:6px;cursor:pointer;font-size:1rem;';
-        delBtn.innerText = '✕';
-        delBtn.addEventListener('click', () => { if (confirm("Delete item?")) deleteDoc(doc(db, "menu", item.id)); });
-
-        row.appendChild(handle); row.appendChild(nameInput); row.appendChild(priceEl);
-        row.appendChild(cb); row.appendChild(optsBtn); row.appendChild(delBtn);
-
-        // ── Drag and drop ──
-        row.ondragstart = (e) => { e.dataTransfer.setData('itemId', item.id); e.dataTransfer.setData('itemCat', item.category); setTimeout(() => row.style.opacity = '0.4', 0); };
-        row.ondragend   = () => { row.style.opacity = '1'; };
-        row.ondragover  = (e) => { e.preventDefault(); row.style.borderTop = '2px solid var(--orange)'; };
-        row.ondragleave = () => { row.style.borderTop = ''; };
-        row.ondrop = async (e) => {
-            e.preventDefault(); row.style.borderTop = '';
-            const fromId  = e.dataTransfer.getData('itemId');
-            const fromCat = e.dataTransfer.getData('itemCat');
-            if (fromId === item.id || fromCat !== item.category) return;
-            const rows = [...container.querySelectorAll('.inv-row')];
-            const ids  = rows.map(r => r.dataset.id);
-            const fi   = ids.indexOf(fromId); const ti = ids.indexOf(item.id);
-            if (fi === -1 || ti === -1) return;
-            ids.splice(fi, 1); ids.splice(ti, 0, fromId);
-            const batch = writeBatch(db); ids.forEach((id, i) => batch.update(doc(db, "menu", id), { sortOrder: i }));
-            await batch.commit();
-        };
-
-        return row;
-    }
-
-    // ── OPTIONS / VARIANTS EDITOR ─────────────────────────────────────────────
-    function toggleOptsEditor(item, row) {
-        const next = row.nextElementSibling;
-        if (next && next.classList.contains('opts-editor')) { next.remove(); return; }
-
-        const editor = document.createElement('div'); editor.className = 'opts-editor';
-
-        // ── Free-choice options (no price) ──
-        const h1 = document.createElement('h5'); h1.innerText = 'Free-Choice Options (e.g. "Mushy Peas or Curry Sauce" — no extra charge)';
-        editor.appendChild(h1);
-
-        const freeWrap = document.createElement('div');
-        editor.appendChild(freeWrap);
-
-        function refreshFree(opts) {
-            freeWrap.innerHTML = '';
-            (opts || []).forEach(opt => {
-                const tag = document.createElement('span'); tag.className = 'opts-tag';
-                tag.appendChild(document.createTextNode(opt));
-                const x = document.createElement('button'); x.innerText = '×';
-                x.onclick = async () => {
-                    const snap = await getDoc(doc(db, "menu", item.id));
-                    const updated = (snap.data().subOptions || []).filter(o => o !== opt);
-                    await updateDoc(doc(db, "menu", item.id), { subOptions: updated });
-                    refreshFree(updated);
-                };
-                tag.appendChild(x); freeWrap.appendChild(tag);
-            });
-        }
-        refreshFree(item.subOptions || []);
-
-        const freeRow = document.createElement('div'); freeRow.className = 'opts-add-row';
-        const freeIn = document.createElement('input'); freeIn.type = 'text'; freeIn.placeholder = 'e.g. Mushy Peas';
-        const freeBtn = document.createElement('button'); freeBtn.className = 'btn btn-primary'; freeBtn.innerText = '+ Add';
-        freeBtn.onclick = async () => {
-            const val = freeIn.value.trim(); if (!val) return;
-            const snap = await getDoc(doc(db, "menu", item.id));
-            const cur = snap.data().subOptions || [];
-            if (cur.includes(val)) { freeIn.value = ''; return; }
-            const updated = [...cur, val];
-            await updateDoc(doc(db, "menu", item.id), { subOptions: updated });
-            refreshFree(updated); freeIn.value = '';
-        };
-        freeIn.onkeydown = e => { if (e.key === 'Enter') freeBtn.click(); };
-        freeRow.appendChild(freeIn); freeRow.appendChild(freeBtn); editor.appendChild(freeRow);
-
-        // spacer
-        editor.appendChild(document.createElement('br'));
-
-        // ── Priced variants ──
-        const h2 = document.createElement('h5'); h2.innerText = 'Priced Variants (e.g. Large £3 / Small £2, or 2 for £3.50 / 4 for £6.50)';
-        editor.appendChild(h2);
-
-        const varWrap = document.createElement('div');
-        editor.appendChild(varWrap);
-
-        function refreshVar(variants) {
-            varWrap.innerHTML = '';
-            (variants || []).forEach(v => {
-                const tag = document.createElement('span'); tag.className = 'opts-tag';
-                tag.appendChild(document.createTextNode(v.label + ' — £' + parseFloat(v.price).toFixed(2)));
-                const x = document.createElement('button'); x.innerText = '×';
-                x.onclick = async () => {
-                    const snap = await getDoc(doc(db, "menu", item.id));
-                    const updated = (snap.data().variants || []).filter(vv => vv.label !== v.label);
-                    await updateDoc(doc(db, "menu", item.id), { variants: updated });
-                    refreshVar(updated);
-                };
-                tag.appendChild(x); varWrap.appendChild(tag);
-            });
-        }
-        refreshVar(item.variants || []);
-
-        const varRow = document.createElement('div'); varRow.className = 'opts-add-row';
-        const varLabel = document.createElement('input'); varLabel.type = 'text'; varLabel.placeholder = 'Label (e.g. Large, 2 for)';
-        const varPrice = document.createElement('input'); varPrice.type = 'number'; varPrice.placeholder = '£'; varPrice.step = '0.01'; varPrice.min = '0';
-        const varBtn = document.createElement('button'); varBtn.className = 'btn btn-primary'; varBtn.innerText = '+ Add';
-        varBtn.onclick = async () => {
-            const lbl = varLabel.value.trim(); const price = parseFloat(varPrice.value);
-            if (!lbl || isNaN(price)) return;
-            const snap = await getDoc(doc(db, "menu", item.id));
-            const cur = snap.data().variants || [];
-            if (cur.some(v => v.label === lbl)) { varLabel.value = ''; varPrice.value = ''; return; }
-            const updated = [...cur, { label: lbl, price }];
-            await updateDoc(doc(db, "menu", item.id), { variants: updated });
-            refreshVar(updated); varLabel.value = ''; varPrice.value = '';
-        };
-        varLabel.onkeydown = e => { if (e.key === 'Enter') varPrice.focus(); };
-        varPrice.onkeydown = e => { if (e.key === 'Enter') varBtn.click(); };
-        varRow.appendChild(varLabel); varRow.appendChild(varPrice); varRow.appendChild(varBtn); editor.appendChild(varRow);
-
-        row.insertAdjacentElement('afterend', editor);
-    }
-
-    // ── ADD ITEM ─────────────────────────────────────────────────────────────
-    async function addItem() {
-        const name = document.getElementById('new-name').value.trim();
-        const price = parseFloat(document.getElementById('new-price').value);
-        const category = document.getElementById('new-cat').value;
-        if (!name || isNaN(price) || !category) return alert("Fill all fields");
-        const catItems = allMenuItems.filter(i => i.category === category);
-        const maxOrder = catItems.length ? Math.max(...catItems.map(i => i.sortOrder ?? 0)) : -1;
-        await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: maxOrder + 1, subOptions: [], variants: [] });
-        document.getElementById('new-name').value = ""; document.getElementById('new-price').value = "";
-    }
-
-    // ── PIE BATCH ────────────────────────────────────────────────────────────
     async function archivePies() {
-        if (!confirm("Archive all?")) return;
+        if (!confirm("Archive?")) return;
         const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending")));
         const b = writeBatch(db); snap.forEach(d => b.update(d.ref, { status: "archived" })); await b.commit();
     }
