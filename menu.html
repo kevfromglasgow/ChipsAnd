@@ -19,7 +19,7 @@
         .cat-title { color: var(--orange); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin: 30px 0 15px; }
         .item-card { background: var(--surface); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid var(--border); gap: 12px; }
         .item-info { flex: 1; }
-        .item-sub-hint { font-size: 0.78rem; color: #666; margin-top: 4px; font-style: italic; }
+        .item-sub-hint { font-size: 0.78rem; color: #888; margin-top: 6px; font-style: italic; line-height: 1.4; }
         .add-btn { background: var(--orange); border: none; color: white; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; flex-shrink: 0; }
         #cart-bar { position: fixed; bottom: 20px; right: 20px; width: 90%; max-width: 450px; background: #1f1f1f; padding: 20px; border-radius: 20px; border: 1px solid var(--orange); display: none; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         @media (max-width: 800px) { #cart-bar { left: 50%; right: auto; transform: translateX(-50%); } }
@@ -32,12 +32,13 @@
         .cart-qty-wrap { display: flex; align-items: center; gap: 5px; }
         .qty-btn { background: #2a2a2a; border: 1px solid #444; color: white; width: 22px; height: 22px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; line-height: 1; }
         .rm-btn  { background: none; border: 1px solid rgba(231,76,60,0.4); color: #e74c3c; width: 22px; height: 22px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; line-height: 1; }
-        #opt-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        #opt-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .opt-sheet { background: var(--surface); border-radius: 16px; padding: 24px; width: 100%; max-width: 380px; }
         .opt-sheet h3 { font-family: 'Playfair Display'; font-size: 1.1rem; margin-bottom: 6px; }
-        .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-        .opt-btn { padding: 13px 10px; border-radius: 10px; border: 1.5px solid var(--border); background: #1f1f1f; color: var(--text); cursor: pointer; font-family: 'DM Sans'; font-size: 0.88rem; text-align: center; }
-        .opt-cancel { background: none; border: 1px solid #333; color: #888; width: 100%; padding: 12px; border-radius: 10px; cursor: pointer; font-family: 'DM Sans'; }
+        .opt-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 14px; }
+        .opt-btn { padding: 14px 10px; border-radius: 10px; border: 1.5px solid var(--border); background: #1f1f1f; color: var(--text); cursor: pointer; font-family: 'DM Sans'; font-size: 0.9rem; text-align: center; }
+        .opt-btn:hover { border-color: var(--orange); }
+        .opt-cancel { background: none; border: 1px solid #333; color: #666; width: 100%; padding: 12px; border-radius: 10px; cursor: pointer; font-family: 'DM Sans'; font-size: 0.88rem; }
         .hidden { display: none !important; }
         .admin-tag { border: 1px dashed var(--orange) !important; opacity: 0.8; }
     </style>
@@ -69,7 +70,12 @@
     </div>
 
     <div id="opt-modal" class="hidden">
-        <div class="opt-sheet"><h3 id="opt-modal-title"></h3><p id="opt-modal-sub"></p><div class="opt-grid" id="opt-modal-grid"></div><button class="opt-cancel" id="opt-modal-cancel">Cancel</button></div>
+        <div class="opt-sheet">
+            <h3 id="opt-modal-title"></h3>
+            <p id="opt-modal-sub" style="font-size: 0.85rem; color: #888; margin-bottom: 15px;"></p>
+            <div class="opt-grid" id="opt-modal-grid"></div>
+            <button class="opt-cancel" id="opt-modal-cancel">Cancel</button>
+        </div>
     </div>
 
     <script type="module">
@@ -135,9 +141,17 @@
         window.adjust = (k, d) => { cart[k].qty += d; if(cart[k].qty <=0) delete cart[k]; updateUI(); };
 
         function showModal(title, sub, choices) {
-            document.getElementById('opt-modal-title').innerText = title; document.getElementById('opt-modal-sub').innerText = sub;
-            const grid = document.getElementById('opt-modal-grid'); grid.innerHTML = "";
-            choices.forEach(c => { const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = c.label; b.onclick = () => { c.onSelect(); document.getElementById('opt-modal').classList.add('hidden'); }; grid.appendChild(b); });
+            document.getElementById('opt-modal-title').innerText = title; 
+            document.getElementById('opt-modal-sub').innerText = sub;
+            const grid = document.getElementById('opt-modal-grid'); 
+            grid.innerHTML = "";
+            choices.forEach(c => { 
+                const b = document.createElement('button'); 
+                b.className = 'opt-btn'; 
+                b.innerText = c.label; 
+                b.onclick = () => { c.onSelect(); document.getElementById('opt-modal').classList.add('hidden'); }; 
+                grid.appendChild(b); 
+            });
             document.getElementById('opt-modal').classList.remove('hidden');
         }
         document.getElementById('opt-modal-cancel').onclick = () => document.getElementById('opt-modal').classList.add('hidden');
@@ -178,15 +192,46 @@
                     display.innerHTML += `<div class="cat-title">${cat}</div>`;
                     catItems.forEach(item => {
                         const card = document.createElement('div'); card.className = 'item-card';
-                        const hasV = item.variants?.length > 0; const hasS = item.subOptions?.length > 0;
-                        card.innerHTML = `<div class='item-info'><strong>${item.name}</strong><div style='color:var(--orange)'>${hasV ? 'Variants' : '£'+parseFloat(item.price).toFixed(2)}</div>${hasS ? `<div class='item-sub-hint'>Choice: ${item.subOptions.join(' or ')}</div>` : ''}</div>`;
+                        const hasV = item.variants?.length > 0; 
+                        const hasS = item.subOptions?.length > 0;
+                        
+                        const info = document.createElement('div');
+                        info.className = 'item-info';
+                        
+                        const priceText = hasV ? item.variants.map(v => v.label + ' £' + parseFloat(v.price).toFixed(2)).join(' / ') : '£' + parseFloat(item.price).toFixed(2);
+                        
+                        info.innerHTML = `<strong>${item.name}</strong><div style='color:var(--orange); font-size: 0.9rem; margin-top: 2px;'>${priceText}</div>`;
+                        
+                        if (hasS) {
+                            info.innerHTML += `<div class='item-sub-hint'>Must choose: ${item.subOptions.join(' or ')}</div>`;
+                        }
+
                         const b = document.createElement('button'); b.className = 'add-btn'; b.innerText = '+';
                         b.onclick = () => {
-                            if(hasV) showModal(item.name, 'Choose Size:', item.variants.map(v => ({ label: v.label+' £'+v.price, onSelect: () => addToCart(item.name, v.price, v.label) })));
-                            else if(hasS) showModal(item.name, 'Choose:', item.subOptions.map(o => ({ label: o, onSelect: () => addToCart(item.name, item.price, null, o) })));
-                            else addToCart(item.name, item.price);
+                            if (hasV) {
+                                showModal(item.name, 'Choose Size:', item.variants.map(v => ({
+                                    label: v.label + ' — £' + parseFloat(v.price).toFixed(2),
+                                    onSelect: () => {
+                                        if (hasS) {
+                                            showModal(item.name, 'Choose Side:', item.subOptions.map(opt => ({
+                                                label: opt,
+                                                onSelect: () => addToCart(item.name, v.price, v.label, opt)
+                                            })));
+                                        } else {
+                                            addToCart(item.name, v.price, v.label, null);
+                                        }
+                                    }
+                                })));
+                            } else if (hasS) {
+                                showModal(item.name, 'Choose Side:', item.subOptions.map(opt => ({
+                                    label: opt,
+                                    onSelect: () => addToCart(item.name, item.price, null, opt)
+                                })));
+                            } else {
+                                addToCart(item.name, item.price, null, null);
+                            }
                         };
-                        card.appendChild(b); display.appendChild(card);
+                        card.appendChild(info); card.appendChild(b); display.appendChild(card);
                     });
                 });
             });
