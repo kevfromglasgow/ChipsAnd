@@ -11,59 +11,36 @@
         :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --surface-2: #1F1F1F; --text: #F0EDE8; --muted: #888; --green: #2ecc71; --red: #e74c3c; --border: rgba(255,255,255,0.08); }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 60px; }
-
         .app-header { background: var(--surface); padding: 10px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .logo-admin { height: 40px; width: auto; }
-
         .tab-nav { display: flex; margin: 20px 32px 0; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; color: var(--muted); padding: 14px 22px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; font-family: 'DM Sans', sans-serif; }
         .tab-btn.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
-
         .content-area { padding: 24px 32px; max-width: 900px; }
         .card { background: var(--surface); border-radius: 16px; padding: 22px; margin-bottom: 18px; border: 1px solid var(--border); }
         .order-card { background: var(--surface-2); border-radius: 14px; padding: 18px; margin-bottom: 12px; }
-
         .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
         .btn-primary { background: var(--orange); color: white; }
         .btn-ready { background: var(--green); color: white; }
         .btn-cancel { background: var(--red); color: white; }
         .btn-pdf { background: #34495e; color: white; width: 100%; margin-bottom: 12px; }
-
-        input[type=text], input[type=email], input[type=password], input[type=number], select {
-            background: var(--surface-2); border: 1px solid var(--border); color: white;
-            padding: 10px 12px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: 100%;
-        }
+        input[type=text], input[type=email], input[type=password], input[type=number], select { background: var(--surface-2); border: 1px solid var(--border); color: white; padding: 10px 12px; border-radius: 8px; width: 100%; font-family: 'DM Sans', sans-serif; }
         input:focus, select:focus { outline: none; border-color: var(--orange); }
-
         .hidden { display: none !important; }
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-
         .status-bar { margin: 20px 32px; background: var(--surface); border-radius: 14px; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
-
         .order-items { list-style: none; margin: 8px 0; font-size: 0.88rem; color: var(--muted); }
         .order-items li::before { content: "· "; color: var(--orange); }
-
         .cat-tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-        .cat-tag {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: var(--surface-2); border: 1px solid var(--border);
-            padding: 6px 14px; border-radius: 20px;
-            cursor: grab; font-size: 0.85rem; user-select: none;
-        }
+        .cat-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; cursor: grab; font-size: 0.85rem; user-select: none; }
         .cat-tag.drag-over { border-color: var(--orange); }
-
         .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 8px; }
         .inv-row:last-child { border-bottom: none; }
         .drag-handle { color: var(--muted); margin-right: 4px; flex-shrink: 0; }
         .inv-name { flex: 1; }
-        .inv-name-input {
-            flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--border);
-            color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
-            padding: 2px 4px; outline: none; width: 100%;
-        }
+        .inv-name-input { flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; width: 100%; }
         .inv-name-input:focus { border-bottom-color: var(--orange); }
         .inv-price { color: var(--orange); margin-right: 8px; white-space: nowrap; flex-shrink: 0; }
-
         .opts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
         .opts-btn:hover { border-color: var(--orange); color: var(--orange); }
         .opts-editor { padding: 12px 16px; background: rgba(0,0,0,0.25); border-bottom: 1px solid var(--border); }
@@ -112,12 +89,15 @@
 
         <div id="tab-pies" class="tab-panel hidden">
             <div class="card" style="border-color:var(--orange)">
-                <h3 style="margin-bottom:16px">Pie Batch Control</h3>
-                <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
-                    <label><input type="checkbox" id="pie-toggle" style="width:auto;accent-color:var(--orange);"> Enable Pie Orders</label>
-                    <input type="number" id="pie-stock" placeholder="Stock" style="width:100px;">
-                    <button class="btn btn-primary" id="pie-update-btn">Update</button>
+                <h3 style="margin-bottom:16px">Collection Dates Manager</h3>
+                <div style="display:grid; grid-template-columns: 1fr 100px 100px auto; gap:10px; margin-bottom:12px;">
+                    <input type="text" id="new-pie-date" placeholder="e.g. Friday 17th April">
+                    <input type="number" id="new-pie-stock" placeholder="Stock">
+                    <input type="text" id="new-pie-times" placeholder="9am - 5pm">
+                    <button class="btn btn-primary" id="add-date-btn">Add Date</button>
                 </div>
+                <div id="dates-list-admin"></div>
+                <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
                 <button class="btn btn-pdf" id="pie-pdf-btn">Download PDF Prep Sheet</button>
                 <button class="btn" style="width:100%;background:#333;color:white;" id="pie-archive-btn">Archive Current Batch</button>
             </div>
@@ -176,8 +156,12 @@
             const d = snap.data() || {};
             window._isClosed = !!d.is_closed;
             document.getElementById('status-text').innerText = d.is_closed ? "CLOSED" : "OPEN";
-            document.getElementById('pie-toggle').checked = !!d.pies_enabled;
-            document.getElementById('pie-stock').value = d.pie_inventory || 0;
+        });
+
+        // COLLECTION DATES LISTENER
+        onSnapshot(doc(db, "settings", "collection_dates"), snap => {
+            const data = snap.data() || { dates: [] };
+            renderDatesAdmin(data.dates);
         });
 
         onSnapshot(doc(db, "settings", "categories"), snap => {
@@ -200,8 +184,8 @@
         onSnapshot(q, snap => renderOrders(snap));
 
         document.getElementById('toggle-shop-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window._isClosed });
-        document.getElementById('pie-update-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { pies_enabled: document.getElementById('pie-toggle').checked, pie_inventory: parseInt(document.getElementById('pie-stock').value) || 0 });
-        document.getElementById('pie-pdf-btn').onclick = generatePiePDF;
+        document.getElementById('add-date-btn').onclick = addCollectionDate;
+        document.getElementById('pie-pdf-btn').onclick = handlePdfPrompt;
         document.getElementById('pie-archive-btn').onclick = archivePies;
         document.getElementById('add-cat-btn').onclick = addCategory;
         document.getElementById('add-item-btn').onclick = addItem;
@@ -216,20 +200,66 @@
         });
     }
 
+    // --- COLLECTION DATES LOGIC ---
+    async function addCollectionDate() {
+        const dateStr = document.getElementById('new-pie-date').value.trim();
+        const stock = parseInt(document.getElementById('new-pie-stock').value) || 0;
+        const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm";
+        if(!dateStr) return alert("Enter a date");
+        const snap = await getDoc(doc(db, "settings", "collection_dates"));
+        const cur = snap.data()?.dates || [];
+        const updated = [...cur, { id: Date.now().toString(), label: dateStr, stock: stock, times: times, active: true }];
+        await setDoc(doc(db, "settings", "collection_dates"), { dates: updated });
+        document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-stock').value = "";
+    }
+
+    function renderDatesAdmin(dates) {
+        const wrap = document.getElementById('dates-list-admin'); wrap.innerHTML = "";
+        dates.forEach(d => {
+            const div = document.createElement('div'); div.className = 'card';
+            div.style.cssText = "background:var(--surface-2); display:flex; justify-content:space-between; align-items:center; padding:10px 15px;";
+            const isSoldOut = d.stock <= 0;
+            div.innerHTML = `<div><strong>${d.label}</strong> <span style='font-size:0.7rem;color:var(--muted)'>(${d.times})</span><br>
+                <span style='color:${isSoldOut ? 'var(--red)' : 'var(--green)'}'>${isSoldOut ? 'SOLD OUT' : 'Stock: '+d.stock}</span></div>
+                <div style='display:flex;gap:10px;'><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'};font-size:0.7rem;'>${d.active?'Online':'Hidden'}</button>
+                <button class='btn btn-cancel' style='padding:5px 10px;'>✕</button></div>`;
+            div.querySelector('.btn').onclick = () => toggleDate(d.id);
+            div.querySelector('.btn-cancel').onclick = () => deleteDate(d.id);
+            wrap.appendChild(div);
+        });
+    }
+
+    async function toggleDate(id) {
+        const snap = await getDoc(doc(db, "settings", "collection_dates"));
+        const dates = snap.data().dates.map(d => d.id === id ? {...d, active: !d.active} : d);
+        await updateDoc(doc(db, "settings", "collection_dates"), { dates });
+    }
+
+    async function deleteDate(id) {
+        if(!confirm("Delete this date?")) return;
+        const snap = await getDoc(doc(db, "settings", "collection_dates"));
+        const dates = snap.data().dates.filter(d => d.id !== id);
+        await updateDoc(doc(db, "settings", "collection_dates"), { dates });
+    }
+
+    async function handlePdfPrompt() {
+        const snap = await getDoc(doc(db, "settings", "collection_dates"));
+        const dates = snap.data()?.dates || [];
+        if(!dates.length) return alert("No dates found");
+        const choice = prompt("Enter the exact Date Label for the PDF:\n\n" + dates.map(d => d.label).join("\n"));
+        if(choice) generatePiePDF(choice);
+    }
+
+    // --- EXISTING RENDER LOGIC ---
     function renderOrders(snap) {
         const live = document.getElementById('orders-list'); const pie = document.getElementById('pie-list');
         live.innerHTML = ""; pie.innerHTML = "";
         snap.forEach(d => {
             const data = d.data(); const id = d.id;
             const div = document.createElement('div'); div.className = 'order-card';
-            const itemLines = data.items.map(i => {
-                let s = i.name;
-                if (i.variantLabel) s += ' (' + i.variantLabel + ')';
-                else if (i.subOption) s += ' (' + i.subOption + ')';
-                return '<li>' + s + '</li>';
-            }).join('');
+            const itemLines = data.items.map(i => `<li>${i.name} ${i.variantLabel ? '('+i.variantLabel+')' : (i.subOption ? '('+i.subOption+')' : '')}</li>`).join('');
             div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div>
-                <div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong><ul class='order-items'>${itemLines}</ul></div>
+                <div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong> ${data.collectionDate ? `<br><span style="color:var(--orange);font-size:0.8rem">${data.collectionDate}</span>` : ''}<ul class='order-items'>${itemLines}</ul></div>
                 <div style='display:flex;gap:10px'><button class='btn btn-ready'>Ready</button><button class='btn btn-cancel'>Cancel</button></div>`;
             div.querySelector('.btn-ready').onclick = () => updateDoc(doc(db, "orders", id), { status: 'ready' });
             div.querySelector('.btn-cancel').onclick = () => confirm('Cancel order?') && updateDoc(doc(db, "orders", id), { status: 'cancelled' });
@@ -241,15 +271,11 @@
         const wrap = document.getElementById('cat-tags-list'); wrap.innerHTML = "";
         allCategories.forEach((cat, idx) => {
             const tag = document.createElement('div'); tag.className = 'cat-tag'; tag.draggable = true;
-            tag.dataset.idx = idx;
-            tag.appendChild(document.createTextNode(cat + ' '));
-            const delBtn = document.createElement('button');
-            delBtn.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;padding:0;';
-            delBtn.innerText = '×';
-            delBtn.onclick = (e) => { e.stopPropagation(); deleteCategory(cat); };
-            tag.appendChild(delBtn);
-            wrap.appendChild(tag);
-            tag.ondragstart = (e) => { e.dataTransfer.setData('idx', String(idx)); };
+            tag.dataset.idx = idx; tag.appendChild(document.createTextNode(cat + ' '));
+            const delBtn = document.createElement('button'); delBtn.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;';
+            delBtn.innerText = '×'; delBtn.onclick = (e) => { e.stopPropagation(); deleteCategory(cat); };
+            tag.appendChild(delBtn); wrap.appendChild(tag);
+            tag.ondragstart = (e) => e.dataTransfer.setData('idx', String(idx));
             tag.ondragover = (e) => { e.preventDefault(); tag.classList.add('drag-over'); };
             tag.ondragleave = () => tag.classList.remove('drag-over');
             tag.ondrop = (e) => {
@@ -266,13 +292,8 @@
 
     function renderCatDropdown() {
         const sel = document.getElementById('new-cat');
-        const cur = sel.value;
         sel.innerHTML = '<option value="">Select category…</option>';
-        allCategories.forEach(c => {
-            const o = document.createElement('option'); o.value = c; o.innerText = c;
-            if (c === cur) o.selected = true;
-            sel.appendChild(o);
-        });
+        allCategories.forEach(c => { const o = document.createElement('option'); o.value = c; o.innerText = c; sel.appendChild(o); });
     }
 
     function renderMenuList() {
@@ -281,12 +302,8 @@
         allCategories.forEach(cat => {
             const items = allMenuItems.filter(i => i.category === cat);
             const sec = document.createElement('div'); sec.style.marginBottom = "20px";
-            const catLabel = document.createElement('div');
-            catLabel.style.cssText = 'color:var(--orange);font-size:0.7rem;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;';
-            catLabel.innerText = cat;
-            sec.appendChild(catLabel);
+            sec.innerHTML = `<div style='color:var(--orange);font-size:0.7rem;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;'>${cat}</div>`;
             const container = document.createElement('div'); container.className = 'card'; container.style.padding = "0";
-            container.addEventListener('dragover', e => e.preventDefault());
             items.forEach(item => { container.appendChild(makeRow(item, items, container)); });
             sec.appendChild(container); list.appendChild(sec);
         });
@@ -295,58 +312,22 @@
     function makeRow(item, siblings, container) {
         const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true; row.dataset.id = item.id;
         const handle = document.createElement('span'); handle.className = 'drag-handle'; handle.innerText = '⠿';
-
-        const nameInput = document.createElement('input');
-        nameInput.type = 'text'; nameInput.className = 'inv-name-input'; nameInput.value = item.name;
-        nameInput.addEventListener('mousedown', e => e.stopPropagation());
+        const nameInput = document.createElement('input'); nameInput.type = 'text'; nameInput.className = 'inv-name-input'; nameInput.value = item.name;
         nameInput.addEventListener('focus', () => { _suppressRender = true; });
         nameInput.addEventListener('blur', async () => {
             const newName = nameInput.value.trim();
-            if (newName && newName !== item.name) {
-                await updateDoc(doc(db, "menu", item.id), { name: newName });
-            } else { nameInput.value = item.name; }
+            if (newName && newName !== item.name) await updateDoc(doc(db, "menu", item.id), { name: newName });
             _suppressRender = false;
         });
-
         const priceEl = document.createElement('span'); priceEl.className = 'inv-price';
         priceEl.innerText = (item.variants && item.variants.length) ? 'variants' : '£' + parseFloat(item.price).toFixed(2);
-
-        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!item.is_available; 
-        cb.style.cssText = 'width:auto;accent-color:var(--orange);cursor:pointer;';
-        cb.addEventListener('change', async () => {
-            _suppressRender = true;
-            await updateDoc(doc(db, "menu", item.id), { is_available: cb.checked });
-            _suppressRender = false;
-        });
-
+        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!item.is_available; cb.style.cssText = 'width:auto;accent-color:var(--orange);cursor:pointer;';
+        cb.addEventListener('change', async () => { _suppressRender = true; await updateDoc(doc(db, "menu", item.id), { is_available: cb.checked }); _suppressRender = false; });
         const optsBtn = document.createElement('button'); optsBtn.className = 'opts-btn'; optsBtn.innerText = '⚙ Options';
         optsBtn.onclick = () => toggleOptsEditor(item, row);
-
-        const delBtn = document.createElement('button');
-        delBtn.style.cssText = 'background:none;border:none;color:var(--muted);margin-left:6px;cursor:pointer;font-size:1rem;';
-        delBtn.innerText = '✕';
-        delBtn.onclick = () => { if (confirm("Delete item?")) deleteDoc(doc(db, "menu", item.id)); };
-
-        row.appendChild(handle); row.appendChild(nameInput); row.appendChild(priceEl);
-        row.appendChild(cb); row.appendChild(optsBtn); row.appendChild(delBtn);
-
-        row.ondragstart = (e) => { e.dataTransfer.setData('itemId', item.id); e.dataTransfer.setData('itemCat', item.category); };
-        row.ondragover = (e) => { e.preventDefault(); row.style.borderTop = '2px solid var(--orange)'; };
-        row.ondragleave = () => { row.style.borderTop = ''; };
-        row.ondrop = async (e) => {
-            e.preventDefault(); row.style.borderTop = '';
-            const fromId = e.dataTransfer.getData('itemId');
-            const fromCat = e.dataTransfer.getData('itemCat');
-            if (fromId === item.id || fromCat !== item.category) return;
-            _suppressRender = true;
-            const rows = [...container.querySelectorAll('.inv-row')];
-            const ids = rows.map(r => r.dataset.id);
-            const fi = ids.indexOf(fromId); const ti = ids.indexOf(item.id);
-            ids.splice(fi, 1); ids.splice(ti, 0, fromId);
-            const batch = writeBatch(db); ids.forEach((id, i) => batch.update(doc(db, "menu", id), { sortOrder: i }));
-            await batch.commit();
-            _suppressRender = false;
-        };
+        const delBtn = document.createElement('button'); delBtn.style.cssText = 'background:none;border:none;color:var(--muted);margin-left:6px;cursor:pointer;';
+        delBtn.innerText = '✕'; delBtn.onclick = () => confirm("Delete item?") && deleteDoc(doc(db, "menu", item.id));
+        row.appendChild(handle); row.appendChild(nameInput); row.appendChild(priceEl); row.appendChild(cb); row.appendChild(optsBtn); row.appendChild(delBtn);
         return row;
     }
 
@@ -354,97 +335,36 @@
         const next = row.nextElementSibling;
         if (next && next.classList.contains('opts-editor')) { next.remove(); return; }
         const editor = document.createElement('div'); editor.className = 'opts-editor';
-
-        const h1 = document.createElement('h5'); h1.innerText = 'Free-Choice Options'; editor.appendChild(h1);
-        const freeWrap = document.createElement('div'); editor.appendChild(freeWrap);
-        
         const refresh = async () => {
             const snap = await getDoc(doc(db, "menu", item.id));
             const d = snap.data();
-            freeWrap.innerHTML = '';
-            (d.subOptions || []).forEach(opt => {
-                const tag = document.createElement('span'); tag.className = 'opts-tag';
-                tag.innerText = opt;
-                const x = document.createElement('button'); x.innerText = '×';
-                x.onclick = async () => {
-                    const fresh = await getDoc(doc(db, "menu", item.id));
-                    const updated = (fresh.data().subOptions || []).filter(o => o !== opt);
-                    await updateDoc(doc(db, "menu", item.id), { subOptions: updated });
-                    refresh();
-                };
-                tag.appendChild(x); freeWrap.appendChild(tag);
-            });
-            varWrap.innerHTML = '';
-            (d.variants || []).forEach(v => {
-                const tag = document.createElement('span'); tag.className = 'opts-tag';
-                tag.innerText = v.label + ' — £' + v.price.toFixed(2);
-                const x = document.createElement('button'); x.innerText = '×';
-                x.onclick = async () => {
-                    const fresh = await getDoc(doc(db, "menu", item.id));
-                    const updated = (fresh.data().variants || []).filter(vv => vv.label !== v.label);
-                    await updateDoc(doc(db, "menu", item.id), { variants: updated });
-                    refresh();
-                };
-                tag.appendChild(x); varWrap.appendChild(tag);
-            });
+            editor.innerHTML = `<h5>Free Options</h5><div class='f-wrap'>${(d.subOptions||[]).map(o => `<span class='opts-tag'>${o}<button onclick="updateSubOpt('${item.id}','${o}')">×</button></span>`).join('')}</div>
+                <div class='opts-add-row'><input type='text' class='f-in'><button class='btn btn-primary f-add'>+ Add</button></div><br>
+                <h5>Variants</h5><div class='v-wrap'>${(d.variants||[]).map(v => `<span class='opts-tag'>${v.label} £${v.price}<button onclick="updateVariant('${item.id}','${v.label}')">×</button></span>`).join('')}</div>
+                <div class='opts-add-row'><input type='text' class='v-l'><input type='number' class='v-p' placeholder='£'><button class='btn btn-primary v-add'>+ Add</button></div>`;
+            editor.querySelector('.f-add').onclick = async () => {
+                const val = editor.querySelector('.f-in').value.trim();
+                const fresh = await getDoc(doc(db, "menu", item.id));
+                await updateDoc(doc(db, "menu", item.id), { subOptions: [...(fresh.data().subOptions||[]), val] }); refresh();
+            };
         };
-
-        const freeRow = document.createElement('div'); freeRow.className = 'opts-add-row';
-        const freeIn = document.createElement('input'); freeIn.type = 'text'; freeIn.placeholder = 'e.g. Mushy Peas';
-        const freeBtn = document.createElement('button'); freeBtn.className = 'btn btn-primary'; freeBtn.innerText = '+ Add';
-        freeBtn.onclick = async () => {
-            _suppressRender = true;
-            const val = freeIn.value.trim();
-            const snap = await getDoc(doc(db, "menu", item.id));
-            await updateDoc(doc(db, "menu", item.id), { subOptions: [...(snap.data().subOptions || []), val] });
-            freeIn.value = ''; refresh(); _suppressRender = false;
-        };
-        freeRow.appendChild(freeIn); freeRow.appendChild(freeBtn); editor.appendChild(freeRow);
-
-        editor.appendChild(document.createElement('br'));
-        const h2 = document.createElement('h5'); h2.innerText = 'Priced Variants'; editor.appendChild(h2);
-        const varWrap = document.createElement('div'); editor.appendChild(varWrap);
-        const varRow = document.createElement('div'); varRow.className = 'opts-add-row';
-        const vL = document.createElement('input'); vL.placeholder = 'Label';
-        const vP = document.createElement('input'); vP.type='number'; vP.placeholder='£'; vP.step='0.01';
-        const vB = document.createElement('button'); vB.className='btn btn-primary'; vB.innerText='+ Add';
-        vB.onclick = async () => {
-            _suppressRender = true;
-            const snap = await getDoc(doc(db, "menu", item.id));
-            await updateDoc(doc(db, "menu", item.id), { variants: [...(snap.data().variants || []), {label: vL.value, price: parseFloat(vP.value)}] });
-            vL.value=''; vP.value=''; refresh(); _suppressRender = false;
-        };
-        varRow.appendChild(vL); varRow.appendChild(vP); varRow.appendChild(vB); editor.appendChild(varRow);
-
-        row.insertAdjacentElement('afterend', editor);
-        refresh();
+        window.updateSubOpt = async (id, opt) => { const fresh = await getDoc(doc(db, "menu", id)); await updateDoc(doc(db, "menu", id), { subOptions: fresh.data().subOptions.filter(o=>o!==opt) }); refresh(); };
+        row.insertAdjacentElement('afterend', editor); refresh();
     }
 
     async function addItem() {
-        _suppressRender = true;
         const name = document.getElementById('new-name').value.trim();
         const price = parseFloat(document.getElementById('new-price').value);
         const category = document.getElementById('new-cat').value;
-        if (!name || isNaN(price) || !category) return alert("Fill all fields");
-        const catItems = allMenuItems.filter(i => i.category === category);
-        const maxOrder = catItems.length ? Math.max(...catItems.map(i => i.sortOrder ?? 0)) : -1;
-        await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: maxOrder + 1, subOptions: [], variants: [] });
+        if (!name || isNaN(price) || !category) return;
+        await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: 999, subOptions: [], variants: [] });
         document.getElementById('new-name').value = ""; document.getElementById('new-price').value = "";
-        _suppressRender = false;
     }
 
     function addCategory() {
         const name = document.getElementById('new-cat-name').value.toUpperCase().trim();
         if (!name || allCategories.includes(name)) return;
-        allCategories = [...allCategories, name];
-        setDoc(doc(db, "settings", "categories"), { list: allCategories });
-        document.getElementById('new-cat-name').value = "";
-    }
-
-    function deleteCategory(cat) {
-        if (!confirm("Delete?")) return;
-        allCategories = allCategories.filter(c => c !== cat);
-        setDoc(doc(db, "settings", "categories"), { list: allCategories });
+        setDoc(doc(db, "settings", "categories"), { list: [...allCategories, name] });
     }
 
     async function archivePies() {
@@ -453,12 +373,12 @@
         const b = writeBatch(db); snap.forEach(d => b.update(d.ref, { status: "archived" })); await b.commit();
     }
 
-    async function generatePiePDF() {
+    async function generatePiePDF(dateLabel) {
         const { jsPDF } = window.jspdf; const pdf = new jsPDF();
-        const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID")));
+        const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("collectionDate", "==", dateLabel), where("paymentStatus", "==", "PAID")));
         const rows = []; snap.forEach(d => { const data = d.data(); rows.push([data.customer?.name || '', data.items.map(i => i.name + (i.variantLabel ? ' (' + i.variantLabel + ')' : '')).join(', '), data.customer?.msg || '-']); });
-        pdf.text("Pie Prep Sheet", 14, 15); pdf.autoTable({ startY: 20, head: [['Customer', 'Items', 'Note']], body: rows });
-        pdf.save("Pies.pdf");
+        pdf.text("Pie Prep Sheet: " + dateLabel, 14, 15); pdf.autoTable({ startY: 20, head: [['Customer', 'Items', 'Note']], body: rows });
+        pdf.save(`Pies_${dateLabel.replace(/ /g, '_')}.pdf`);
     }
 </script>
 </body>
