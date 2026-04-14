@@ -40,7 +40,6 @@
         .opt-btn:hover { border-color: var(--orange); }
         .opt-cancel { background: none; border: 1px solid #333; color: #666; width: 100%; padding: 12px; border-radius: 10px; cursor: pointer; font-family: 'DM Sans'; font-size: 0.88rem; }
         .hidden { display: none !important; }
-        .admin-tag { border: 1px dashed var(--orange) !important; opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -110,8 +109,7 @@
             if(!activeDates.length) { dateWrap.innerHTML = "<p>No dates available.</p>"; return; }
             activeDates.forEach(d => {
                 const btn = document.createElement('button'); btn.className = 'choice-btn'; btn.style.marginBottom = "10px";
-                const isSoldOut = d.stock <= 0; btn.disabled = isSoldOut;
-                btn.innerHTML = `${d.label}<br><span style="font-size:0.7rem; font-family:'DM Sans';">${isSoldOut ? 'SOLD OUT' : 'Pickup: ' + d.times}</span>`;
+                btn.innerHTML = `${d.label}<br><span style="font-size:0.7rem; font-family:'DM Sans';">Pickup: ${d.times}</span>`;
                 btn.onclick = () => { selectedDateId = d.id; startFlow('PIES'); };
                 dateWrap.appendChild(btn);
             });
@@ -159,16 +157,38 @@
         document.getElementById('submit-order-btn').onclick = async () => {
             const name = document.getElementById('cust-name').value; if(!name) return alert("Enter Name");
             const btn = document.getElementById('submit-order-btn'); btn.disabled = true; btn.innerText = "Securing Payment...";
-            const items = []; let total = 0; let piesInCart = 0;
-            Object.values(cart).forEach(e => { if(e.name.toLowerCase().includes('pie')) piesInCart += e.qty; for(let i=0;i<e.qty;i++){ items.push({name:e.name, price:e.price, variantLabel:e.variantLabel, subOption:e.subOption}); total += e.price; } });
+            
+            const cartItems = Object.values(cart);
+            let total = 0; let piesInCart = 0;
+            const items = [];
+            cartItems.forEach(e => { 
+                if(e.name.toLowerCase().includes('pie')) piesInCart += e.qty; 
+                for(let i=0;i<e.qty;i++){ 
+                    items.push({name:e.name, price:e.price, variantLabel:e.variantLabel, subOption:e.subOption}); 
+                    total += e.price; 
+                } 
+            });
             
             try {
                 if(currentMode === 'PIES' && piesInCart > 0) {
-                    const dateRef = doc(db, "settings", "collection_dates"); const dateSnap = await getDoc(dateRef);
-                    let dates = dateSnap.data().dates; let idx = dates.findIndex(d => d.id === selectedDateId);
-                    if(dates[idx].stock < piesInCart) { alert("Stock low for this date."); btn.disabled=false; return; }
-                    dates[idx].stock -= piesInCart; await updateDoc(dateRef, { dates: dates });
+                    const dateRef = doc(db, "settings", "collection_dates");
+                    const dateSnap = await getDoc(dateRef);
+                    let dates = dateSnap.data().dates;
+                    let dIdx = dates.findIndex(d => d.id === selectedDateId);
+
+                    for (const item of cartItems) {
+                        if (item.name.toLowerCase().includes('pie')) {
+                            if (!dates[dIdx].inventory[item.name] || dates[dIdx].inventory[item.name] < item.qty) {
+                                alert(`Sorry, not enough stock for ${item.name} on this date.`);
+                                btn.disabled = false; btn.innerText = "Pay & Confirm Order";
+                                return;
+                            }
+                            dates[dIdx].inventory[item.name] -= item.qty;
+                        }
+                    }
+                    await updateDoc(dateRef, { dates });
                 }
+
                 const docRef = await addDoc(collection(db, "orders"), {
                     items, customer: { name, phone: document.getElementById('cust-phone').value, msg: document.getElementById('cust-note').value },
                     collectionDate: currentMode === 'PIES' ? collectionDates.find(d => d.id === selectedDateId).label : 'ASAP',
@@ -176,7 +196,7 @@
                 });
                 const response = await fetch('https://us-central1-chipsand-13831.cloudfunctions.net/createCheckout', { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: { orderId: docRef.id, amount: Math.round(total * 100) } }) });
                 const result = await response.json(); if (result.data?.url) window.location.href = result.data.url;
-            } catch (e) { alert("Error"); btn.disabled = false; }
+            } catch (e) { alert("Error processing order."); btn.disabled = false; btn.innerText = "Pay & Confirm Order"; }
         };
 
         function loadMenu() {
@@ -185,28 +205,37 @@
                 const items = []; snap.forEach(d => items.push({ id: d.id, ...d.data() }));
                 items.sort((a, b) => (a.sortOrder ?? 99) - (b.sortOrder ?? 99));
                 const orderedCats = catOrder.length ? [...new Set([...catOrder, ...items.map(i => i.category)])] : [...new Set(items.map(i => i.category))];
+                
                 orderedCats.forEach(cat => {
                     const catItems = items.filter(i => i.category === cat && i.is_available);
                     if ((currentMode === 'PIES' && cat !== 'PIES') || (currentMode === 'MENU' && cat === 'PIES')) return;
                     if (!catItems.length) return;
                     display.innerHTML += `<div class="cat-title">${cat}</div>`;
+                    
                     catItems.forEach(item => {
                         const card = document.createElement('div'); card.className = 'item-card';
                         const hasV = item.variants?.length > 0; 
                         const hasS = item.subOptions?.length > 0;
-                        
-                        const info = document.createElement('div');
-                        info.className = 'item-info';
-                        
-                        const priceText = hasV ? item.variants.map(v => v.label + ' £' + parseFloat(v.price).toFixed(2)).join(' / ') : '£' + parseFloat(item.price).toFixed(2);
-                        
-                        info.innerHTML = `<strong>${item.name}</strong><div style='color:var(--orange); font-size: 0.9rem; margin-top: 2px;'>${priceText}</div>`;
-                        
-                        if (hasS) {
-                            info.innerHTML += `<div class='item-sub-hint'>Must choose: ${item.subOptions.join(' or ')}</div>`;
-                        }
 
-                        const b = document.createElement('button'); b.className = 'add-btn'; b.innerText = '+';
+                        // Per-Pie Inventory Logic
+                        let isSoldOut = false;
+                        if (currentMode === 'PIES' && selectedDateId) {
+                            const selectedDate = collectionDates.find(d => d.id === selectedDateId);
+                            const stock = selectedDate.inventory ? selectedDate.inventory[item.name] : 0;
+                            if (stock <= 0) isSoldOut = true;
+                        }
+                        
+                        const info = document.createElement('div'); info.className = 'item-info';
+                        const priceText = hasV ? item.variants.map(v => v.label + ' £' + parseFloat(v.price).toFixed(2)).join(' / ') : '£' + parseFloat(item.price).toFixed(2);
+                        info.innerHTML = `<strong>${item.name}</strong><div style='color:var(--orange); font-size: 0.9rem; margin-top: 2px;'>${priceText}</div>`;
+                        if (hasS) info.innerHTML += `<div class='item-sub-hint'>Must choose: ${item.subOptions.join(' or ')}</div>`;
+
+                        const b = document.createElement('button'); 
+                        b.className = 'add-btn'; 
+                        b.innerText = isSoldOut ? 'SOLD OUT' : '+';
+                        b.disabled = isSoldOut;
+                        if (isSoldOut) b.style.background = '#444';
+
                         b.onclick = () => {
                             if (hasV) {
                                 showModal(item.name, 'Choose Size:', item.variants.map(v => ({
@@ -217,9 +246,7 @@
                                                 label: opt,
                                                 onSelect: () => addToCart(item.name, v.price, v.label, opt)
                                             })));
-                                        } else {
-                                            addToCart(item.name, v.price, v.label, null);
-                                        }
+                                        } else { addToCart(item.name, v.price, v.label, null); }
                                     }
                                 })));
                             } else if (hasS) {
@@ -227,9 +254,7 @@
                                     label: opt,
                                     onSelect: () => addToCart(item.name, item.price, null, opt)
                                 })));
-                            } else {
-                                addToCart(item.name, item.price, null, null);
-                            }
+                            } else { addToCart(item.name, item.price, null, null); }
                         };
                         card.appendChild(info); card.appendChild(b); display.appendChild(card);
                     });
