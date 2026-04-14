@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChipsAnd | Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500&dependency=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
@@ -90,9 +90,8 @@
         <div id="tab-pies" class="tab-panel hidden">
             <div class="card" style="border-color:var(--orange)">
                 <h3 style="margin-bottom:16px">Collection Dates Manager</h3>
-                <div style="display:grid; grid-template-columns: 1fr 100px 100px auto; gap:10px; margin-bottom:12px;">
+                <div style="display:grid; grid-template-columns: 1fr 100px auto; gap:10px; margin-bottom:12px;">
                     <input type="text" id="new-pie-date" placeholder="e.g. Friday 17th April">
-                    <input type="number" id="new-pie-stock" placeholder="Stock">
                     <input type="text" id="new-pie-times" placeholder="9am - 5pm">
                     <button class="btn btn-primary" id="add-date-btn">Add Date</button>
                 </div>
@@ -201,52 +200,72 @@
 
     async function addCollectionDate() {
         const dateStr = document.getElementById('new-pie-date').value.trim();
-        const stock = parseInt(document.getElementById('new-pie-stock').value) || 0;
         const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm";
         if(!dateStr) return alert("Enter a date");
+
+        // Map current PIE items to this specific date for independent inventory
+        const pieItems = allMenuItems.filter(i => i.category === 'PIES');
+        const initialInventory = {};
+        pieItems.forEach(p => { initialInventory[p.name] = 0; });
+
         const snap = await getDoc(doc(db, "settings", "collection_dates"));
         const cur = snap.data()?.dates || [];
-        const updated = [...cur, { id: Date.now().toString(), label: dateStr, stock: stock, times: times, active: true }];
+        const updated = [...cur, { 
+            id: Date.now().toString(), 
+            label: dateStr, 
+            times: times, 
+            inventory: initialInventory,
+            active: true 
+        }];
+
         await setDoc(doc(db, "settings", "collection_dates"), { dates: updated });
-        document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-stock').value = "";
+        document.getElementById('new-pie-date').value = "";
     }
 
     function renderDatesAdmin(dates) {
         const wrap = document.getElementById('dates-list-admin'); wrap.innerHTML = "";
         dates.forEach(d => {
             const div = document.createElement('div'); div.className = 'card';
-            div.style.cssText = "background:var(--surface-2); display:flex; justify-content:space-between; align-items:center; padding:10px 15px;";
-            const isSoldOut = d.stock <= 0;
+            div.style.cssText = "background:var(--surface-2); margin-bottom:15px; padding:15px;";
+            
+            let invHtml = `<div style="margin-top:10px; display:grid; grid-template-columns: 1fr auto; gap:8px;">`;
+            for (const [pieName, stock] of Object.entries(d.inventory || {})) {
+                invHtml += `
+                    <span style="font-size:0.85rem; color:var(--muted)">${pieName}:</span>
+                    <input type="number" value="${stock}" 
+                        style="width:60px; padding:2px 5px; font-size:0.8rem; background:#000; border:1px solid #444; color:#fff;" 
+                        onchange="updatePieStock('${d.id}', '${pieName}', this.value)">
+                `;
+            }
+            invHtml += `</div>`;
+
             div.innerHTML = `
-                <div style="flex:1;">
-                    <strong>${d.label}</strong> <span style='font-size:0.7rem;color:var(--muted)'>(${d.times})</span><br>
-                    <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
-                        <span style='color:${isSoldOut ? 'var(--red)' : 'var(--green)'}; font-weight:bold; font-size:0.8rem;'>
-                            ${isSoldOut ? 'SOLD OUT' : 'Stock:'}
-                        </span>
-                        <input type="number" value="${d.stock}" 
-                            style="width:60px; padding:2px 5px; font-size:0.8rem; background:#000; border:1px solid #444; color:#fff;" 
-                            onchange="updateDateStock('${d.id}', this.value)">
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <div><strong>${d.label}</strong> <span style='font-size:0.75rem;color:var(--orange)'>(${d.times})</span></div>
+                    <div style='display:flex; gap:10px;'>
+                        <button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem;' onclick="toggleDate('${d.id}')">${d.active ? 'Online' : 'Hidden'}</button>
+                        <button class='btn btn-cancel' style='padding:5px 10px;' onclick="deleteDate('${d.id}')">✕</button>
                     </div>
                 </div>
-                <div style='display:flex; gap:10px; align-items:center;'>
-                    <button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem;' onclick="toggleDate('${d.id}')">
-                        ${d.active ? 'Online' : 'Hidden'}
-                    </button>
-                    <button class='btn btn-cancel' style='padding:5px 10px;' onclick="deleteDate('${d.id}')">✕</button>
-                </div>
+                ${invHtml}
             `;
             wrap.appendChild(div);
         });
     }
 
-    window.updateDateStock = async (id, newVal) => {
+    window.updatePieStock = async (dateId, pieName, newVal) => {
         const stockNum = parseInt(newVal);
         if (isNaN(stockNum)) return;
         const snap = await getDoc(doc(db, "settings", "collection_dates"));
-        if (!snap.exists()) return;
-        const dates = snap.data().dates.map(d => d.id === id ? { ...d, stock: stockNum } : d);
-        await updateDoc(doc(db, "settings", "collection_dates"), { dates: dates });
+        const dates = snap.data().dates.map(d => {
+            if (d.id === dateId) {
+                const newInv = { ...d.inventory };
+                newInv[pieName] = stockNum;
+                return { ...d, inventory: newInv };
+            }
+            return d;
+        });
+        await updateDoc(doc(db, "settings", "collection_dates"), { dates });
     };
 
     async function toggleDate(id) {
