@@ -182,12 +182,13 @@
 
         const orderSnap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("paymentStatus", "==", "PAID")));
         const allPreOrders = orderSnap.docs.map(doc => doc.data());
-        const currentPies = allMenuItems.filter(i => i.category === 'PIES').map(i => i.name);
+        const sortedPiesFromMenu = allMenuItems.filter(item => item.category === 'PIES');
         let needsGlobalUpdate = false;
 
         dates.forEach(d => {
             let localUpdate = false;
             if (!d.inventory) { d.inventory = {}; localUpdate = true; }
+            const currentPies = sortedPiesFromMenu.map(i => i.name);
             Object.keys(d.inventory).forEach(p => { if (!currentPies.includes(p)) { delete d.inventory[p]; localUpdate = true; } });
             currentPies.forEach(p => { if (d.inventory[p] === undefined) { d.inventory[p] = 0; localUpdate = true; } });
             if (localUpdate) needsGlobalUpdate = true;
@@ -202,7 +203,9 @@
             let invHtml = `<div style="margin-top:15px; display:grid; grid-template-columns: 1fr auto auto; gap:10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
                             <div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase;">Flavor</div><div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; text-align:center;">Sold</div><div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; text-align:right;">Stock</div>`;
             
-            Object.entries(d.inventory).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([pieName, stock]) => {
+            sortedPiesFromMenu.forEach(pieItem => {
+                const pieName = pieItem.name;
+                const stock = d.inventory[pieName] || 0;
                 const soldCount = pieTotals[pieName] || 0;
                 invHtml += `<span style="font-size:0.85rem;">${pieName}:</span><span style="font-size:0.85rem; color:var(--orange); text-align:center; font-weight:bold;">${soldCount}</span><input type="number" value="${stock}" style="width:50px; padding:2px 5px; font-size:0.8rem; background:#000; border:1px solid #444; color:#fff; text-align:right;" onchange="updatePieStock('${d.id}', '${pieName}', this.value)">`;
             });
@@ -217,8 +220,6 @@
 
     function renderOrders(snap) {
         const live = document.getElementById('orders-list'); live.innerHTML = "";
-        document.getElementById('pie-list').innerHTML = ""; // Keep Pre-Orders container empty
-        
         snap.forEach(d => {
             const data = d.data(); const id = d.id;
             if (data.type === 'PICKUP') {
@@ -232,7 +233,6 @@
         });
     }
 
-    // DRAG & DROP
     function initDragEvents(container, selector, onDropCallback) {
         let draggedItem = null;
         container.addEventListener('dragstart', (e) => { draggedItem = e.target.closest(selector); if (draggedItem) { draggedItem.classList.add('dragging'); _suppressRender = true; } });
@@ -254,7 +254,6 @@
         rows.forEach((r, i) => b.update(doc(db, "menu", r.dataset.id), { sortOrder: i })); await b.commit();
     }
 
-    // HANDLERS
     window.updatePieStock = async (id, pie, val) => {
         const num = parseInt(val); if (isNaN(num)) return;
         const s = await getDoc(doc(db, "settings", "collection_dates"));
@@ -282,16 +281,17 @@
     function makeRow(item) {
         const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true; row.dataset.id = item.id;
         const hasV = item.variants && item.variants.length > 0;
-        row.innerHTML = `<span class='drag-handle'>⠿</span><input type='text' class='inv-name-input' value="${item.name}"><div style="display:flex; align-items:center; gap:4px;"><span style="color:var(--orange); font-size:0.8rem;">£</span><input type='number' class='inv-price-input' value="${parseFloat(item.price || 0).toFixed(2)}" step="0.01" ${hasV ? 'disabled style="opacity:0.4"' : ''}></div><input type='checkbox' ${item.is_available ? 'checked' : ''} style='width:auto; accent-color:var(--orange);'><button class='opts-btn'>⚙ Options</button><button style='background:none;border:none;color:var(--muted);cursor:pointer;'>✕</button>`;
+        row.innerHTML = `<span class='drag-handle'>⠿</span><input type='text' class='inv-name-input' value="${item.name}"><div style="display:flex; align-items:center; gap:4px;"><span style="color:var(--orange); font-size:0.8rem;">£</span><input type='number' class='inv-price-input' value="${parseFloat(item.price || 0).toFixed(2)}" step="0.01" ${hasV ? 'disabled style="opacity:0.4"' : ''} onfocus="_suppressRender=true" onblur="_suppressRender=false; updateItemPrice('${item.id}', this.value)"></div><input type='checkbox' ${item.is_available ? 'checked' : ''} style='width:auto; accent-color:var(--orange);'><button class='opts-btn'>⚙ Options</button><button style='background:none;border:none;color:var(--muted);cursor:pointer;'>✕</button>`;
         const [nameInp, priceInp, availInp] = row.querySelectorAll('input');
-        nameInp.onfocus = priceInp.onfocus = () => _suppressRender = true;
+        nameInp.onfocus = () => _suppressRender = true;
         nameInp.onblur = async () => { _suppressRender = false; if(nameInp.value.trim() !== item.name) await updateDoc(doc(db, "menu", item.id), { name: nameInp.value.trim() }); };
-        priceInp.onblur = async () => { _suppressRender = false; let p = parseFloat(priceInp.value); if(!isNaN(p) && p !== item.price) await updateDoc(doc(db, "menu", item.id), { price: p }); };
         availInp.onchange = async () => await updateDoc(doc(db, "menu", item.id), { is_available: availInp.checked });
         row.querySelector('.opts-btn').onclick = () => toggleOptsEditor(item, row);
         row.querySelector('button:last-child').onclick = () => confirm("Delete?") && deleteDoc(doc(db, "menu", item.id));
         return row;
     }
+
+    window.updateItemPrice = async (id, val) => { const p = parseFloat(val); if(!isNaN(p)) await updateDoc(doc(db, "menu", id), { price: p }); };
 
     function renderCatTags() {
         const wrap = document.getElementById('cat-tags-list'); wrap.innerHTML = "";
