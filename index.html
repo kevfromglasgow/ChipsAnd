@@ -258,13 +258,33 @@
     function renderDatesAdmin(dates) {
         const wrap = document.getElementById('dates-list-admin'); 
         wrap.innerHTML = "";
-        
+    
+        // 1. Get a list of all current Pie names from your main inventory
+        const currentPiesInSystem = allMenuItems
+            .filter(i => i.category === 'PIES')
+            .map(i => i.name);
+
         dates.forEach(d => {
             const div = document.createElement('div'); 
             div.className = 'card';
             div.style.cssText = "background:var(--surface-2); margin-bottom:15px; padding:15px;";
-            
-            // Sort inventory alphabetically to prevent jumping
+        
+            // 2. AUTO-HEAL: Check if this date is missing any new pies
+            let needsUpdate = false;
+            currentPiesInSystem.forEach(pieName => {
+                if (d.inventory[pieName] === undefined) {
+                    d.inventory[pieName] = 0; // Add the new pie to this date with 0 stock
+                    needsUpdate = true;
+                }
+            });
+
+            // 3. If we added a missing pie, save it back to the database immediately
+            if (needsUpdate) {
+                const updatedDates = dates.map(dateObj => dateObj.id === d.id ? d : dateObj);
+                updateDoc(doc(db, "settings", "collection_dates"), { dates: updatedDates });
+            }
+
+            // 4. Sort and Render as normal
             const sortedInventory = Object.entries(d.inventory || {}).sort((a, b) => a[0].localeCompare(b[0]));
 
             let invHtml = `<div style="margin-top:10px; display:grid; grid-template-columns: 1fr auto; gap:8px;">`;
