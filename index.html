@@ -34,14 +34,16 @@
         .cat-tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
         .cat-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; cursor: grab; font-size: 0.85rem; user-select: none; }
         .cat-tag.dragging { opacity: 0.5; border: 1px dashed var(--orange); }
-        .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 8px; transition: background 0.2s; }
+        .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 12px; transition: background 0.2s; }
         .inv-row.dragging { opacity: 0.4; background: var(--orange); }
         .inv-row:last-child { border-bottom: none; }
-        .drag-handle { color: var(--muted); margin-right: 4px; flex-shrink: 0; }
-        .inv-name-input { flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; width: 100%; }
-        .inv-name-input:focus { border-bottom-color: var(--orange); }
-        .inv-price { color: var(--orange); margin-right: 8px; white-space: nowrap; flex-shrink: 0; }
+        .drag-handle { color: var(--muted); cursor: grab; flex-shrink: 0; }
+        .inv-name-input { flex: 2; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; }
+        .inv-price-input { width: 70px; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--orange); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; text-align: right; }
         .opts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+        .opts-tag { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-2); border: 1px solid var(--border); padding: 3px 8px 3px 10px; border-radius: 14px; font-size: 0.8rem; margin: 2px; }
+        .opts-editor { padding: 12px 16px; background: rgba(0,0,0,0.25); border-bottom: 1px solid var(--border); }
+        .opts-add-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -160,8 +162,7 @@
         });
 
         onSnapshot(doc(db, "settings", "categories"), snap => {
-            const saved = snap.data()?.list || [];
-            allCategories = saved;
+            allCategories = snap.data()?.list || [];
             renderCatTags(); renderCatDropdown();
             if (!_suppressRender) renderMenuList();
         });
@@ -170,16 +171,11 @@
             allMenuItems = [];
             snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
             allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
-            
-            getDoc(doc(db, "settings", "collection_dates")).then(s => {
-                if(s.exists()) renderDatesAdmin(s.data().dates);
-            });
-
+            getDoc(doc(db, "settings", "collection_dates")).then(s => { if(s.exists()) renderDatesAdmin(s.data().dates); });
             if (!_suppressRender) renderMenuList();
         });
 
-        const q = query(collection(db, "orders"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID"), orderBy("createdAt", "desc"));
-        onSnapshot(q, snap => renderOrders(snap));
+        onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID"), orderBy("createdAt", "desc")), renderOrders);
 
         document.getElementById('toggle-shop-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window._isClosed });
         document.getElementById('add-date-btn').onclick = addCollectionDate;
@@ -198,34 +194,21 @@
         });
     }
 
-    // DRAG AND DROP HANDLERS
+    // DRAG & DROP LOGIC
     function initDragEvents(container, selector, onDropCallback) {
         let draggedItem = null;
-
         container.addEventListener('dragstart', (e) => {
             draggedItem = e.target.closest(selector);
-            if (draggedItem) {
-                draggedItem.classList.add('dragging');
-                _suppressRender = true; // Prevent UI refreshing while dragging
-            }
+            if (draggedItem) { draggedItem.classList.add('dragging'); _suppressRender = true; }
         });
-
         container.addEventListener('dragend', (e) => {
-            if (draggedItem) {
-                draggedItem.classList.remove('dragging');
-                _suppressRender = false;
-                onDropCallback(container);
-            }
+            if (draggedItem) { draggedItem.classList.remove('dragging'); _suppressRender = false; onDropCallback(container); }
         });
-
         container.addEventListener('dragover', (e) => {
             e.preventDefault();
             const afterElement = getDragAfterElement(container, e.clientY, selector);
-            if (afterElement == null) {
-                container.appendChild(draggedItem);
-            } else {
-                container.insertBefore(draggedItem, afterElement);
-            }
+            if (afterElement == null) { container.appendChild(draggedItem); } 
+            else { container.insertBefore(draggedItem, afterElement); }
         });
     }
 
@@ -234,44 +217,21 @@
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
+            if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+            else return closest;
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
     async function saveItemOrder(container) {
         const rows = [...container.querySelectorAll('.inv-row')];
         const batch = writeBatch(db);
-        rows.forEach((row, index) => {
-            const itemRef = doc(db, "menu", row.dataset.id);
-            batch.update(itemRef, { sortOrder: index });
-        });
+        rows.forEach((row, index) => batch.update(doc(db, "menu", row.dataset.id), { sortOrder: index }));
         await batch.commit();
     }
 
-    async function addCollectionDate() {
-        const dateStr = document.getElementById('new-pie-date').value.trim();
-        const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm";
-        if(!dateStr) return alert("Enter a date");
-
-        const pieItems = allMenuItems.filter(i => i.category === 'PIES');
-        const initialInventory = {};
-        pieItems.forEach(p => { initialInventory[p.name] = 0; });
-
-        const snap = await getDoc(doc(db, "settings", "collection_dates"));
-        const cur = snap.data()?.dates || [];
-        const updated = [...cur, { id: Date.now().toString(), label: dateStr, times: times, inventory: initialInventory, active: true }];
-
-        await setDoc(doc(db, "settings", "collection_dates"), { dates: updated });
-        document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = "";
-    }
-
+    // GLOBAL HELPERS
     window.updatePieStock = async (dateId, pieName, newVal) => {
-        const stockNum = parseInt(newVal);
-        if (isNaN(stockNum)) return;
+        const stockNum = parseInt(newVal); if (isNaN(stockNum)) return;
         const snap = await getDoc(doc(db, "settings", "collection_dates"));
         const dates = snap.data().dates.map(d => {
             if (d.id === dateId) {
@@ -281,7 +241,7 @@
             }
             return d;
         });
-        await updateDoc(doc(db, "settings", "collection_dates"), { dates: dates });
+        await updateDoc(doc(db, "settings", "collection_dates"), { dates });
     };
 
     window.toggleDate = async (id) => {
@@ -291,32 +251,28 @@
     };
 
     window.deleteDate = async (id) => {
-        if(!confirm("Delete this collection date?")) return;
+        if(!confirm("Delete this date?")) return;
         const snap = await getDoc(doc(db, "settings", "collection_dates"));
         const dates = snap.data().dates.filter(d => d.id !== id);
         await updateDoc(doc(db, "settings", "collection_dates"), { dates });
     };
 
     function renderDatesAdmin(dates) {
-        const wrap = document.getElementById('dates-list-admin'); 
-        wrap.innerHTML = "";
+        const wrap = document.getElementById('dates-list-admin'); wrap.innerHTML = "";
         if (!allMenuItems.length) return;
-        const currentPiesInSystem = allMenuItems.filter(i => i.category === 'PIES').map(i => i.name);
-        let finalDatesToSave = [];
-        let globalNeedsUpdate = false;
+        const currentPies = allMenuItems.filter(i => i.category === 'PIES').map(i => i.name);
+        let needsGlobalUpdate = false;
 
         dates.forEach(d => {
-            let localNeedsUpdate = false;
-            if (!d.inventory) d.inventory = {};
-            const piesInDate = Object.keys(d.inventory);
-            piesInDate.forEach(p => { if (!currentPiesInSystem.includes(p)) { delete d.inventory[p]; localNeedsUpdate = true; } });
-            currentPiesInSystem.forEach(pieName => { if (d.inventory[pieName] === undefined) { d.inventory[pieName] = 0; localNeedsUpdate = true; } });
-            if (localNeedsUpdate) globalNeedsUpdate = true;
-            finalDatesToSave.push(d);
+            let localUpdate = false;
+            if (!d.inventory) { d.inventory = {}; localUpdate = true; }
+            Object.keys(d.inventory).forEach(p => { if (!currentPies.includes(p)) { delete d.inventory[p]; localUpdate = true; } });
+            currentPies.forEach(p => { if (d.inventory[p] === undefined) { d.inventory[p] = 0; localUpdate = true; } });
+            if (localUpdate) needsGlobalUpdate = true;
 
-            const sortedInventory = Object.entries(d.inventory || {}).sort((a, b) => a[0].localeCompare(b[0]));
+            const sortedInv = Object.entries(d.inventory).sort((a, b) => a[0].localeCompare(b[0]));
             let invHtml = `<div style="margin-top:10px; display:grid; grid-template-columns: 1fr auto; gap:8px;">`;
-            for (const [pieName, stock] of sortedInventory) {
+            for (const [pieName, stock] of sortedInv) {
                 invHtml += `<span style="font-size:0.85rem; color:var(--muted)">${pieName}:</span><input type="number" value="${stock}" style="width:60px; padding:2px 5px; font-size:0.8rem; background:#000; border:1px solid #444; color:#fff;" onchange="updatePieStock('${d.id}', '${pieName}', this.value)">`;
             }
             invHtml += `</div>`;
@@ -325,17 +281,52 @@
             div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start;"><div><strong>${d.label}</strong> <span style='font-size:0.75rem;color:var(--orange)'>(${d.times})</span></div><div style='display:flex; gap:10px;'><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem;' onclick="toggleDate('${d.id}')">${d.active ? 'Online' : 'Hidden'}</button><button class='btn btn-cancel' style='padding:5px 10px;' onclick="deleteDate('${d.id}')">✕</button></div></div>${invHtml}`;
             wrap.appendChild(div);
         });
-        if (globalNeedsUpdate) updateDoc(doc(db, "settings", "collection_dates"), { dates: finalDatesToSave });
+        if (needsGlobalUpdate) updateDoc(doc(db, "settings", "collection_dates"), { dates });
     }
 
-    async function handlePdfPrompt() {
-        const snap = await getDoc(doc(db, "settings", "collection_dates"));
-        const dates = snap.data()?.dates || [];
-        if(!dates.length) return alert("No dates found");
-        const choice = prompt("Enter the exact Date Label for the PDF:\n\n" + dates.map(d => d.label).join("\n"));
-        if(choice) generatePiePDF(choice);
+    function renderMenuList() {
+        if (_suppressRender) return;
+        const list = document.getElementById('menu-list'); list.innerHTML = "";
+        allCategories.forEach(cat => {
+            const items = allMenuItems.filter(i => i.category === cat);
+            const sec = document.createElement('div'); sec.style.marginBottom = "20px";
+            sec.innerHTML = `<div style='color:var(--orange);font-size:0.7rem;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;'>${cat}</div>`;
+            const container = document.createElement('div'); container.className = 'card'; container.style.padding = "0";
+            items.forEach(item => container.appendChild(makeRow(item)));
+            list.appendChild(sec); sec.appendChild(container);
+            initDragEvents(container, '.inv-row', saveItemOrder);
+        });
     }
 
+    function makeRow(item) {
+        const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true; row.dataset.id = item.id;
+        const hasVariants = item.variants && item.variants.length > 0;
+
+        row.innerHTML = `
+            <span class='drag-handle'>⠿</span>
+            <input type='text' class='inv-name-input' value="${item.name}">
+            <div style="display:flex; align-items:center; gap:4px;">
+                <span style="color:var(--orange); font-size:0.8rem;">£</span>
+                <input type='number' class='inv-price-input' value="${parseFloat(item.price || 0).toFixed(2)}" step="0.01" ${hasVariants ? 'disabled style="opacity:0.4"' : ''}>
+            </div>
+            <input type='checkbox' ${item.is_available ? 'checked' : ''} style='width:auto; accent-color:var(--orange);'>
+            <button class='opts-btn'>⚙ Options</button>
+            <button style='background:none; border:none; color:var(--muted); cursor:pointer;'>✕</button>
+        `;
+
+        const [nameInp, priceInp, availInp] = row.querySelectorAll('input');
+        
+        nameInp.onfocus = priceInp.onfocus = () => _suppressRender = true;
+        nameInp.onblur = async () => { _suppressRender = false; if(nameInp.value.trim() !== item.name) await updateDoc(doc(db, "menu", item.id), { name: nameInp.value.trim() }); };
+        priceInp.onblur = async () => { _suppressRender = false; let p = parseFloat(priceInp.value); if(!isNaN(p) && p !== item.price) await updateDoc(doc(db, "menu", item.id), { price: p }); };
+        availInp.onchange = async () => await updateDoc(doc(db, "menu", item.id), { is_available: availInp.checked });
+        
+        row.querySelector('.opts-btn').onclick = () => toggleOptsEditor(item, row);
+        row.querySelector('button:last-child').onclick = () => confirm("Delete item?") && deleteDoc(doc(db, "menu", item.id));
+        return row;
+    }
+
+    // Remaining functions (renderOrders, renderCatTags, toggleOptsEditor, etc.) as per previous version
     function renderOrders(snap) {
         const live = document.getElementById('orders-list'); const pie = document.getElementById('pie-list');
         live.innerHTML = ""; pie.innerHTML = "";
@@ -352,16 +343,15 @@
 
     function renderCatTags() {
         const wrap = document.getElementById('cat-tags-list'); wrap.innerHTML = "";
-        allCategories.forEach((cat, idx) => {
+        allCategories.forEach(cat => {
             const tag = document.createElement('div'); tag.className = 'cat-tag'; tag.draggable = true;
-            tag.dataset.idx = idx; tag.innerText = cat + ' ';
+            tag.innerText = cat + ' ';
             const delBtn = document.createElement('button'); delBtn.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;';
-            delBtn.innerText = '×'; delBtn.onclick = (e) => { e.stopPropagation(); deleteCategory(cat); };
+            delBtn.innerText = '×'; delBtn.onclick = (e) => { e.stopPropagation(); const newList = allCategories.filter(c => c !== cat); setDoc(doc(db, "settings", "categories"), { list: newList }); };
             tag.appendChild(delBtn); wrap.appendChild(tag);
         });
         initDragEvents(wrap, '.cat-tag', async (container) => {
-            const tags = [...container.querySelectorAll('.cat-tag')];
-            const newList = tags.map(t => t.innerText.replace(' ×', '').trim());
+            const newList = [...container.querySelectorAll('.cat-tag')].map(t => t.innerText.replace(' ×', '').trim());
             await setDoc(doc(db, "settings", "categories"), { list: newList });
         });
     }
@@ -372,33 +362,6 @@
         allCategories.forEach(c => { const o = document.createElement('option'); o.value = c; o.innerText = c; sel.appendChild(o); });
     }
 
-    function renderMenuList() {
-        if (_suppressRender) return;
-        const list = document.getElementById('menu-list'); list.innerHTML = "";
-        allCategories.forEach(cat => {
-            const items = allMenuItems.filter(i => i.category === cat);
-            const sec = document.createElement('div'); sec.style.marginBottom = "20px";
-            sec.innerHTML = `<div style='color:var(--orange);font-size:0.7rem;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;'>${cat}</div>`;
-            const container = document.createElement('div'); container.className = 'card'; container.style.padding = "0";
-            items.forEach(item => { container.appendChild(makeRow(item)); });
-            list.appendChild(sec); sec.appendChild(container);
-            initDragEvents(container, '.inv-row', saveItemOrder);
-        });
-    }
-
-    function makeRow(item) {
-        const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true; row.dataset.id = item.id;
-        row.innerHTML = `<span class='drag-handle'>⠿</span><input type='text' class='inv-name-input' value="${item.name}"><span class='inv-price'>${(item.variants?.length) ? 'variants' : '£' + parseFloat(item.price).toFixed(2)}</span><input type='checkbox' ${item.is_available ? 'checked' : ''} style='width:auto;accent-color:var(--orange);'><button class='opts-btn'>⚙ Options</button><button style='background:none;border:none;color:var(--muted);margin-left:6px;cursor:pointer;'>✕</button>`;
-        
-        const inputs = row.querySelectorAll('input');
-        inputs[0].onfocus = () => _suppressRender = true;
-        inputs[0].onblur = async () => { _suppressRender = false; if(inputs[0].value !== item.name) await updateDoc(doc(db, "menu", item.id), { name: inputs[0].value }); };
-        inputs[1].onchange = async () => await updateDoc(doc(db, "menu", item.id), { is_available: inputs[1].checked });
-        row.querySelector('.opts-btn').onclick = () => toggleOptsEditor(item, row);
-        row.querySelector('button:last-child').onclick = () => confirm("Delete item?") && deleteDoc(doc(db, "menu", item.id));
-        return row;
-    }
-
     function toggleOptsEditor(item, row) {
         const next = row.nextElementSibling;
         if (next && next.classList.contains('opts-editor')) { next.remove(); return; }
@@ -406,9 +369,11 @@
         const refresh = async () => {
             const snap = await getDoc(doc(db, "menu", item.id)); const d = snap.data();
             editor.innerHTML = `<h5>Free Options</h5><div>${(d.subOptions||[]).map(o => `<span class='opts-tag'>${o}<button onclick="updateSubOpt('${item.id}','${o}')">×</button></span>`).join('')}</div><div class='opts-add-row'><input type='text' class='f-in'><button class='btn btn-primary f-add'>+ Add</button></div><br><h5>Variants</h5><div>${(d.variants||[]).map(v => `<span class='opts-tag'>${v.label} £${v.price}<button onclick="updateVariant('${item.id}','${v.label}')">×</button></span>`).join('')}</div><div class='opts-add-row'><input type='text' class='v-l'><input type='number' class='v-p' placeholder='£'><button class='btn btn-primary v-add'>+ Add</button></div>`;
-            editor.querySelector('.f-add').onclick = async () => { const val = editor.querySelector('.f-in').value.trim(); const fresh = await getDoc(doc(db, "menu", item.id)); await updateDoc(doc(db, "menu", item.id), { subOptions: [...(fresh.data().subOptions||[]), val] }); refresh(); };
+            editor.querySelector('.f-add').onclick = async () => { const val = editor.querySelector('.f-in').value.trim(); if(!val) return; await updateDoc(doc(db, "menu", item.id), { subOptions: [...(d.subOptions||[]), val] }); refresh(); };
+            editor.querySelector('.v-add').onclick = async () => { const l = editor.querySelector('.v-l').value.trim(); const p = parseFloat(editor.querySelector('.v-p').value); if(!l || isNaN(p)) return; await updateDoc(doc(db, "menu", item.id), { variants: [...(d.variants||[]), {label:l, price:p}] }); refresh(); };
         };
-        window.updateSubOpt = async (id, opt) => { const fresh = await getDoc(doc(db, id)); await updateDoc(doc(db, id), { subOptions: fresh.data().subOptions.filter(o=>o!==opt) }); refresh(); };
+        window.updateSubOpt = async (id, opt) => { const snap = await getDoc(doc(db, "menu", id)); await updateDoc(doc(db, "menu", id), { subOptions: snap.data().subOptions.filter(o=>o!==opt) }); refresh(); };
+        window.updateVariant = async (id, lab) => { const snap = await getDoc(doc(db, "menu", id)); await updateDoc(doc(db, "menu", id), { variants: snap.data().variants.filter(v=>v.label!==lab) }); refresh(); };
         row.insertAdjacentElement('afterend', editor); refresh();
     }
 
@@ -432,12 +397,33 @@
         const b = writeBatch(db); snap.forEach(d => b.update(d.ref, { status: "archived" })); await b.commit();
     }
 
+    async function handlePdfPrompt() {
+        const snap = await getDoc(doc(db, "settings", "collection_dates"));
+        const dates = snap.data()?.dates || [];
+        if(!dates.length) return alert("No dates found");
+        const choice = prompt("Enter the exact Date Label for the PDF:\n\n" + dates.map(d => d.label).join("\n"));
+        if(choice) generatePiePDF(choice);
+    }
+
     async function generatePiePDF(dateLabel) {
         const { jsPDF } = window.jspdf; const pdf = new jsPDF();
         const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("collectionDate", "==", dateLabel), where("paymentStatus", "==", "PAID")));
         const rows = []; snap.forEach(d => { const data = d.data(); rows.push([data.customer?.name || '', data.items.map(i => i.name + (i.variantLabel ? ' (' + i.variantLabel + ')' : '')).join(', '), data.customer?.msg || '-']); });
         pdf.text("Pie Prep Sheet: " + dateLabel, 14, 15); pdf.autoTable({ head: [['Customer', 'Items', 'Note']], body: rows });
         pdf.save(`Pies_${dateLabel.replace(/ /g, '_')}.pdf`);
+    }
+
+    async function addCollectionDate() {
+        const dateStr = document.getElementById('new-pie-date').value.trim();
+        const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm";
+        if(!dateStr) return alert("Enter a date");
+        const pieItems = allMenuItems.filter(i => i.category === 'PIES');
+        const initialInventory = {}; pieItems.forEach(p => initialInventory[p.name] = 0);
+        const snap = await getDoc(doc(db, "settings", "collection_dates"));
+        const cur = snap.data()?.dates || [];
+        const updated = [...cur, { id: Date.now().toString(), label: dateStr, times: times, inventory: initialInventory, active: true }];
+        await setDoc(doc(db, "settings", "collection_dates"), { dates: updated });
+        document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = "";
     }
 </script>
 </body>
