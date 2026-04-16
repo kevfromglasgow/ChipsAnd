@@ -181,13 +181,10 @@
             snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
             allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
             
-            // Force "heal" check for pies immediately when menu changes
-            const dateTab = document.getElementById('tab-pies');
-            if (dateTab && !dateTab.classList.contains('hidden')) {
-                getDoc(doc(db, "settings", "collection_dates")).then(s => {
-                    if(s.exists()) renderDatesAdmin(s.data().dates);
-                });
-            }
+            // Re-render dates admin to handle any inventory changes (add/delete)
+            getDoc(doc(db, "settings", "collection_dates")).then(s => {
+                if(s.exists()) renderDatesAdmin(s.data().dates);
+            });
 
             if (!_suppressRender) renderMenuList();
         });
@@ -235,7 +232,6 @@
         document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = "";
     }
 
-    // EXPOSED GLOBAL HELPERS
     window.updatePieStock = async (dateId, pieName, newVal) => {
         const stockNum = parseInt(newVal);
         if (isNaN(stockNum)) return;
@@ -274,28 +270,34 @@
             .filter(i => i.category === 'PIES')
             .map(i => i.name);
 
+        let finalDatesToSave = [];
+        let globalNeedsUpdate = false;
+
         dates.forEach(d => {
-            const div = document.createElement('div'); 
-            div.className = 'card';
-            div.style.cssText = "background:var(--surface-2); margin-bottom:15px; padding:15px;";
-            
-            // AUTO-HEAL MISSING PIES
-            let needsUpdate = false;
+            let localNeedsUpdate = false;
             if (!d.inventory) d.inventory = {};
 
-            currentPiesInSystem.forEach(pieName => {
-                if (d.inventory[pieName] === undefined) {
-                    d.inventory[pieName] = 0;
-                    needsUpdate = true;
+            // 1. REMOVE pies that no longer exist in the main inventory
+            const piesInDate = Object.keys(d.inventory);
+            piesInDate.forEach(p => {
+                if (!currentPiesInSystem.includes(p)) {
+                    delete d.inventory[p];
+                    localNeedsUpdate = true;
                 }
             });
 
-            if (needsUpdate) {
-                const updatedDates = dates.map(dateObj => dateObj.id === d.id ? d : dateObj);
-                updateDoc(doc(db, "settings", "collection_dates"), { dates: updatedDates });
-                return;
-            }
+            // 2. ADD new pies from the main inventory
+            currentPiesInSystem.forEach(pieName => {
+                if (d.inventory[pieName] === undefined) {
+                    d.inventory[pieName] = 0;
+                    localNeedsUpdate = true;
+                }
+            });
 
+            if (localNeedsUpdate) globalNeedsUpdate = true;
+            finalDatesToSave.push(d);
+
+            // Sorting for UI display
             const sortedInventory = Object.entries(d.inventory || {}).sort((a, b) => a[0].localeCompare(b[0]));
 
             let invHtml = `<div style="margin-top:10px; display:grid; grid-template-columns: 1fr auto; gap:8px;">`;
@@ -309,6 +311,9 @@
             }
             invHtml += `</div>`;
 
+            const div = document.createElement('div'); 
+            div.className = 'card';
+            div.style.cssText = "background:var(--surface-2); margin-bottom:15px; padding:15px;";
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:start;">
                     <div><strong>${d.label}</strong> <span style='font-size:0.75rem;color:var(--orange)'>(${d.times})</span></div>
@@ -321,6 +326,11 @@
             `;
             wrap.appendChild(div);
         });
+
+        // 3. Batch update database if any syncing occurred
+        if (globalNeedsUpdate) {
+            updateDoc(doc(db, "settings", "collection_dates"), { dates: finalDatesToSave });
+        }
     }
 
     async function handlePdfPrompt() {
