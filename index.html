@@ -145,7 +145,7 @@
             document.getElementById('admin-content').classList.remove('hidden');
             initAdmin();
         } else {
-            document.getElementById('login-gate').style.display = 'flex'; // Show it only if NO user
+            document.getElementById('login-gate').style.display = 'flex';
             document.getElementById('admin-content').classList.add('hidden');
         }
     });
@@ -180,6 +180,15 @@
             allMenuItems = [];
             snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
             allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
+            
+            // Force "heal" check for pies immediately when menu changes
+            const dateTab = document.getElementById('tab-pies');
+            if (dateTab && !dateTab.classList.contains('hidden')) {
+                getDoc(doc(db, "settings", "collection_dates")).then(s => {
+                    if(s.exists()) renderDatesAdmin(s.data().dates);
+                });
+            }
+
             if (!_suppressRender) renderMenuList();
         });
 
@@ -226,7 +235,7 @@
         document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = "";
     }
 
-    // HELPER FUNCTIONS EXPOSED GLOBALLY FOR HTML ONCLICK/ONCHANGE
+    // EXPOSED GLOBAL HELPERS
     window.updatePieStock = async (dateId, pieName, newVal) => {
         const stockNum = parseInt(newVal);
         if (isNaN(stockNum)) return;
@@ -239,7 +248,7 @@
             }
             return d;
         });
-        await updateDoc(doc(db, "settings", "collection_dates"), { dates });
+        await updateDoc(doc(db, "settings", "collection_dates"), { dates: dates });
     };
 
     window.toggleDate = async (id) => {
@@ -258,8 +267,9 @@
     function renderDatesAdmin(dates) {
         const wrap = document.getElementById('dates-list-admin'); 
         wrap.innerHTML = "";
-    
-        // 1. Get a list of all current Pie names from your main inventory
+        
+        if (!allMenuItems.length) return;
+
         const currentPiesInSystem = allMenuItems
             .filter(i => i.category === 'PIES')
             .map(i => i.name);
@@ -268,23 +278,24 @@
             const div = document.createElement('div'); 
             div.className = 'card';
             div.style.cssText = "background:var(--surface-2); margin-bottom:15px; padding:15px;";
-        
-            // 2. AUTO-HEAL: Check if this date is missing any new pies
+            
+            // AUTO-HEAL MISSING PIES
             let needsUpdate = false;
+            if (!d.inventory) d.inventory = {};
+
             currentPiesInSystem.forEach(pieName => {
                 if (d.inventory[pieName] === undefined) {
-                    d.inventory[pieName] = 0; // Add the new pie to this date with 0 stock
+                    d.inventory[pieName] = 0;
                     needsUpdate = true;
                 }
             });
 
-            // 3. If we added a missing pie, save it back to the database immediately
             if (needsUpdate) {
                 const updatedDates = dates.map(dateObj => dateObj.id === d.id ? d : dateObj);
                 updateDoc(doc(db, "settings", "collection_dates"), { dates: updatedDates });
+                return;
             }
 
-            // 4. Sort and Render as normal
             const sortedInventory = Object.entries(d.inventory || {}).sort((a, b) => a[0].localeCompare(b[0]));
 
             let invHtml = `<div style="margin-top:10px; display:grid; grid-template-columns: 1fr auto; gap:8px;">`;
