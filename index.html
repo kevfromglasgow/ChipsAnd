@@ -74,7 +74,7 @@
     </header>
 
     <div class="status-bar">
-        <div>Shop Status: <strong id="status-text">...</strong></div>
+        <div style="font-size: 1.1rem;">Shop Status: <strong id="status-text">...</strong></div>
         <button class="btn btn-primary" id="toggle-shop-btn">Toggle Shop Status</button>
     </div>
 
@@ -159,7 +159,9 @@
         onSnapshot(doc(db, "settings", "truck_status"), snap => {
             const d = snap.data() || {};
             window._isClosed = !!d.is_closed;
-            document.getElementById('status-text').innerText = d.is_closed ? "CLOSED" : "OPEN";
+            const statusEl = document.getElementById('status-text');
+            statusEl.innerText = d.is_closed ? "CLOSED" : "OPEN";
+            statusEl.style.color = d.is_closed ? "var(--red)" : "var(--green)";
         });
 
         onSnapshot(doc(db, "settings", "collection_dates"), snap => {
@@ -181,7 +183,6 @@
             snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
             allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
             
-            // Re-render dates admin to handle any inventory changes (add/delete)
             getDoc(doc(db, "settings", "collection_dates")).then(s => {
                 if(s.exists()) renderDatesAdmin(s.data().dates);
             });
@@ -277,7 +278,6 @@
             let localNeedsUpdate = false;
             if (!d.inventory) d.inventory = {};
 
-            // 1. REMOVE pies that no longer exist in the main inventory
             const piesInDate = Object.keys(d.inventory);
             piesInDate.forEach(p => {
                 if (!currentPiesInSystem.includes(p)) {
@@ -286,7 +286,6 @@
                 }
             });
 
-            // 2. ADD new pies from the main inventory
             currentPiesInSystem.forEach(pieName => {
                 if (d.inventory[pieName] === undefined) {
                     d.inventory[pieName] = 0;
@@ -297,7 +296,6 @@
             if (localNeedsUpdate) globalNeedsUpdate = true;
             finalDatesToSave.push(d);
 
-            // Sorting for UI display
             const sortedInventory = Object.entries(d.inventory || {}).sort((a, b) => a[0].localeCompare(b[0]));
 
             let invHtml = `<div style="margin-top:10px; display:grid; grid-template-columns: 1fr auto; gap:8px;">`;
@@ -327,7 +325,6 @@
             wrap.appendChild(div);
         });
 
-        // 3. Batch update database if any syncing occurred
         if (globalNeedsUpdate) {
             updateDoc(doc(db, "settings", "collection_dates"), { dates: finalDatesToSave });
         }
