@@ -202,9 +202,9 @@
             onSnapshot(collection(db, "menu"), (snap) => {
                 const display = document.getElementById('menu-display'); 
                 
-                // Dynamic Back Button Logic
+                // FIXED: Back Action correctly restores the landing screen view
                 const backAction = currentMode === 'PIES' 
-                    ? "document.getElementById('main-content').classList.add('hidden'); document.getElementById('date-selection').classList.remove('hidden');" 
+                    ? "document.getElementById('main-content').classList.add('hidden'); document.getElementById('landing-screen').style.display='flex'; document.getElementById('date-selection').classList.remove('hidden');" 
                     : "location.reload();";
 
                 display.innerHTML = `
