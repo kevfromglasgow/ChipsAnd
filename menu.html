@@ -47,7 +47,7 @@
         <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" class="logo-main">
         <div id="landing-buttons">
             <button id="pie-trigger" class="choice-btn">Pre-Order Pies</button>
-            <button id="menu-btn" class="choice-btn">Order Food</button>
+            <button id="menu-btn" class="choice-btn" style="opacity: 0; transition: opacity 0.3s;">...</button>
         </div>
         <div id="date-selection" class="hidden">
             <h3 style="color:var(--orange); font-family:'Playfair Display';">Select Collection Date</h3>
@@ -91,11 +91,23 @@
         onSnapshot(doc(db, "settings", "categories"), snap => { catOrder = snap.data()?.list || []; });
         onSnapshot(doc(db, "settings", "collection_dates"), snap => { collectionDates = snap.data()?.dates || []; });
 
+        // Status Listener with Fade-In to prevent text flashing
         onSnapshot(doc(db, "settings", "truck_status"), (s) => {
             const d = s.data();
             const mBtn = document.getElementById('menu-btn');
-            if (isAdmin) { mBtn.innerText = "Order Food (Admin Preview)"; mBtn.classList.add('admin-tag'); }
-            else if (d?.is_closed) { mBtn.disabled = true; mBtn.innerText = 'MENU - COMING SOON'; }
+            
+            if (isAdmin) { 
+                mBtn.innerText = "Order Food (Admin Preview)"; 
+                mBtn.disabled = false;
+            } else if (d?.is_closed) { 
+                mBtn.disabled = true; 
+                mBtn.innerText = 'MENU - COMING SOON'; 
+            } else {
+                mBtn.disabled = false;
+                mBtn.innerText = 'Order Food';
+            }
+            
+            mBtn.style.opacity = "1";
             mBtn.onclick = () => startFlow('MENU');
         });
 
@@ -202,7 +214,6 @@
             onSnapshot(collection(db, "menu"), (snap) => {
                 const display = document.getElementById('menu-display'); 
                 
-                // FIXED: Back Action correctly restores the landing screen view
                 const backAction = currentMode === 'PIES' 
                     ? "document.getElementById('main-content').classList.add('hidden'); document.getElementById('landing-screen').style.display='flex'; document.getElementById('date-selection').classList.remove('hidden');" 
                     : "location.reload();";
