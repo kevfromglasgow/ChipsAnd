@@ -340,9 +340,9 @@
         snap.forEach(d => { d.data().items.forEach(item => { totals[item.name] = (totals[item.name] || 0) + 1; grandTotal++; }); });
         const rows = Object.entries(totals).sort((a, b) => a[0].localeCompare(b[0])).map(([name, qty]) => [name, qty]);
         rows.push([{ content: 'TOTAL PIES TO BAKE', styles: { fontStyle: 'bold', fillColor: [244, 113, 43], textColor: [255,255,255] } }, { content: grandTotal, styles: { fontStyle: 'bold', fillColor: [244, 113, 43], textColor: [255,255,255] } }]);
-        pdf.setFontSize(18); pdf.text("Baker's Production Tally", 14, 15); pdf.setFontSize(11); pdf.text(`Collection Date: ${dateLabel}`, 14, 22);
+        pdf.setFontSize(18); pdf.text("Pie Order Sheet", 14, 15); pdf.setFontSize(11); pdf.text(`Collection Date: ${dateLabel}`, 14, 22);
         pdf.autoTable({ startY: 30, head: [['Pie Variety', 'Quantity Needed']], body: rows, theme: 'striped', headStyles: { fillColor: [31, 31, 31] }, columnStyles: { 1: { halign: 'center', fontSize: 14, fontStyle: 'bold' } } });
-        pdf.save(`Tally_${dateLabel.replace(/ /g, '_')}.pdf`);
+        pdf.save(`Pies_${dateLabel.replace(/ /g, '_')}.pdf`);
     }
 
     async function addCollectionDate() { const dateStr = document.getElementById('new-pie-date').value.trim(); const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm"; if(!dateStr) return alert("Enter a date"); const pieItems = allMenuItems.filter(i => i.category === 'PIES'); const initialInventory = {}; pieItems.forEach(p => initialInventory[p.name] = 0); const snap = await getDoc(doc(db, "settings", "collection_dates")); const cur = snap.data()?.dates || []; const updated = [...cur, { id: Date.now().toString(), label: dateStr, times: times, inventory: initialInventory, active: true }]; await setDoc(doc(db, "settings", "collection_dates"), { dates: updated }); document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = ""; }
