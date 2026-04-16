@@ -203,7 +203,6 @@
         const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm";
         if(!dateStr) return alert("Enter a date");
 
-        // Map current PIE items to this specific date for independent inventory
         const pieItems = allMenuItems.filter(i => i.category === 'PIES');
         const initialInventory = {};
         pieItems.forEach(p => { initialInventory[p.name] = 0; });
@@ -219,17 +218,52 @@
         }];
 
         await setDoc(doc(db, "settings", "collection_dates"), { dates: updated });
-        document.getElementById('new-pie-date').value = "";
+        document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = "";
     }
 
+    // HELPER FUNCTIONS EXPOSED GLOBALLY FOR HTML ONCLICK/ONCHANGE
+    window.updatePieStock = async (dateId, pieName, newVal) => {
+        const stockNum = parseInt(newVal);
+        if (isNaN(stockNum)) return;
+        const snap = await getDoc(doc(db, "settings", "collection_dates"));
+        const dates = snap.data().dates.map(d => {
+            if (d.id === dateId) {
+                const newInv = { ...d.inventory };
+                newInv[pieName] = stockNum;
+                return { ...d, inventory: newInv };
+            }
+            return d;
+        });
+        await updateDoc(doc(db, "settings", "collection_dates"), { dates });
+    };
+
+    window.toggleDate = async (id) => {
+        const snap = await getDoc(doc(db, "settings", "collection_dates"));
+        const dates = snap.data().dates.map(d => d.id === id ? {...d, active: !d.active} : d);
+        await updateDoc(doc(db, "settings", "collection_dates"), { dates });
+    };
+
+    window.deleteDate = async (id) => {
+        if(!confirm("Delete this collection date?")) return;
+        const snap = await getDoc(doc(db, "settings", "collection_dates"));
+        const dates = snap.data().dates.filter(d => d.id !== id);
+        await updateDoc(doc(db, "settings", "collection_dates"), { dates });
+    };
+
     function renderDatesAdmin(dates) {
-        const wrap = document.getElementById('dates-list-admin'); wrap.innerHTML = "";
+        const wrap = document.getElementById('dates-list-admin'); 
+        wrap.innerHTML = "";
+        
         dates.forEach(d => {
-            const div = document.createElement('div'); div.className = 'card';
+            const div = document.createElement('div'); 
+            div.className = 'card';
             div.style.cssText = "background:var(--surface-2); margin-bottom:15px; padding:15px;";
             
+            // Sort inventory alphabetically to prevent jumping
+            const sortedInventory = Object.entries(d.inventory || {}).sort((a, b) => a[0].localeCompare(b[0]));
+
             let invHtml = `<div style="margin-top:10px; display:grid; grid-template-columns: 1fr auto; gap:8px;">`;
-            for (const [pieName, stock] of Object.entries(d.inventory || {})) {
+            for (const [pieName, stock] of sortedInventory) {
                 invHtml += `
                     <span style="font-size:0.85rem; color:var(--muted)">${pieName}:</span>
                     <input type="number" value="${stock}" 
@@ -251,34 +285,6 @@
             `;
             wrap.appendChild(div);
         });
-    }
-
-    window.updatePieStock = async (dateId, pieName, newVal) => {
-        const stockNum = parseInt(newVal);
-        if (isNaN(stockNum)) return;
-        const snap = await getDoc(doc(db, "settings", "collection_dates"));
-        const dates = snap.data().dates.map(d => {
-            if (d.id === dateId) {
-                const newInv = { ...d.inventory };
-                newInv[pieName] = stockNum;
-                return { ...d, inventory: newInv };
-            }
-            return d;
-        });
-        await updateDoc(doc(db, "settings", "collection_dates"), { dates });
-    };
-
-    async function toggleDate(id) {
-        const snap = await getDoc(doc(db, "settings", "collection_dates"));
-        const dates = snap.data().dates.map(d => d.id === id ? {...d, active: !d.active} : d);
-        await updateDoc(doc(db, "settings", "collection_dates"), { dates });
-    }
-
-    async function deleteDate(id) {
-        if(!confirm("Delete this date?")) return;
-        const snap = await getDoc(doc(db, "settings", "collection_dates"));
-        const dates = snap.data().dates.filter(d => d.id !== id);
-        await updateDoc(doc(db, "settings", "collection_dates"), { dates });
     }
 
     async function handlePdfPrompt() {
