@@ -27,7 +27,7 @@
         input[type=text], input[type=email], input[type=password], input[type=number], select { background: var(--surface-2); border: 1px solid var(--border); color: white; padding: 10px 12px; border-radius: 8px; width: 100%; font-family: 'DM Sans', sans-serif; }
         input:focus, select:focus { outline: none; border-color: var(--orange); }
         .hidden { display: none !important; }
-        #login-gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        #login-gate { position: fixed; inset: 0; background: var(--bg); display: none; align-items: center; justify-content: center; z-index: 9999; }
         .status-bar { margin: 20px 32px; background: var(--surface); border-radius: 14px; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
         .order-items { list-style: none; margin: 8px 0; font-size: 0.88rem; color: var(--muted); }
         .order-items li::before { content: "· "; color: var(--orange); }
@@ -140,9 +140,14 @@
     let _suppressRender = false; 
 
     onAuthStateChanged(auth, user => {
-        document.getElementById('login-gate').classList.toggle('hidden', !!user);
-        document.getElementById('admin-content').classList.toggle('hidden', !user);
-        if (user) initAdmin();
+        if (user) {
+            document.getElementById('login-gate').style.display = 'none';
+            document.getElementById('admin-content').classList.remove('hidden');
+            initAdmin();
+        } else {
+            document.getElementById('login-gate').style.display = 'flex'; // Show it only if NO user
+            document.getElementById('admin-content').classList.add('hidden');
+        }
     });
 
     document.getElementById('login-btn').onclick = () => {
