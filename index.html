@@ -33,25 +33,15 @@
         .order-items li::before { content: "· "; color: var(--orange); }
         .cat-tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
         .cat-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; cursor: grab; font-size: 0.85rem; user-select: none; }
-        .cat-tag.drag-over { border-color: var(--orange); }
-        .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 8px; }
+        .cat-tag.dragging { opacity: 0.5; border: 1px dashed var(--orange); }
+        .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 8px; transition: background 0.2s; }
+        .inv-row.dragging { opacity: 0.4; background: var(--orange); }
         .inv-row:last-child { border-bottom: none; }
         .drag-handle { color: var(--muted); margin-right: 4px; flex-shrink: 0; }
-        .inv-name { flex: 1; }
         .inv-name-input { flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; width: 100%; }
         .inv-name-input:focus { border-bottom-color: var(--orange); }
         .inv-price { color: var(--orange); margin-right: 8px; white-space: nowrap; flex-shrink: 0; }
         .opts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
-        .opts-btn:hover { border-color: var(--orange); color: var(--orange); }
-        .opts-editor { padding: 12px 16px; background: rgba(0,0,0,0.25); border-bottom: 1px solid var(--border); }
-        .opts-editor h5 { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .opts-tag { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-2); border: 1px solid var(--border); padding: 3px 8px 3px 10px; border-radius: 14px; font-size: 0.8rem; margin: 2px; }
-        .opts-tag button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0; }
-        .opts-tag button:hover { color: var(--red); }
-        .opts-add-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-        .opts-add-row input { flex: 1; min-width: 120px; padding: 7px 10px; font-size: 0.82rem; }
-        .opts-add-row input[type=number] { width: 90px; flex: none; }
-        .opts-add-row .btn { font-size: 0.82rem; padding: 6px 12px; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -171,9 +161,7 @@
 
         onSnapshot(doc(db, "settings", "categories"), snap => {
             const saved = snap.data()?.list || [];
-            const fromItems = [...new Set(allMenuItems.map(i => i.category).filter(Boolean))];
-            allCategories = [...new Set([...saved, ...fromItems])];
-            if (!allCategories.length) allCategories = ["CHIPS", "PIES", "SIDES"];
+            allCategories = saved;
             renderCatTags(); renderCatDropdown();
             if (!_suppressRender) renderMenuList();
         });
@@ -210,6 +198,60 @@
         });
     }
 
+    // DRAG AND DROP HANDLERS
+    function initDragEvents(container, selector, onDropCallback) {
+        let draggedItem = null;
+
+        container.addEventListener('dragstart', (e) => {
+            draggedItem = e.target.closest(selector);
+            if (draggedItem) {
+                draggedItem.classList.add('dragging');
+                _suppressRender = true; // Prevent UI refreshing while dragging
+            }
+        });
+
+        container.addEventListener('dragend', (e) => {
+            if (draggedItem) {
+                draggedItem.classList.remove('dragging');
+                _suppressRender = false;
+                onDropCallback(container);
+            }
+        });
+
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(container, e.clientY, selector);
+            if (afterElement == null) {
+                container.appendChild(draggedItem);
+            } else {
+                container.insertBefore(draggedItem, afterElement);
+            }
+        });
+    }
+
+    function getDragAfterElement(container, y, selector) {
+        const draggableElements = [...container.querySelectorAll(`${selector}:not(.dragging)`)];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    async function saveItemOrder(container) {
+        const rows = [...container.querySelectorAll('.inv-row')];
+        const batch = writeBatch(db);
+        rows.forEach((row, index) => {
+            const itemRef = doc(db, "menu", row.dataset.id);
+            batch.update(itemRef, { sortOrder: index });
+        });
+        await batch.commit();
+    }
+
     async function addCollectionDate() {
         const dateStr = document.getElementById('new-pie-date').value.trim();
         const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm";
@@ -221,13 +263,7 @@
 
         const snap = await getDoc(doc(db, "settings", "collection_dates"));
         const cur = snap.data()?.dates || [];
-        const updated = [...cur, { 
-            id: Date.now().toString(), 
-            label: dateStr, 
-            times: times, 
-            inventory: initialInventory,
-            active: true 
-        }];
+        const updated = [...cur, { id: Date.now().toString(), label: dateStr, times: times, inventory: initialInventory, active: true }];
 
         await setDoc(doc(db, "settings", "collection_dates"), { dates: updated });
         document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = "";
@@ -264,70 +300,32 @@
     function renderDatesAdmin(dates) {
         const wrap = document.getElementById('dates-list-admin'); 
         wrap.innerHTML = "";
-        
         if (!allMenuItems.length) return;
-
-        const currentPiesInSystem = allMenuItems
-            .filter(i => i.category === 'PIES')
-            .map(i => i.name);
-
+        const currentPiesInSystem = allMenuItems.filter(i => i.category === 'PIES').map(i => i.name);
         let finalDatesToSave = [];
         let globalNeedsUpdate = false;
 
         dates.forEach(d => {
             let localNeedsUpdate = false;
             if (!d.inventory) d.inventory = {};
-
             const piesInDate = Object.keys(d.inventory);
-            piesInDate.forEach(p => {
-                if (!currentPiesInSystem.includes(p)) {
-                    delete d.inventory[p];
-                    localNeedsUpdate = true;
-                }
-            });
-
-            currentPiesInSystem.forEach(pieName => {
-                if (d.inventory[pieName] === undefined) {
-                    d.inventory[pieName] = 0;
-                    localNeedsUpdate = true;
-                }
-            });
-
+            piesInDate.forEach(p => { if (!currentPiesInSystem.includes(p)) { delete d.inventory[p]; localNeedsUpdate = true; } });
+            currentPiesInSystem.forEach(pieName => { if (d.inventory[pieName] === undefined) { d.inventory[pieName] = 0; localNeedsUpdate = true; } });
             if (localNeedsUpdate) globalNeedsUpdate = true;
             finalDatesToSave.push(d);
 
             const sortedInventory = Object.entries(d.inventory || {}).sort((a, b) => a[0].localeCompare(b[0]));
-
             let invHtml = `<div style="margin-top:10px; display:grid; grid-template-columns: 1fr auto; gap:8px;">`;
             for (const [pieName, stock] of sortedInventory) {
-                invHtml += `
-                    <span style="font-size:0.85rem; color:var(--muted)">${pieName}:</span>
-                    <input type="number" value="${stock}" 
-                        style="width:60px; padding:2px 5px; font-size:0.8rem; background:#000; border:1px solid #444; color:#fff;" 
-                        onchange="updatePieStock('${d.id}', '${pieName}', this.value)">
-                `;
+                invHtml += `<span style="font-size:0.85rem; color:var(--muted)">${pieName}:</span><input type="number" value="${stock}" style="width:60px; padding:2px 5px; font-size:0.8rem; background:#000; border:1px solid #444; color:#fff;" onchange="updatePieStock('${d.id}', '${pieName}', this.value)">`;
             }
             invHtml += `</div>`;
 
-            const div = document.createElement('div'); 
-            div.className = 'card';
-            div.style.cssText = "background:var(--surface-2); margin-bottom:15px; padding:15px;";
-            div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:start;">
-                    <div><strong>${d.label}</strong> <span style='font-size:0.75rem;color:var(--orange)'>(${d.times})</span></div>
-                    <div style='display:flex; gap:10px;'>
-                        <button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem;' onclick="toggleDate('${d.id}')">${d.active ? 'Online' : 'Hidden'}</button>
-                        <button class='btn btn-cancel' style='padding:5px 10px;' onclick="deleteDate('${d.id}')">✕</button>
-                    </div>
-                </div>
-                ${invHtml}
-            `;
+            const div = document.createElement('div'); div.className = 'card'; div.style.cssText = "background:var(--surface-2); margin-bottom:15px; padding:15px;";
+            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start;"><div><strong>${d.label}</strong> <span style='font-size:0.75rem;color:var(--orange)'>(${d.times})</span></div><div style='display:flex; gap:10px;'><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem;' onclick="toggleDate('${d.id}')">${d.active ? 'Online' : 'Hidden'}</button><button class='btn btn-cancel' style='padding:5px 10px;' onclick="deleteDate('${d.id}')">✕</button></div></div>${invHtml}`;
             wrap.appendChild(div);
         });
-
-        if (globalNeedsUpdate) {
-            updateDoc(doc(db, "settings", "collection_dates"), { dates: finalDatesToSave });
-        }
+        if (globalNeedsUpdate) updateDoc(doc(db, "settings", "collection_dates"), { dates: finalDatesToSave });
     }
 
     async function handlePdfPrompt() {
@@ -345,9 +343,7 @@
             const data = d.data(); const id = d.id;
             const div = document.createElement('div'); div.className = 'order-card';
             const itemLines = data.items.map(i => `<li>${i.name} ${i.variantLabel ? '('+i.variantLabel+')' : (i.subOption ? '('+i.subOption+')' : '')}</li>`).join('');
-            div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div>
-                <div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong> ${data.collectionDate ? `<br><span style="color:var(--orange);font-size:0.8rem">${data.collectionDate}</span>` : ''}<ul class='order-items'>${itemLines}</ul></div>
-                <div style='display:flex;gap:10px'><button class='btn btn-ready'>Ready</button><button class='btn btn-cancel'>Cancel</button></div>`;
+            div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div><div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong> ${data.collectionDate ? `<br><span style="color:var(--orange);font-size:0.8rem">${data.collectionDate}</span>` : ''}<ul class='order-items'>${itemLines}</ul></div><div style='display:flex;gap:10px'><button class='btn btn-ready'>Ready</button><button class='btn btn-cancel'>Cancel</button></div>`;
             div.querySelector('.btn-ready').onclick = () => updateDoc(doc(db, "orders", id), { status: 'ready' });
             div.querySelector('.btn-cancel').onclick = () => confirm('Cancel order?') && updateDoc(doc(db, "orders", id), { status: 'cancelled' });
             data.type === 'PRE-ORDER' ? pie.appendChild(div) : live.appendChild(div);
@@ -358,22 +354,15 @@
         const wrap = document.getElementById('cat-tags-list'); wrap.innerHTML = "";
         allCategories.forEach((cat, idx) => {
             const tag = document.createElement('div'); tag.className = 'cat-tag'; tag.draggable = true;
-            tag.dataset.idx = idx; tag.appendChild(document.createTextNode(cat + ' '));
+            tag.dataset.idx = idx; tag.innerText = cat + ' ';
             const delBtn = document.createElement('button'); delBtn.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;';
             delBtn.innerText = '×'; delBtn.onclick = (e) => { e.stopPropagation(); deleteCategory(cat); };
             tag.appendChild(delBtn); wrap.appendChild(tag);
-            tag.ondragstart = (e) => e.dataTransfer.setData('idx', String(idx));
-            tag.ondragover = (e) => { e.preventDefault(); tag.classList.add('drag-over'); };
-            tag.ondragleave = () => tag.classList.remove('drag-over');
-            tag.ondrop = (e) => {
-                e.preventDefault(); tag.classList.remove('drag-over');
-                const fromIdx = parseInt(e.dataTransfer.getData('idx'));
-                const toIdx = parseInt(tag.dataset.idx);
-                if (fromIdx === toIdx) return;
-                const list = [...allCategories]; const [moved] = list.splice(fromIdx, 1);
-                list.splice(toIdx, 0, moved); allCategories = list;
-                setDoc(doc(db, "settings", "categories"), { list: allCategories });
-            };
+        });
+        initDragEvents(wrap, '.cat-tag', async (container) => {
+            const tags = [...container.querySelectorAll('.cat-tag')];
+            const newList = tags.map(t => t.innerText.replace(' ×', '').trim());
+            await setDoc(doc(db, "settings", "categories"), { list: newList });
         });
     }
 
@@ -391,30 +380,22 @@
             const sec = document.createElement('div'); sec.style.marginBottom = "20px";
             sec.innerHTML = `<div style='color:var(--orange);font-size:0.7rem;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;'>${cat}</div>`;
             const container = document.createElement('div'); container.className = 'card'; container.style.padding = "0";
-            items.forEach(item => { container.appendChild(makeRow(item, items, container)); });
-            sec.appendChild(container); list.appendChild(sec);
+            items.forEach(item => { container.appendChild(makeRow(item)); });
+            list.appendChild(sec); sec.appendChild(container);
+            initDragEvents(container, '.inv-row', saveItemOrder);
         });
     }
 
-    function makeRow(item, siblings, container) {
+    function makeRow(item) {
         const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true; row.dataset.id = item.id;
-        const handle = document.createElement('span'); handle.className = 'drag-handle'; handle.innerText = '⠿';
-        const nameInput = document.createElement('input'); nameInput.type = 'text'; nameInput.className = 'inv-name-input'; nameInput.value = item.name;
-        nameInput.addEventListener('focus', () => { _suppressRender = true; });
-        nameInput.addEventListener('blur', async () => {
-            const newName = nameInput.value.trim();
-            if (newName && newName !== item.name) await updateDoc(doc(db, "menu", item.id), { name: newName });
-            _suppressRender = false;
-        });
-        const priceEl = document.createElement('span'); priceEl.className = 'inv-price';
-        priceEl.innerText = (item.variants && item.variants.length) ? 'variants' : '£' + parseFloat(item.price).toFixed(2);
-        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!item.is_available; cb.style.cssText = 'width:auto;accent-color:var(--orange);cursor:pointer;';
-        cb.addEventListener('change', async () => { _suppressRender = true; await updateDoc(doc(db, "menu", item.id), { is_available: cb.checked }); _suppressRender = false; });
-        const optsBtn = document.createElement('button'); optsBtn.className = 'opts-btn'; optsBtn.innerText = '⚙ Options';
-        optsBtn.onclick = () => toggleOptsEditor(item, row);
-        const delBtn = document.createElement('button'); delBtn.style.cssText = 'background:none;border:none;color:var(--muted);margin-left:6px;cursor:pointer;';
-        delBtn.innerText = '✕'; delBtn.onclick = () => confirm("Delete item?") && deleteDoc(doc(db, "menu", item.id));
-        row.appendChild(handle); row.appendChild(nameInput); row.appendChild(priceEl); row.appendChild(cb); row.appendChild(optsBtn); row.appendChild(delBtn);
+        row.innerHTML = `<span class='drag-handle'>⠿</span><input type='text' class='inv-name-input' value="${item.name}"><span class='inv-price'>${(item.variants?.length) ? 'variants' : '£' + parseFloat(item.price).toFixed(2)}</span><input type='checkbox' ${item.is_available ? 'checked' : ''} style='width:auto;accent-color:var(--orange);'><button class='opts-btn'>⚙ Options</button><button style='background:none;border:none;color:var(--muted);margin-left:6px;cursor:pointer;'>✕</button>`;
+        
+        const inputs = row.querySelectorAll('input');
+        inputs[0].onfocus = () => _suppressRender = true;
+        inputs[0].onblur = async () => { _suppressRender = false; if(inputs[0].value !== item.name) await updateDoc(doc(db, "menu", item.id), { name: inputs[0].value }); };
+        inputs[1].onchange = async () => await updateDoc(doc(db, "menu", item.id), { is_available: inputs[1].checked });
+        row.querySelector('.opts-btn').onclick = () => toggleOptsEditor(item, row);
+        row.querySelector('button:last-child').onclick = () => confirm("Delete item?") && deleteDoc(doc(db, "menu", item.id));
         return row;
     }
 
@@ -423,17 +404,9 @@
         if (next && next.classList.contains('opts-editor')) { next.remove(); return; }
         const editor = document.createElement('div'); editor.className = 'opts-editor';
         const refresh = async () => {
-            const snap = await getDoc(doc(db, "menu", item.id));
-            const d = snap.data();
-            editor.innerHTML = `<h5>Free Options</h5><div class='f-wrap'>${(d.subOptions||[]).map(o => `<span class='opts-tag'>${o}<button onclick="updateSubOpt('${item.id}','${o}')">×</button></span>`).join('')}</div>
-                <div class='opts-add-row'><input type='text' class='f-in'><button class='btn btn-primary f-add'>+ Add</button></div><br>
-                <h5>Variants</h5><div class='v-wrap'>${(d.variants||[]).map(v => `<span class='opts-tag'>${v.label} £${v.price}<button onclick="updateVariant('${item.id}','${v.label}')">×</button></span>`).join('')}</div>
-                <div class='opts-add-row'><input type='text' class='v-l'><input type='number' class='v-p' placeholder='£'><button class='btn btn-primary v-add'>+ Add</button></div>`;
-            editor.querySelector('.f-add').onclick = async () => {
-                const val = editor.querySelector('.f-in').value.trim();
-                const fresh = await getDoc(doc(db, "menu", item.id));
-                await updateDoc(doc(db, "menu", item.id), { subOptions: [...(fresh.data().subOptions||[]), val] }); refresh();
-            };
+            const snap = await getDoc(doc(db, "menu", item.id)); const d = snap.data();
+            editor.innerHTML = `<h5>Free Options</h5><div>${(d.subOptions||[]).map(o => `<span class='opts-tag'>${o}<button onclick="updateSubOpt('${item.id}','${o}')">×</button></span>`).join('')}</div><div class='opts-add-row'><input type='text' class='f-in'><button class='btn btn-primary f-add'>+ Add</button></div><br><h5>Variants</h5><div>${(d.variants||[]).map(v => `<span class='opts-tag'>${v.label} £${v.price}<button onclick="updateVariant('${item.id}','${v.label}')">×</button></span>`).join('')}</div><div class='opts-add-row'><input type='text' class='v-l'><input type='number' class='v-p' placeholder='£'><button class='btn btn-primary v-add'>+ Add</button></div>`;
+            editor.querySelector('.f-add').onclick = async () => { const val = editor.querySelector('.f-in').value.trim(); const fresh = await getDoc(doc(db, "menu", item.id)); await updateDoc(doc(db, "menu", item.id), { subOptions: [...(fresh.data().subOptions||[]), val] }); refresh(); };
         };
         window.updateSubOpt = async (id, opt) => { const fresh = await getDoc(doc(db, id)); await updateDoc(doc(db, id), { subOptions: fresh.data().subOptions.filter(o=>o!==opt) }); refresh(); };
         row.insertAdjacentElement('afterend', editor); refresh();
@@ -445,7 +418,6 @@
         const category = document.getElementById('new-cat').value;
         if (!name || isNaN(price) || !category) return;
         await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: 999, subOptions: [], variants: [] });
-        document.getElementById('new-name').value = ""; document.getElementById('new-price').value = "";
     }
 
     function addCategory() {
@@ -464,7 +436,7 @@
         const { jsPDF } = window.jspdf; const pdf = new jsPDF();
         const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("collectionDate", "==", dateLabel), where("paymentStatus", "==", "PAID")));
         const rows = []; snap.forEach(d => { const data = d.data(); rows.push([data.customer?.name || '', data.items.map(i => i.name + (i.variantLabel ? ' (' + i.variantLabel + ')' : '')).join(', '), data.customer?.msg || '-']); });
-        pdf.text("Pie Prep Sheet: " + dateLabel, 14, 15); pdf.autoTable({ startY: 20, head: [['Customer', 'Items', 'Note']], body: rows });
+        pdf.text("Pie Prep Sheet: " + dateLabel, 14, 15); pdf.autoTable({ head: [['Customer', 'Items', 'Note']], body: rows });
         pdf.save(`Pies_${dateLabel.replace(/ /g, '_')}.pdf`);
     }
 </script>
