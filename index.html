@@ -212,7 +212,7 @@
             invHtml += `</div>`;
 
             const div = document.createElement('div'); div.className = 'card'; div.style.cssText = "background:var(--surface-2); margin-bottom:15px; padding:15px;";
-            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start;"><div><div style="display:flex; align-items:center; gap:8px;"><strong>${d.label}</strong>${badge}</div><span style='font-size:0.75rem;color:var(--orange)'>${d.times} — ${dateOrders.length} Pending Pre-Orders</span></div><div style='display:flex; gap:8px;'><button class='btn' style='background:#34495e; padding: 5px 10px; font-size:0.7rem;' onclick="generatePiePDF('${d.label}')">📄 PDF</button><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem; padding: 5px 10px;' onclick="toggleDate('${d.id}')">${d.active ? 'Online' : 'Hidden'}</button><button class='btn btn-cancel' style='padding:5px 10px;' onclick="deleteDate('${d.id}')">✕</button></div></div>${invHtml}`;
+            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start;"><div><div style="display:flex; align-items:center; gap:8px;"><strong>${d.label}</strong>${badge}</div><span style='font-size:0.75rem;color:var(--orange)'>${d.times} — ${dateOrders.length} Pending Pre-Orders</span></div><div style='display:flex; gap:8px;'><button class='btn' style='background:#34495e; padding: 5px 10px; font-size:0.7rem;' onclick="generatePiePDF('${d.label}')">📄 Orders</button><button class='btn' style='background:#673ab7; padding: 5px 10px; font-size:0.7rem;' onclick="generateTallyPDF('${d.label}')">📊 Tally</button><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem; padding: 5px 10px;' onclick="toggleDate('${d.id}')">${d.active ? 'Online' : 'Hidden'}</button><button class='btn btn-cancel' style='padding:5px 10px;' onclick="deleteDate('${d.id}')">✕</button></div></div>${invHtml}`;
             wrap.appendChild(div);
         });
         if (needsGlobalUpdate) updateDoc(doc(db, "settings", "collection_dates"), { dates });
@@ -329,7 +329,20 @@
         const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("collectionDate", "==", dateLabel), where("paymentStatus", "==", "PAID"), where("status","==","pending")));
         const rows = []; snap.forEach(d => { const data = d.data(); rows.push([data.customer?.name || '', data.items.map(i => i.name + (i.variantLabel ? ' (' + i.variantLabel + ')' : '')).join(', '), data.customer?.msg || '-']); });
         pdf.text("Pie Prep Sheet: " + dateLabel, 14, 15); pdf.autoTable({ head: [['Customer', 'Items', 'Note']], body: rows });
-        pdf.save(`Pies_${dateLabel.replace(/ /g, '_')}.pdf`);
+        pdf.save(`Orders_${dateLabel.replace(/ /g, '_')}.pdf`);
+    }
+
+    window.generateTallyPDF = async (dateLabel) => {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+        const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("collectionDate", "==", dateLabel), where("paymentStatus", "==", "PAID"), where("status", "==", "pending")));
+        const totals = {}; let grandTotal = 0;
+        snap.forEach(d => { d.data().items.forEach(item => { totals[item.name] = (totals[item.name] || 0) + 1; grandTotal++; }); });
+        const rows = Object.entries(totals).sort((a, b) => a[0].localeCompare(b[0])).map(([name, qty]) => [name, qty]);
+        rows.push([{ content: 'TOTAL PIES TO BAKE', styles: { fontStyle: 'bold', fillColor: [244, 113, 43], textColor: [255,255,255] } }, { content: grandTotal, styles: { fontStyle: 'bold', fillColor: [244, 113, 43], textColor: [255,255,255] } }]);
+        pdf.setFontSize(18); pdf.text("Baker's Production Tally", 14, 15); pdf.setFontSize(11); pdf.text(`Collection Date: ${dateLabel}`, 14, 22);
+        pdf.autoTable({ startY: 30, head: [['Pie Variety', 'Quantity Needed']], body: rows, theme: 'striped', headStyles: { fillColor: [31, 31, 31] }, columnStyles: { 1: { halign: 'center', fontSize: 14, fontStyle: 'bold' } } });
+        pdf.save(`Tally_${dateLabel.replace(/ /g, '_')}.pdf`);
     }
 
     async function addCollectionDate() { const dateStr = document.getElementById('new-pie-date').value.trim(); const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm"; if(!dateStr) return alert("Enter a date"); const pieItems = allMenuItems.filter(i => i.category === 'PIES'); const initialInventory = {}; pieItems.forEach(p => initialInventory[p.name] = 0); const snap = await getDoc(doc(db, "settings", "collection_dates")); const cur = snap.data()?.dates || []; const updated = [...cur, { id: Date.now().toString(), label: dateStr, times: times, inventory: initialInventory, active: true }]; await setDoc(doc(db, "settings", "collection_dates"), { dates: updated }); document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = ""; }
