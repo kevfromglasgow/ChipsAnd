@@ -12,7 +12,7 @@
         .logo-header { height: 45px; width: auto; cursor: pointer; }
         #landing-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px; text-align: center;}
         .logo-main { width: 220px; height: auto; margin-bottom: 10px; }
-        .choice-btn { width: 85%; max-width: 320px; padding: 20px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: white; cursor: pointer; font-family: 'Playfair Display'; font-size: 1.2rem; transition: 0.2s; text-align: center; }
+        .choice-btn { width: 85%; max-width: 320px; padding: 20px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: white; cursor: pointer; font-family: 'Playfair Display'; font-size: 1.2rem; transition: 0.2s; text-align: center; min-height: 75px; }
         .choice-btn:hover:not(:disabled) { border-color: var(--orange); }
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .container { max-width: 800px; margin: 0 auto; padding: 20px; }
@@ -44,11 +44,9 @@
 
     <div id="landing-screen">
         <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" class="logo-main">
-        
         <div id="landing-buttons" style="min-height: 200px; display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%;">
             <button id="pie-trigger" class="choice-btn">Pre-Order Pies</button>
-            
-            <button id="menu-btn" class="choice-btn" disabled style="opacity: 0.4;">MENU - COMING SOON</button>
+            <button id="menu-btn" class="choice-btn" disabled style="opacity: 0;">...</button>
         </div>
 
         <div id="date-selection" class="hidden">
@@ -93,7 +91,6 @@
         onSnapshot(doc(db, "settings", "categories"), snap => { catOrder = snap.data()?.list || []; });
         onSnapshot(doc(db, "settings", "collection_dates"), snap => { collectionDates = snap.data()?.dates || []; });
 
-        // Status Listener: Upgrades the button only when necessary
         onSnapshot(doc(db, "settings", "truck_status"), (s) => {
             const d = s.data();
             const mBtn = document.getElementById('menu-btn');
