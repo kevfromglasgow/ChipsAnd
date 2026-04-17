@@ -13,11 +13,10 @@
         .status-badge { display: inline-block; padding: 14px 28px; border-radius: 40px; font-weight: bold; text-transform: uppercase; margin: 20px 0; border: 1px solid var(--orange); color: var(--orange); font-size: 0.9rem; }
         .badge-paid     { background: var(--green); color: white; border-color: var(--green); }
         .badge-ready    { background: var(--orange); color: white; border-color: var(--orange); }
-        .badge-waiting  { border-color: #f1c40f; color: #f1c40f; }
         .badge-cancelled{ border-color: var(--red); color: var(--red); }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         .pulse { animation: pulse 2s infinite; }
-        .back-btn { background: none; border: 1px solid #333; color: #666; padding: 10px 20px; border-radius: 8px; margin-top: 28px; cursor: pointer; font-family: 'DM Sans'; }
+        .back-btn { background: none; border: 1px solid #333; color: #666; padding: 10px 20px; border-radius: 8px; margin-top: 28px; cursor: pointer; font-family: 'DM Sans'; text-decoration: none; display: inline-block; }
     </style>
 </head>
 <body>
@@ -30,8 +29,11 @@
         <div id="order-id" style="font-size:0.8rem;color:#888;margin-bottom:10px;">LOADING...</div>
         <h2 style="font-family:'Playfair Display';">Order Status</h2>
         <div id="status-container"><div class="status-badge pulse">Checking…</div></div>
+        
+        <div id="date-display" style="color:var(--orange); font-weight: bold; margin-bottom: 15px;"></div>
+        
         <p id="msg" style="color:#888;font-size:0.9rem;line-height:1.6;margin-top:8px;"></p>
-        <button class="back-btn" onclick="window.location.href='menu.html'">Back to Menu</button>
+        <a href="menu.html" class="back-btn">Back to Menu</a>
     </div>
 
     <script type="module">
@@ -46,28 +48,41 @@
         if (!orderId) { document.getElementById('msg').innerText = "No order ID found."; }
         else {
             document.getElementById('order-id').innerText = 'ORDER #' + orderId.slice(-6).toUpperCase();
+            
             onSnapshot(doc(db, "orders", orderId), snap => {
                 if (!snap.exists()) return;
                 const data = snap.data();
                 const container = document.getElementById('status-container');
-                const msg       = document.getElementById('msg');
+                const msg = document.getElementById('msg');
+                const dateBox = document.getElementById('date-display');
 
-                if (data.status === 'awaiting_approval') {
-                    container.innerHTML = '<div class="status-badge badge-waiting pulse">⏳ Awaiting Approval</div>';
-                    msg.innerText = "Your order has been received. Due to limited availability, it requires manual approval. This page will update automatically — no need to refresh.";
-                } else if (data.status === 'cancelled') {
+                // Display the collection date clearly
+                if(data.collectionDate) {
+                    dateBox.innerText = "Collection: " + data.collectionDate;
+                }
+
+                if (data.status === 'cancelled') {
                     container.innerHTML = '<div class="status-badge badge-cancelled">✕ Order Cancelled</div>';
                     msg.innerText = "This order has been cancelled. If this is a mistake, please contact us directly.";
-                } else if (data.paymentStatus === 'UNPAID') {
+                } 
+                else if (data.paymentStatus === 'UNPAID') {
                     container.innerHTML = '<div class="status-badge pulse">Waiting for Payment</div>';
-                    msg.innerText = "Your order is saved but payment hasn't been confirmed yet. If you closed the payment window, please try again from the menu.";
-                } else if (data.paymentStatus === 'PAID') {
-                    if (data.status === 'pending' || data.status === 'accepted') {
-                        container.innerHTML = '<div class="status-badge badge-paid">✅ Payment Received</div>';
-                        msg.innerText = "We've got your order and payment confirmed! Our team is on it now.";
-                    } else if (data.status === 'ready') {
+                    msg.innerText = "Payment hasn't been confirmed yet. If you've already paid, this will update shortly.";
+                } 
+                else if (data.paymentStatus === 'PAID') {
+                    if (data.status === 'pending') {
+                        container.innerHTML = '<div class="status-badge badge-paid">✅ Order Confirmed</div>';
+                        
+                        // Adaptive messaging based on order type
+                        if (data.type === 'PRE-ORDER') {
+                            msg.innerText = "Payment confirmed! Your pies are reserved. You'll also receive an email receipt shortly.";
+                        } else {
+                            msg.innerText = "Payment confirmed! We are preparing your food now.";
+                        }
+                    } 
+                    else if (data.status === 'ready') {
                         container.innerHTML = '<div class="status-badge badge-ready">🔥 Ready to Collect!</div>';
-                        msg.innerText = "Your order is hot and ready! Head to the truck to collect.";
+                        msg.innerText = "Your order is ready! Head to the truck and show this screen to collect.";
                     }
                 }
             });
