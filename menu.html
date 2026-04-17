@@ -11,7 +11,6 @@
         header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: center; background: var(--bg); position: sticky; top: 0; z-index: 100; }
         .logo-header { height: 45px; width: auto; cursor: pointer; }
         
-        /* FIXED: Changed to absolute and min-height to allow scrolling on mobile */
         #landing-screen { 
             position: absolute; 
             inset: 0; 
@@ -21,7 +20,7 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: flex-start; /* Start from top to allow natural scroll */
+            justify-content: flex-start; 
             gap: 20px; 
             padding: 60px 20px; 
             text-align: center;
@@ -83,6 +82,7 @@
 
     <div id="cart-bar">
         <input type="text" id="cust-name" placeholder="Full Name *" required>
+        <input type="email" id="cust-email" placeholder="Email Address *" required>
         <input type="tel" id="cust-phone" placeholder="Phone Number">
         <textarea id="cust-note" placeholder="Special requests or allergies..."></textarea>
         <div id="cart-items"></div>
@@ -100,7 +100,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCkNRj4zdboRsE8oF_GGwvqz63gU4V5KG8", authDomain: "chipsand-13831.firebaseapp.com", projectId: "chipsand-13831", storageBucket: "chipsand-13831.firebasestorage.app", messagingSenderId: "105749630976", appId: "1:105749630976:web:038ab2c3ce81612064c8e5" };
         const app = initializeApp(firebaseConfig);
@@ -192,7 +192,12 @@
         document.getElementById('opt-modal-cancel').onclick = () => document.getElementById('opt-modal').classList.add('hidden');
 
         document.getElementById('submit-order-btn').onclick = async () => {
-            const name = document.getElementById('cust-name').value; if(!name) return alert("Enter Name");
+            const name = document.getElementById('cust-name').value;
+            const email = document.getElementById('cust-email').value; // Get Email
+            const phone = document.getElementById('cust-phone').value;
+            
+            if(!name || !email) return alert("Enter Name and Email Address");
+            
             const btn = document.getElementById('submit-order-btn'); btn.disabled = true; btn.innerText = "Securing Payment...";
             
             const cartItems = Object.values(cart);
@@ -227,11 +232,18 @@
                 }
 
                 const docRef = await addDoc(collection(db, "orders"), {
-                    items, customer: { name, phone: document.getElementById('cust-phone').value, msg: document.getElementById('cust-note').value },
+                    items, 
+                    customer: { name, email, phone, msg: document.getElementById('cust-note').value }, // Added email to DB
                     collectionDate: currentMode === 'PIES' ? collectionDates.find(d => d.id === selectedDateId).label : 'ASAP',
                     paymentStatus: 'UNPAID', status: 'pending', type: currentMode === 'PIES' ? 'PRE-ORDER' : 'PICKUP', createdAt: serverTimestamp()
                 });
-                const response = await fetch('https://us-central1-chipsand-13831.cloudfunctions.net/createCheckout', { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: { orderId: docRef.id, amount: Math.round(total * 100) } }) });
+                
+                const response = await fetch('https://us-central1-chipsand-13831.cloudfunctions.net/createCheckout', { 
+                    method: 'POST', 
+                    mode: 'cors', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ data: { orderId: docRef.id, amount: Math.round(total * 100) } }) 
+                });
                 const result = await response.json(); if (result.data?.url) window.location.href = result.data.url;
             } catch (e) { alert("Error processing order."); btn.disabled = false; btn.innerText = "Pay & Confirm Order"; }
         };
