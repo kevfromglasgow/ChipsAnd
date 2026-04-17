@@ -37,11 +37,9 @@
         .inv-price-input { width: 70px; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--orange); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; text-align: right; }
         .opts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
 
+        /* Stock Input Arrows Reset */
         input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
         .stock-input { width: 60px !important; padding: 4px 8px !important; text-align: center !important; }
     </style>
@@ -210,7 +208,7 @@
             invHtml += `</div>`;
 
             const div = document.createElement('div'); div.className = 'card'; div.style.background = "var(--surface-2)";
-            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start; text-align:left;"><div><strong>${d.label}</strong><br><span style='font-size:0.75rem;color:var(--orange)'>${d.times} — ${dateOrders.length} Paid Orders</span></div><div style='display:flex; gap:8px;'><button class='btn' style='background:#34495e; font-size:0.7rem;' onclick="generatePiePDF('${d.label}')">📄 Orders</button><button class='btn' style='background:#673ab7; font-size:0.7rem;' onclick="generateTallyPDF('${d.label}')">📊 Tally</button><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem;' onclick="toggleDate('${d.id}')">${d.active ? 'Online' : 'Hidden'}</button><button class='btn btn-cancel' onclick="deleteDate('${d.id}')">✕</button></div></div>${invHtml}`;
+            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start; text-align:left;"><div><strong>${d.label}</strong><br><span style='font-size:0.75rem;color:var(--orange)'>${d.times} — ${dateOrders.length} Paid Orders</span></div><div style='display:flex; gap:8px;'><button class='btn' style='background:#34495e; font-size:0.7rem;' onclick="generatePiePDF('${d.label}')">📄 Orders</button><button class='btn' style='background:#673ab7; font-size:0.7rem;' onclick="generateTallyPDF('${d.label}')">📊 Tally</button><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem;' onclick="toggleDate('${d.id}', event)">${d.active ? 'Online' : 'Hidden'}</button><button class='btn btn-cancel' onclick="deleteDate('${d.id}')">✕</button></div></div>${invHtml}`;
             wrap.appendChild(div);
         });
     }
@@ -305,12 +303,20 @@
     window.updateItemPrice = async (id, val) => { const p = parseFloat(val); if(!isNaN(p)) await updateDoc(doc(db, "menu", id), { price: p }); };
     window.updatePieStock = async (id, pie, val) => { const num = parseInt(val); if (isNaN(num)) return; const s = await getDoc(doc(db, "settings", "collection_dates")); const dts = s.data().dates.map(d => d.id === id ? {...d, inventory: {...d.inventory, [pie]: num}} : d); await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts }); };
     
-    window.toggleDate = async (id) => { 
+    window.toggleDate = async (id, event) => { 
+        const btn = event.target;
+        const currentlyOnline = btn.innerText === 'Online';
+        
         _suppressRender = true;
+        
+        btn.innerText = currentlyOnline ? 'Hidden' : 'Online';
+        btn.style.background = currentlyOnline ? '#444' : 'var(--green)';
+
         const s = await getDoc(doc(db, "settings", "collection_dates")); 
-        const dts = s.data().dates.map(d => d.id === id ? {...d, active: !d.active} : d); 
+        const dts = s.data().dates.map(d => d.id === id ? {...d, active: !currentlyOnline} : d); 
         await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts });
-        _suppressRender = false;
+        
+        setTimeout(() => { _suppressRender = false; }, 800);
     };
 
     window.deleteDate = async (id) => { 
@@ -319,7 +325,7 @@
         const s = await getDoc(doc(db, "settings", "collection_dates")); 
         const dts = s.data().dates.filter(d => d.id !== id); 
         await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts });
-        _suppressRender = false;
+        setTimeout(() => { _suppressRender = false; }, 800);
     };
 
     window.generatePiePDF = async (dateLabel) => {
