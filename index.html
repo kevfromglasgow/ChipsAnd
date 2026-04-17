@@ -8,9 +8,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
+        /* --- ORIGINAL STYLES RESTORED --- */
         :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --surface-2: #1F1F1F; --text: #F0EDE8; --muted: #888; --green: #2ecc71; --red: #e74c3c; --border: rgba(255,255,255,0.08); }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 60px; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 60px; text-align: left; }
         .app-header { background: var(--surface); padding: 10px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .logo-admin { height: 40px; width: auto; }
         .tab-nav { display: flex; margin: 20px 32px 0; border-bottom: 1px solid var(--border); }
@@ -31,12 +32,19 @@
         .order-items { list-style: none; margin: 8px 0; font-size: 0.88rem; color: var(--muted); }
         .cat-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; cursor: grab; font-size: 0.85rem; user-select: none; }
         .cat-tag.dragging { opacity: 0.5; border: 1px dashed var(--orange); }
-        .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 12px; transition: background 0.2s; }
+        .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 12px; transition: background 0.2s; text-align: left; }
         .inv-row.dragging { opacity: 0.4; background: var(--orange); }
         .drag-handle { color: var(--muted); cursor: grab; flex-shrink: 0; }
         .inv-name-input { flex: 2; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; }
         .inv-price-input { width: 70px; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--orange); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; text-align: right; }
         .opts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
+
+        /* --- INSIGHTS SPECIFIC (Scoped to prevent leakage) --- */
+        .insights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stats-tile { background: var(--surface-2); text-align: center; padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .insights-table { width: 100%; border-collapse: collapse; }
+        .insights-table th { text-align: left; color: var(--muted); font-size: 0.7rem; text-transform: uppercase; padding: 12px; border-bottom: 1px solid var(--border); }
+        .insights-table td { padding: 12px; border-bottom: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -59,7 +67,7 @@
     </header>
 
     <div class="status-bar">
-        <div style="font-size: 1.1rem;">Shop Status: <strong id="status-text">...</strong></div>
+        <div style="font-size: 1.1rem; text-align: left;">Shop Status: <strong id="status-text">...</strong></div>
         <button class="btn btn-primary" id="toggle-shop-btn">Toggle Shop Status</button>
     </div>
 
@@ -67,6 +75,7 @@
         <button class="tab-btn active" data-tab="live">Live Orders</button>
         <button class="tab-btn" data-tab="pies">Pie Batch</button>
         <button class="tab-btn" data-tab="menu">Inventory</button>
+        <button class="tab-btn" data-tab="insights">Insights</button>
     </nav>
 
     <div class="content-area">
@@ -81,8 +90,6 @@
                     <button class="btn btn-primary" id="add-date-btn">Add Date</button>
                 </div>
                 <div id="dates-list-admin"></div>
-                <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
-                <button class="btn" style="width:100%;background:#333;color:white;" id="pie-archive-btn">Archive All Paid Pre-Orders</button>
             </div>
             <div id="pie-list"></div>
         </div>
@@ -90,7 +97,7 @@
         <div id="tab-menu" class="tab-panel hidden">
             <div class="card">
                 <h3>Categories</h3>
-                <div class="cat-tags-wrap" id="cat-tags-list"></div>
+                <div id="cat-tags-list" style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;"></div>
                 <div style="display:flex;gap:10px;">
                     <input type="text" id="new-cat-name" placeholder="New category">
                     <button class="btn btn-primary" id="add-cat-btn">Add</button>
@@ -107,6 +114,33 @@
             </div>
             <div id="menu-list"></div>
         </div>
+
+        <div id="tab-insights" class="tab-panel hidden">
+            <div class="card">
+                <h3>Business Performance</h3>
+                <select id="insights-date-picker" style="margin: 20px 0;"></select>
+                <div class="insights-grid">
+                    <div class="stats-tile">
+                        <div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase;">Gross Revenue</div>
+                        <div id="stat-rev" style="font-size:1.5rem; color:var(--green); font-weight:bold; margin-top:5px;">£0.00</div>
+                    </div>
+                    <div class="stats-tile">
+                        <div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase;">Pies Sold</div>
+                        <div id="stat-qty" style="font-size:1.5rem; color:var(--orange); font-weight:bold; margin-top:5px;">0</div>
+                    </div>
+                    <div class="stats-tile">
+                        <div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase;">Avg Order</div>
+                        <div id="stat-avg" style="font-size:1.5rem; color:var(--text); font-weight:bold; margin-top:5px;">£0.00</div>
+                    </div>
+                </div>
+                <table class="insights-table">
+                    <thead>
+                        <tr><th>Flavor</th><th style="text-align:center;">Sold</th><th style="text-align:right;">Subtotal</th></tr>
+                    </thead>
+                    <tbody id="insights-rows"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -120,8 +154,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let allMenuItems = []; let allCategories = [];
-    let _suppressRender = false; 
+    let allMenuItems = []; let allCategories = []; let _suppressRender = false;
 
     onAuthStateChanged(auth, user => {
         if (user) {
@@ -143,18 +176,33 @@
         onSnapshot(doc(db, "settings", "truck_status"), snap => {
             const d = snap.data() || {};
             window._isClosed = !!d.is_closed;
-            const statusEl = document.getElementById('status-text');
-            statusEl.innerText = d.is_closed ? "CLOSED" : "OPEN";
-            statusEl.style.color = d.is_closed ? "var(--red)" : "var(--green)";
+            document.getElementById('status-text').innerText = d.is_closed ? "CLOSED" : "OPEN";
+            document.getElementById('status-text').style.color = d.is_closed ? "var(--red)" : "var(--green)";
         });
 
-        onSnapshot(doc(db, "settings", "collection_dates"), snap => { renderDatesAdmin(snap.data()?.dates || []); });
-        onSnapshot(doc(db, "settings", "categories"), snap => { allCategories = snap.data()?.list || []; renderCatTags(); renderCatDropdown(); if (!_suppressRender) renderMenuList(); });
+        onSnapshot(doc(db, "settings", "collection_dates"), snap => {
+            const dates = snap.data()?.dates || [];
+            renderDatesAdmin(dates);
+            const picker = document.getElementById('insights-date-picker');
+            const curVal = picker.value;
+            picker.innerHTML = '<option value="">Select a Batch to Analyze...</option>';
+            dates.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.label; opt.innerText = d.label;
+                picker.appendChild(opt);
+            });
+            picker.value = curVal;
+        });
+
+        onSnapshot(doc(db, "settings", "categories"), snap => {
+            allCategories = snap.data()?.list || [];
+            renderCatTags(); renderCatDropdown();
+            if (!_suppressRender) renderMenuList();
+        });
 
         onSnapshot(collection(db, "menu"), snap => {
-            allMenuItems = []; snap.forEach(d => allMenuItems.push({ id: d.id, ...d.data() }));
+            allMenuItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
-            getDoc(doc(db, "settings", "collection_dates")).then(s => { if(s.exists()) renderDatesAdmin(s.data().dates); });
             if (!_suppressRender) renderMenuList();
         });
 
@@ -162,9 +210,9 @@
 
         document.getElementById('toggle-shop-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window._isClosed });
         document.getElementById('add-date-btn').onclick = addCollectionDate;
-        document.getElementById('pie-archive-btn').onclick = archivePies;
         document.getElementById('add-cat-btn').onclick = addCategory;
         document.getElementById('add-item-btn').onclick = addItem;
+        document.getElementById('insights-date-picker').onchange = (e) => runInsights(e.target.value);
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.onclick = () => {
@@ -176,61 +224,111 @@
         });
     }
 
+    async function runInsights(dateLabel) {
+        if (!dateLabel) return;
+        const q = query(collection(db, "orders"), where("collectionDate", "==", dateLabel), where("paymentStatus", "==", "PAID"));
+        const snap = await getDocs(q);
+        let totalRev = 0; let totalPies = 0; let flavorStats = {};
+        snap.forEach(d => {
+            const data = d.data();
+            data.items.forEach(item => {
+                totalRev += item.price; totalPies += 1;
+                flavorStats[item.name] = (flavorStats[item.name] || 0) + 1;
+            });
+        });
+        document.getElementById('stat-rev').innerText = `£${totalRev.toFixed(2)}`;
+        document.getElementById('stat-qty').innerText = totalPies;
+        document.getElementById('stat-avg').innerText = snap.size > 0 ? `£${(totalRev / snap.size).toFixed(2)}` : '£0.00';
+        const tbody = document.getElementById('insights-rows'); tbody.innerHTML = "";
+        Object.entries(flavorStats).sort((a,b) => b[1] - a[1]).forEach(([name, qty]) => {
+            const price = allMenuItems.find(i => i.name === name)?.price || 0;
+            tbody.innerHTML += `<tr><td>${name}</td><td style="text-align:center;">${qty}</td><td style="text-align:right;">£${(qty * price).toFixed(2)}</td></tr>`;
+        });
+    }
+
     async function renderDatesAdmin(dates) {
         const wrap = document.getElementById('dates-list-admin'); wrap.innerHTML = "";
         if (!allMenuItems.length) return;
-
         const orderSnap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("paymentStatus", "==", "PAID")));
         const allPreOrders = orderSnap.docs.map(doc => doc.data());
-        const sortedPiesFromMenu = allMenuItems.filter(item => item.category === 'PIES');
-        let needsGlobalUpdate = false;
+        const piesFromMenu = allMenuItems.filter(i => i.category === 'PIES');
 
         dates.forEach(d => {
-            let localUpdate = false;
-            if (!d.inventory) { d.inventory = {}; localUpdate = true; }
-            const currentPies = sortedPiesFromMenu.map(i => i.name);
-            Object.keys(d.inventory).forEach(p => { if (!currentPies.includes(p)) { delete d.inventory[p]; localUpdate = true; } });
-            currentPies.forEach(p => { if (d.inventory[p] === undefined) { d.inventory[p] = 0; localUpdate = true; } });
-            if (localUpdate) needsGlobalUpdate = true;
-
             const dateOrders = allPreOrders.filter(o => o.collectionDate === d.label && o.status === "pending");
             const pieTotals = {};
-            dateOrders.forEach(order => order.items.forEach(item => { pieTotals[item.name] = (pieTotals[item.name] || 0) + 1; }));
+            dateOrders.forEach(o => o.items.forEach(i => pieTotals[i.name] = (pieTotals[i.name] || 0) + 1));
 
-            const isFullySoldOut = Object.values(d.inventory).every(stock => stock === 0);
-            const badge = isFullySoldOut ? `<span style="background:var(--red); color:white; padding:2px 8px; border-radius:4px; font-size:0.7rem; margin-left:10px; vertical-align:middle;">SOLD OUT</span>` : '';
-
-            let invHtml = `<div style="margin-top:15px; display:grid; grid-template-columns: 1fr auto auto; gap:10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-                            <div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase;">Flavor</div><div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; text-align:center;">Sold</div><div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; text-align:right;">Stock</div>`;
-            
-            sortedPiesFromMenu.forEach(pieItem => {
-                const pieName = pieItem.name;
-                const stock = d.inventory[pieName] || 0;
-                const soldCount = pieTotals[pieName] || 0;
-                invHtml += `<span style="font-size:0.85rem;">${pieName}:</span><span style="font-size:0.85rem; color:var(--orange); text-align:center; font-weight:bold;">${soldCount}</span><input type="number" value="${stock}" style="width:50px; padding:2px 5px; font-size:0.8rem; background:#000; border:1px solid #444; color:#fff; text-align:right;" onchange="updatePieStock('${d.id}', '${pieName}', this.value)">`;
+            let invHtml = `<div style="margin-top:15px; display:grid; grid-template-columns: 1fr auto auto; gap:10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">`;
+            piesFromMenu.forEach(p => {
+                const stock = d.inventory[p.name] || 0;
+                invHtml += `<span>${p.name}:</span><span style="color:var(--orange); text-align:center;">${pieTotals[p.name] || 0}</span><input type="number" value="${stock}" style="width:50px; text-align:right; background:#000; border:1px solid #444; color:#fff;" onchange="updatePieStock('${d.id}', '${p.name}', this.value)">`;
             });
             invHtml += `</div>`;
 
-            const div = document.createElement('div'); div.className = 'card'; div.style.cssText = "background:var(--surface-2); margin-bottom:15px; padding:15px;";
-            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start;"><div><div style="display:flex; align-items:center; gap:8px;"><strong>${d.label}</strong>${badge}</div><span style='font-size:0.75rem;color:var(--orange)'>${d.times} — ${dateOrders.length} Pending Pre-Orders</span></div><div style='display:flex; gap:8px;'><button class='btn' style='background:#34495e; padding: 5px 10px; font-size:0.7rem;' onclick="generatePiePDF('${d.label}')">📄 Orders</button><button class='btn' style='background:#673ab7; padding: 5px 10px; font-size:0.7rem;' onclick="generateTallyPDF('${d.label}')">📊 Order Summary</button><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem; padding: 5px 10px;' onclick="toggleDate('${d.id}')">${d.active ? 'Online' : 'Hidden'}</button><button class='btn btn-cancel' style='padding:5px 10px;' onclick="deleteDate('${d.id}')">✕</button></div></div>${invHtml}`;
+            const div = document.createElement('div'); div.className = 'card'; div.style.background = "var(--surface-2)";
+            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start; text-align:left;"><div><strong>${d.label}</strong><br><span style='font-size:0.75rem;color:var(--orange)'>${d.times} — ${dateOrders.length} Paid Orders</span></div><div style='display:flex; gap:8px;'><button class='btn' style='background:#34495e; font-size:0.7rem;' onclick="generatePiePDF('${d.label}')">📄 Orders</button><button class='btn' style='background:#673ab7; font-size:0.7rem;' onclick="generateTallyPDF('${d.label}')">📊 Tally</button><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem;' onclick="toggleDate('${d.id}')">${d.active ? 'Online' : 'Hidden'}</button><button class='btn btn-cancel' onclick="deleteDate('${d.id}')">✕</button></div></div>${invHtml}`;
             wrap.appendChild(div);
         });
-        if (needsGlobalUpdate) updateDoc(doc(db, "settings", "collection_dates"), { dates });
     }
 
     function renderOrders(snap) {
         const live = document.getElementById('orders-list'); live.innerHTML = "";
         snap.forEach(d => {
-            const data = d.data(); const id = d.id;
-            if (data.type === 'PICKUP') {
-                const div = document.createElement('div'); div.className = 'order-card';
-                const itemLines = data.items.map(i => `<li>${i.name} ${i.variantLabel ? '('+i.variantLabel+')' : (i.subOption ? '('+i.subOption+')' : '')}</li>`).join('');
-                div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div><div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong><ul class='order-items'>${itemLines}</ul></div><div style='display:flex;gap:10px'><button class='btn btn-ready'>Ready</button><button class='btn btn-cancel'>Cancel</button></div>`;
-                div.querySelector('.btn-ready').onclick = () => updateDoc(doc(db, "orders", id), { status: 'ready' });
-                div.querySelector('.btn-cancel').onclick = () => confirm('Cancel order?') && updateDoc(doc(db, "orders", id), { status: 'cancelled' });
-                live.appendChild(div);
-            }
+            const data = d.data(); if (data.type !== 'PICKUP') return;
+            const div = document.createElement('div'); div.className = 'order-card';
+            div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${d.id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div><div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong><ul style='list-style:none; font-size:0.8rem; color:var(--muted); text-align:left;'>${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul></div><div style='display:flex;gap:10px'><button class='btn btn-ready'>Ready</button><button class='btn btn-cancel'>Cancel</button></div>`;
+            div.querySelector('.btn-ready').onclick = () => updateDoc(doc(db, "orders", d.id), { status: 'ready' });
+            div.querySelector('.btn-cancel').onclick = () => confirm('Cancel?') && updateDoc(doc(db, "orders", d.id), { status: 'cancelled' });
+            live.appendChild(div);
         });
+    }
+
+    function renderMenuList() {
+        if (_suppressRender) return;
+        const list = document.getElementById('menu-list'); list.innerHTML = "";
+        allCategories.forEach(cat => {
+            const items = allMenuItems.filter(i => i.category === cat);
+            const sec = document.createElement('div'); sec.innerHTML = `<div style='color:var(--orange); font-size:0.7rem; margin: 20px 0 10px; text-transform:uppercase; text-align:left;'>${cat}</div>`;
+            const container = document.createElement('div'); container.className = 'card'; container.style.padding = "0";
+            items.forEach(item => container.appendChild(makeRow(item)));
+            list.appendChild(sec); sec.appendChild(container);
+            initDragEvents(container, '.inv-row', saveItemOrder);
+        });
+    }
+
+    function makeRow(item) {
+        const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true; row.dataset.id = item.id;
+        const hasV = item.variants && item.variants.length > 0;
+        row.innerHTML = `<span class='drag-handle'>⠿</span><input type='text' class='inv-name-input' value="${item.name}"><div style="display:flex; align-items:center; gap:4px;"><span style="color:var(--orange); font-size:0.8rem;">£</span><input type='number' class='inv-price-input' value="${parseFloat(item.price || 0).toFixed(2)}" step="0.01" ${hasV ? 'disabled style="opacity:0.4"' : ''} onfocus="_suppressRender=true" onblur="_suppressRender=false; updateItemPrice('${item.id}', this.value)"></div><input type='checkbox' ${item.is_available ? 'checked' : ''} style='width:auto;' onchange="updateDoc(doc(db,'menu','${item.id}'),{is_available:this.checked})"><button class='opts-btn'>⚙ Options</button><button style='background:none; border:none; color:var(--muted); cursor:pointer;' onclick="confirm('Delete?') && deleteDoc(doc(db,'menu','${item.id}'))">✕</button>`;
+        row.querySelector('.inv-name-input').onfocus = () => _suppressRender = true;
+        row.querySelector('.inv-name-input').onblur = async (e) => { _suppressRender = false; if(e.target.value.trim() !== item.name) await updateDoc(doc(db, "menu", item.id), { name: e.target.value.trim() }); };
+        row.querySelector('.opts-btn').onclick = () => toggleOptsEditor(item, row);
+        return row;
+    }
+
+    function renderCatTags() {
+        const wrap = document.getElementById('cat-tags-list'); wrap.innerHTML = "";
+        allCategories.forEach(cat => {
+            const tag = document.createElement('div'); tag.className = 'cat-tag'; tag.draggable = true; tag.innerText = cat + ' ';
+            const del = document.createElement('button'); del.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;';
+            del.innerText = '×'; del.onclick = (e) => { e.stopPropagation(); const newList = allCategories.filter(c => c !== cat); setDoc(doc(db, "settings", "categories"), { list: newList }); };
+            tag.appendChild(del); wrap.appendChild(tag);
+        });
+        initDragEvents(wrap, '.cat-tag', async (container) => { const newList = [...container.querySelectorAll('.cat-tag')].map(t => t.innerText.replace(' ×', '').trim()); await setDoc(doc(db, "settings", "categories"), { list: newList }); });
+    }
+
+    function renderCatDropdown() { const sel = document.getElementById('new-cat'); if(!sel) return; sel.innerHTML = '<option value="">Select category…</option>'; allCategories.forEach(c => { const o = document.createElement('option'); o.value = c; o.innerText = c; sel.appendChild(o); }); }
+
+    function toggleOptsEditor(item, row) {
+        const next = row.nextElementSibling; if (next && next.classList.contains('opts-editor')) { next.remove(); return; }
+        const editor = document.createElement('div'); editor.className = 'opts-editor'; editor.style.padding = "20px";
+        const refresh = async () => {
+            const snap = await getDoc(doc(db, "menu", item.id)); const d = snap.data();
+            editor.innerHTML = `<h5 style="margin-bottom:10px">Options</h5><div>${(d.subOptions||[]).map(o => `<span style="background:#222; padding:4px 8px; border-radius:4px; margin-right:5px;">${o}<button style="border:none; background:none; color:#888; margin-left:5px;" onclick="updateSubOpt('${item.id}','${o}')">×</button></span>`).join('')}</div><div style="margin-top:10px"><input type='text' id='f-in-${item.id}' style="width:120px"><button class="btn btn-primary" onclick="addSubOpt('${item.id}')" style="padding:5px 10px; margin-left:5px;">+</button></div>`;
+        };
+        window.addSubOpt = async (id) => { const val = document.getElementById('f-in-'+id).value.trim(); if(!val) return; const snap = await getDoc(doc(db, "menu", id)); await updateDoc(doc(db, "menu", id), { subOptions: [...(snap.data().subOptions||[]), val] }); refresh(); };
+        window.updateSubOpt = async (id, opt) => { const snap = await getDoc(doc(db, "menu", id)); await updateDoc(doc(db, "menu", id), { subOptions: snap.data().subOptions.filter(o=>o!==opt) }); refresh(); };
+        row.insertAdjacentElement('afterend', editor); refresh();
     }
 
     function initDragEvents(container, selector, onDropCallback) {
@@ -254,98 +352,33 @@
         rows.forEach((r, i) => b.update(doc(db, "menu", r.dataset.id), { sortOrder: i })); await b.commit();
     }
 
-    window.updatePieStock = async (id, pie, val) => {
-        const num = parseInt(val); if (isNaN(num)) return;
-        const s = await getDoc(doc(db, "settings", "collection_dates"));
-        const dts = s.data().dates.map(d => { if (d.id === id) { d.inventory[pie] = num; return d; } return d; });
-        await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts });
-    };
-
+    window.updateItemPrice = async (id, val) => { const p = parseFloat(val); if(!isNaN(p)) await updateDoc(doc(db, "menu", id), { price: p }); };
+    window.updatePieStock = async (id, pie, val) => { const num = parseInt(val); if (isNaN(num)) return; const s = await getDoc(doc(db, "settings", "collection_dates")); const dts = s.data().dates.map(d => d.id === id ? {...d, inventory: {...d.inventory, [pie]: num}} : d); await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts }); };
     window.toggleDate = async (id) => { const s = await getDoc(doc(db, "settings", "collection_dates")); const dts = s.data().dates.map(d => d.id === id ? {...d, active: !d.active} : d); await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts }); };
     window.deleteDate = async (id) => { if(!confirm("Delete?")) return; const s = await getDoc(doc(db, "settings", "collection_dates")); const dts = s.data().dates.filter(d => d.id !== id); await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts }); };
-
-    function renderMenuList() {
-        if (_suppressRender) return;
-        const list = document.getElementById('menu-list'); list.innerHTML = "";
-        allCategories.forEach(cat => {
-            const items = allMenuItems.filter(i => i.category === cat);
-            const sec = document.createElement('div'); sec.style.marginBottom = "20px";
-            sec.innerHTML = `<div style='color:var(--orange);font-size:0.7rem;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;'>${cat}</div>`;
-            const container = document.createElement('div'); container.className = 'card'; container.style.padding = "0";
-            items.forEach(item => container.appendChild(makeRow(item)));
-            list.appendChild(sec); sec.appendChild(container);
-            initDragEvents(container, '.inv-row', saveItemOrder);
-        });
-    }
-
-    function makeRow(item) {
-        const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true; row.dataset.id = item.id;
-        const hasV = item.variants && item.variants.length > 0;
-        row.innerHTML = `<span class='drag-handle'>⠿</span><input type='text' class='inv-name-input' value="${item.name}"><div style="display:flex; align-items:center; gap:4px;"><span style="color:var(--orange); font-size:0.8rem;">£</span><input type='number' class='inv-price-input' value="${parseFloat(item.price || 0).toFixed(2)}" step="0.01" ${hasV ? 'disabled style="opacity:0.4"' : ''} onfocus="_suppressRender=true" onblur="_suppressRender=false; updateItemPrice('${item.id}', this.value)"></div><input type='checkbox' ${item.is_available ? 'checked' : ''} style='width:auto; accent-color:var(--orange);'><button class='opts-btn'>⚙ Options</button><button style='background:none;border:none;color:var(--muted);cursor:pointer;'>✕</button>`;
-        const [nameInp, priceInp, availInp] = row.querySelectorAll('input');
-        nameInp.onfocus = () => _suppressRender = true;
-        nameInp.onblur = async () => { _suppressRender = false; if(nameInp.value.trim() !== item.name) await updateDoc(doc(db, "menu", item.id), { name: nameInp.value.trim() }); };
-        availInp.onchange = async () => await updateDoc(doc(db, "menu", item.id), { is_available: availInp.checked });
-        row.querySelector('.opts-btn').onclick = () => toggleOptsEditor(item, row);
-        row.querySelector('button:last-child').onclick = () => confirm("Delete?") && deleteDoc(doc(db, "menu", item.id));
-        return row;
-    }
-
-    window.updateItemPrice = async (id, val) => { const p = parseFloat(val); if(!isNaN(p)) await updateDoc(doc(db, "menu", id), { price: p }); };
-
-    function renderCatTags() {
-        const wrap = document.getElementById('cat-tags-list'); wrap.innerHTML = "";
-        allCategories.forEach(cat => {
-            const tag = document.createElement('div'); tag.className = 'cat-tag'; tag.draggable = true; tag.innerText = cat + ' ';
-            const del = document.createElement('button'); del.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;';
-            del.innerText = '×'; del.onclick = (e) => { e.stopPropagation(); const newList = allCategories.filter(c => c !== cat); setDoc(doc(db, "settings", "categories"), { list: newList }); };
-            tag.appendChild(del); wrap.appendChild(tag);
-        });
-        initDragEvents(wrap, '.cat-tag', async (container) => { const newList = [...container.querySelectorAll('.cat-tag')].map(t => t.innerText.replace(' ×', '').trim()); await setDoc(doc(db, "settings", "categories"), { list: newList }); });
-    }
-
-    function renderCatDropdown() { const sel = document.getElementById('new-cat'); sel.innerHTML = '<option value="">Select category…</option>'; allCategories.forEach(c => { const o = document.createElement('option'); o.value = c; o.innerText = c; sel.appendChild(o); }); }
-
-    function toggleOptsEditor(item, row) {
-        const next = row.nextElementSibling; if (next && next.classList.contains('opts-editor')) { next.remove(); return; }
-        const editor = document.createElement('div'); editor.className = 'opts-editor';
-        const refresh = async () => {
-            const snap = await getDoc(doc(db, "menu", item.id)); const d = snap.data();
-            editor.innerHTML = `<h5>Free Options</h5><div>${(d.subOptions||[]).map(o => `<span class='opts-tag'>${o}<button onclick="updateSubOpt('${item.id}','${o}')">×</button></span>`).join('')}</div><div class='opts-add-row'><input type='text' class='f-in'><button class='btn btn-primary f-add'>+ Add</button></div><br><h5>Variants</h5><div>${(d.variants||[]).map(v => `<span class='opts-tag'>${v.label} £${v.price}<button onclick="updateVariant('${item.id}','${v.label}')">×</button></span>`).join('')}</div><div class='opts-add-row'><input type='text' class='v-l'><input type='number' class='v-p' placeholder='£'><button class='btn btn-primary v-add'>+ Add</button></div>`;
-            editor.querySelector('.f-add').onclick = async () => { const val = editor.querySelector('.f-in').value.trim(); if(!val) return; await updateDoc(doc(db, "menu", item.id), { subOptions: [...(d.subOptions||[]), val] }); refresh(); };
-            editor.querySelector('.v-add').onclick = async () => { const l = editor.querySelector('.v-l').value.trim(); const p = parseFloat(editor.querySelector('.v-p').value); if(!l || isNaN(p)) return; await updateDoc(doc(db, "menu", item.id), { variants: [...(d.variants||[]), {label:l, price:p}] }); refresh(); };
-        };
-        window.updateSubOpt = async (id, opt) => { const snap = await getDoc(doc(db, "menu", id)); await updateDoc(doc(db, "menu", id), { subOptions: snap.data().subOptions.filter(o=>o!==opt) }); refresh(); };
-        window.updateVariant = async (id, lab) => { const snap = await getDoc(doc(db, "menu", id)); await updateDoc(doc(db, "menu", id), { variants: snap.data().variants.filter(v=>v.label!==lab) }); refresh(); };
-        row.insertAdjacentElement('afterend', editor); refresh();
-    }
-
-    async function addItem() { const name = document.getElementById('new-name').value.trim(); const price = parseFloat(document.getElementById('new-price').value); const category = document.getElementById('new-cat').value; if (!name || isNaN(price) || !category) return; await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: 999, subOptions: [], variants: [] }); document.getElementById('new-name').value=""; document.getElementById('new-price').value=""; }
-    function addCategory() { const name = document.getElementById('new-cat-name').value.toUpperCase().trim(); if (!name || allCategories.includes(name)) return; setDoc(doc(db, "settings", "categories"), { list: [...allCategories, name] }); document.getElementById('new-cat-name').value=""; }
-    async function archivePies() { if (!confirm("Archive?")) return; const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending"))); const b = writeBatch(db); snap.forEach(d => b.update(d.ref, { status: "archived" })); await b.commit(); alert("Archived!"); }
 
     window.generatePiePDF = async (dateLabel) => {
         const { jsPDF } = window.jspdf; const pdf = new jsPDF();
         const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("collectionDate", "==", dateLabel), where("paymentStatus", "==", "PAID"), where("status","==","pending")));
-        const rows = []; snap.forEach(d => { const data = d.data(); rows.push([data.customer?.name || '', data.items.map(i => i.name + (i.variantLabel ? ' (' + i.variantLabel + ')' : '')).join(', '), data.customer?.msg || '-']); });
-        pdf.text("Pie Prep Sheet: " + dateLabel, 14, 15); pdf.autoTable({ head: [['Customer', 'Items', 'Note']], body: rows });
-        pdf.save(`Orders_${dateLabel.replace(/ /g, '_')}.pdf`);
+        const rows = snap.docs.map(d => [d.data().customer?.name || '', d.data().items.map(i => i.name).join(', '), d.data().customer?.msg || '-']);
+        pdf.text("Order Sheet: " + dateLabel, 14, 15); pdf.autoTable({ head: [['Customer', 'Items', 'Notes']], body: rows });
+        pdf.save(`Orders_${dateLabel}.pdf`);
     }
 
     window.generateTallyPDF = async (dateLabel) => {
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF();
+        const { jsPDF } = window.jspdf; const pdf = new jsPDF();
         const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("collectionDate", "==", dateLabel), where("paymentStatus", "==", "PAID"), where("status", "==", "pending")));
         const totals = {}; let grandTotal = 0;
         snap.forEach(d => { d.data().items.forEach(item => { totals[item.name] = (totals[item.name] || 0) + 1; grandTotal++; }); });
-        const rows = Object.entries(totals).sort((a, b) => a[0].localeCompare(b[0])).map(([name, qty]) => [name, qty]);
-        rows.push([{ content: 'TOTAL PIES TO BAKE', styles: { fontStyle: 'bold', fillColor: [244, 113, 43], textColor: [255,255,255] } }, { content: grandTotal, styles: { fontStyle: 'bold', fillColor: [244, 113, 43], textColor: [255,255,255] } }]);
-        pdf.setFontSize(18); pdf.text("Pie Order Sheet", 14, 15); pdf.setFontSize(11); pdf.text(`Collection Date: ${dateLabel}`, 14, 22);
-        pdf.autoTable({ startY: 30, head: [['Pie Variety', 'Quantity Needed']], body: rows, theme: 'striped', headStyles: { fillColor: [31, 31, 31] }, columnStyles: { 1: { halign: 'center', fontSize: 14, fontStyle: 'bold' } } });
-        pdf.save(`Pies_${dateLabel.replace(/ /g, '_')}.pdf`);
+        const rows = Object.entries(totals).map(([name, qty]) => [name, qty]);
+        rows.push([{ content: 'TOTAL PIES', styles: { fontStyle: 'bold', fillColor: [244, 113, 43], textColor: [255,255,255] } }, { content: grandTotal, styles: { fontStyle: 'bold', fillColor: [244, 113, 43], textColor: [255,255,255] } }]);
+        pdf.text("Tally: " + dateLabel, 14, 15); pdf.autoTable({ head: [['Variety', 'Qty']], body: rows });
+        pdf.save(`Tally_${dateLabel}.pdf`);
     }
 
-    async function addCollectionDate() { const dateStr = document.getElementById('new-pie-date').value.trim(); const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm"; if(!dateStr) return alert("Enter a date"); const pieItems = allMenuItems.filter(i => i.category === 'PIES'); const initialInventory = {}; pieItems.forEach(p => initialInventory[p.name] = 0); const snap = await getDoc(doc(db, "settings", "collection_dates")); const cur = snap.data()?.dates || []; const updated = [...cur, { id: Date.now().toString(), label: dateStr, times: times, inventory: initialInventory, active: true }]; await setDoc(doc(db, "settings", "collection_dates"), { dates: updated }); document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = ""; }
+    async function addItem() { const name = document.getElementById('new-name').value.trim(); const price = parseFloat(document.getElementById('new-price').value); const category = document.getElementById('new-cat').value; if (!name || isNaN(price) || !category) return; await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: 999, subOptions: [], variants: [] }); document.getElementById('new-name').value=""; document.getElementById('new-price').value=""; }
+    function addCategory() { const name = document.getElementById('new-cat-name').value.toUpperCase().trim(); if (!name || allCategories.includes(name)) return; setDoc(doc(db, "settings", "categories"), { list: [...allCategories, name] }); document.getElementById('new-cat-name').value=""; }
+    async function addCollectionDate() { const dateStr = document.getElementById('new-pie-date').value.trim(); const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm"; if(!dateStr) return alert("Enter a date"); const pies = allMenuItems.filter(i => i.category === 'PIES'); const inv = {}; pies.forEach(p => inv[p.name] = 0); const snap = await getDoc(doc(db, "settings", "collection_dates")); const updated = [...(snap.data()?.dates || []), { id: Date.now().toString(), label: dateStr, times, inventory: inv, active: true }]; await setDoc(doc(db, "settings", "collection_dates"), { dates: updated }); document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = ""; }
 </script>
 </body>
 </html>
