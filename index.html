@@ -37,20 +37,13 @@
         .inv-price-input { width: 70px; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--orange); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; text-align: right; }
         .opts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
 
-        /* FIXED: Stock Input Styling */
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
-        .stock-input {
-            width: 60px !important;
-            padding: 4px 8px !important;
-            text-align: center !important;
-        }
+        input[type=number] { -moz-appearance: textfield; }
+        .stock-input { width: 60px !important; padding: 4px 8px !important; text-align: center !important; }
     </style>
 </head>
 <body>
@@ -162,8 +155,7 @@
 
         onSnapshot(doc(db, "settings", "categories"), snap => {
             allCategories = snap.data()?.list || [];
-            renderCatTags();
-            renderCatDropdown();
+            renderCatTags(); renderCatDropdown();
             if (!_suppressRender) renderMenuList();
         });
 
@@ -196,7 +188,6 @@
     async function renderDatesAdmin(dates) {
         const wrap = document.getElementById('dates-list-admin'); wrap.innerHTML = "";
         if (!allMenuItems.length) return;
-
         const orderSnap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("paymentStatus", "==", "PAID")));
         const allPreOrders = orderSnap.docs.map(doc => doc.data());
         const piesFromMenu = allMenuItems.filter(i => i.category === 'PIES');
@@ -313,8 +304,23 @@
 
     window.updateItemPrice = async (id, val) => { const p = parseFloat(val); if(!isNaN(p)) await updateDoc(doc(db, "menu", id), { price: p }); };
     window.updatePieStock = async (id, pie, val) => { const num = parseInt(val); if (isNaN(num)) return; const s = await getDoc(doc(db, "settings", "collection_dates")); const dts = s.data().dates.map(d => d.id === id ? {...d, inventory: {...d.inventory, [pie]: num}} : d); await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts }); };
-    window.toggleDate = async (id) => { const s = await getDoc(doc(db, "settings", "collection_dates")); const dts = s.data().dates.map(d => d.id === id ? {...d, active: !d.active} : d); await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts }); };
-    window.deleteDate = async (id) => { if(!confirm("Delete?")) return; const s = await getDoc(doc(db, "settings", "collection_dates")); const dts = s.data().dates.filter(d => d.id !== id); await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts }); };
+    
+    window.toggleDate = async (id) => { 
+        _suppressRender = true;
+        const s = await getDoc(doc(db, "settings", "collection_dates")); 
+        const dts = s.data().dates.map(d => d.id === id ? {...d, active: !d.active} : d); 
+        await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts });
+        _suppressRender = false;
+    };
+
+    window.deleteDate = async (id) => { 
+        if(!confirm("Delete?")) return; 
+        _suppressRender = true;
+        const s = await getDoc(doc(db, "settings", "collection_dates")); 
+        const dts = s.data().dates.filter(d => d.id !== id); 
+        await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts });
+        _suppressRender = false;
+    };
 
     window.generatePiePDF = async (dateLabel) => {
         const { jsPDF } = window.jspdf; const pdf = new jsPDF();
