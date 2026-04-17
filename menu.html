@@ -10,9 +10,27 @@
         body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; }
         header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: center; background: var(--bg); position: sticky; top: 0; z-index: 100; }
         .logo-header { height: 45px; width: auto; cursor: pointer; }
-        #landing-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px; text-align: center;}
-        .logo-main { width: 220px; height: auto; margin-bottom: 10px; }
-        .choice-btn { width: 85%; max-width: 320px; padding: 20px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: white; cursor: pointer; font-family: 'Playfair Display'; font-size: 1.2rem; transition: 0.2s; text-align: center; min-height: 75px; }
+        
+        /* FIXED: Changed to absolute and min-height to allow scrolling on mobile */
+        #landing-screen { 
+            position: absolute; 
+            inset: 0; 
+            min-height: 100vh; 
+            background: var(--bg); 
+            z-index: 2000; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; /* Start from top to allow natural scroll */
+            gap: 20px; 
+            padding: 60px 20px; 
+            text-align: center;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .logo-main { width: 220px; height: auto; margin-bottom: 10px; flex-shrink: 0; }
+        .choice-btn { width: 85%; max-width: 320px; padding: 20px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: white; cursor: pointer; font-family: 'Playfair Display'; font-size: 1.2rem; transition: 0.2s; text-align: center; min-height: 75px; flex-shrink: 0; }
         .choice-btn:hover:not(:disabled) { border-color: var(--orange); }
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .container { max-width: 800px; margin: 0 auto; padding: 20px; }
@@ -38,21 +56,25 @@
         .opt-btn:hover { border-color: var(--orange); }
         .opt-cancel { background: none; border: 1px solid #333; color: #666; width: 100%; padding: 12px; border-radius: 10px; cursor: pointer; font-family: 'DM Sans'; font-size: 0.88rem; }
         .hidden { display: none !important; }
+        
+        #date-selection { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-bottom: 40px; }
+        #landing-buttons { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 20px; min-height: 200px; }
     </style>
 </head>
 <body>
 
     <div id="landing-screen">
         <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" class="logo-main">
-        <div id="landing-buttons" style="min-height: 200px; display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%;">
+        
+        <div id="landing-buttons">
             <button id="pie-trigger" class="choice-btn">Pre-Order Pies</button>
             <button id="menu-btn" class="choice-btn" disabled style="opacity: 0;">...</button>
         </div>
 
         <div id="date-selection" class="hidden">
-            <h3 style="color:var(--orange); font-family:'Playfair Display';">Select Collection Date</h3>
-            <div id="date-buttons"></div>
-            <button class="choice-btn" style="margin-top:20px; font-size:1rem; padding:10px" onclick="location.reload()">Back</button>
+            <h3 style="color:var(--orange); font-family:'Playfair Display'; margin-bottom: 10px;">Select Collection Date</h3>
+            <div id="date-buttons" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px;"></div>
+            <button class="choice-btn" style="margin-top:20px; font-size:1rem; padding:10px; min-height: 50px;" onclick="location.reload()">Back</button>
         </div>
     </div>
 
@@ -128,8 +150,11 @@
         };
 
         function startFlow(mode) {
-            currentMode = mode; document.getElementById('landing-screen').style.display = 'none';
-            document.getElementById('main-content').classList.remove('hidden'); loadMenu();
+            currentMode = mode; 
+            document.getElementById('landing-screen').style.display = 'none';
+            window.scrollTo(0,0);
+            document.getElementById('main-content').classList.remove('hidden'); 
+            loadMenu();
         }
 
         function addToCart(n, p, v, s) {
@@ -221,7 +246,7 @@
 
                 display.innerHTML = `
                     <button class="choice-btn" 
-                        style="margin-bottom:20px; font-size:0.9rem; padding:10px 15px; width:auto; display:block; background:none; border:1px solid #333; color:#888;" 
+                        style="margin-bottom:20px; font-size:0.9rem; padding:10px 15px; width:auto; display:block; background:none; border:1px solid #333; color:#888; min-height: auto;" 
                         onclick="${backAction}">
                         ← Back
                     </button>
