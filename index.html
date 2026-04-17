@@ -10,7 +10,7 @@
     <style>
         :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --surface-2: #1F1F1F; --text: #F0EDE8; --muted: #888; --green: #2ecc71; --red: #e74c3c; --border: rgba(255,255,255,0.08); }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 60px; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 60px; text-align: left; }
         .app-header { background: var(--surface); padding: 10px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .logo-admin { height: 40px; width: auto; }
         .tab-nav { display: flex; margin: 20px 32px 0; border-bottom: 1px solid var(--border); }
@@ -28,15 +28,29 @@
         .hidden { display: none !important; }
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: none; align-items: center; justify-content: center; z-index: 9999; }
         .status-bar { margin: 20px 32px; background: var(--surface); border-radius: 14px; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
-        .order-items { list-style: none; margin: 8px 0; font-size: 0.88rem; color: var(--muted); }
         .cat-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; cursor: grab; font-size: 0.85rem; user-select: none; }
         .cat-tag.dragging { opacity: 0.5; border: 1px dashed var(--orange); }
-        .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 12px; transition: background 0.2s; }
+        .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 12px; transition: background 0.2s; text-align: left; }
         .inv-row.dragging { opacity: 0.4; background: var(--orange); }
         .drag-handle { color: var(--muted); cursor: grab; flex-shrink: 0; }
         .inv-name-input { flex: 2; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; }
         .inv-price-input { width: 70px; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--orange); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; text-align: right; }
         .opts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
+
+        /* FIXED: Stock Input Styling */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .stock-input {
+            width: 60px !important;
+            padding: 4px 8px !important;
+            text-align: center !important;
+        }
     </style>
 </head>
 <body>
@@ -59,7 +73,7 @@
     </header>
 
     <div class="status-bar">
-        <div style="font-size: 1.1rem;">Shop Status: <strong id="status-text">...</strong></div>
+        <div style="font-size: 1.1rem; text-align: left;">Shop Status: <strong id="status-text">...</strong></div>
         <button class="btn btn-primary" id="toggle-shop-btn">Toggle Shop Status</button>
     </div>
 
@@ -82,8 +96,6 @@
                     <button class="btn btn-primary" id="add-date-btn">Add Date</button>
                 </div>
                 <div id="dates-list-admin"></div>
-                <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
-                <button class="btn" style="width:100%;background:#333;color:white;" id="pie-archive-btn">Archive All Paid Pre-Orders</button>
             </div>
         </div>
 
@@ -146,11 +158,12 @@
             document.getElementById('status-text').style.color = d.is_closed ? "var(--red)" : "var(--green)";
         });
 
-        onSnapshot(doc(db, "settings", "collection_dates"), snap => { renderDatesAdmin(snap.data()?.dates || []); });
+        onSnapshot(doc(db, "settings", "collection_dates"), snap => { if (!_suppressRender) renderDatesAdmin(snap.data()?.dates || []); });
 
         onSnapshot(doc(db, "settings", "categories"), snap => {
             allCategories = snap.data()?.list || [];
-            renderCatTags(); renderCatDropdown();
+            renderCatTags();
+            renderCatDropdown();
             if (!_suppressRender) renderMenuList();
         });
 
@@ -158,16 +171,17 @@
             allMenuItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             allMenuItems.sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999));
             if (!_suppressRender) renderMenuList();
-            getDoc(doc(db, "settings", "collection_dates")).then(s => { if(s.exists()) renderDatesAdmin(s.data().dates); });
+            getDoc(doc(db, "settings", "collection_dates")).then(s => { if(s.exists() && !_suppressRender) renderDatesAdmin(s.data().dates); });
         });
 
-        onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID"), orderBy("createdAt", "desc")), renderOrders);
+        onSnapshot(query(collection(db, "orders"), where("status", "==", "pending"), where("paymentStatus", "==", "PAID"), orderBy("createdAt", "desc")), snap => {
+            if (!_suppressRender) renderOrders(snap);
+        });
 
         document.getElementById('toggle-shop-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window._isClosed });
         document.getElementById('add-date-btn').onclick = addCollectionDate;
         document.getElementById('add-cat-btn').onclick = addCategory;
         document.getElementById('add-item-btn').onclick = addItem;
-        document.getElementById('pie-archive-btn').onclick = archivePies;
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.onclick = () => {
@@ -182,6 +196,7 @@
     async function renderDatesAdmin(dates) {
         const wrap = document.getElementById('dates-list-admin'); wrap.innerHTML = "";
         if (!allMenuItems.length) return;
+
         const orderSnap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("paymentStatus", "==", "PAID")));
         const allPreOrders = orderSnap.docs.map(doc => doc.data());
         const piesFromMenu = allMenuItems.filter(i => i.category === 'PIES');
@@ -195,7 +210,11 @@
                             <div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase;">Flavor</div><div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; text-align:center;">Sold</div><div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; text-align:right;">Stock</div>`;
             piesFromMenu.forEach(p => {
                 const stock = d.inventory[p.name] || 0;
-                invHtml += `<span>${p.name}:</span><span style="color:var(--orange); text-align:center;">${pieTotals[p.name] || 0}</span><input type="number" value="${stock}" style="width:50px; text-align:right; background:#000; border:1px solid #444; color:#fff;" onchange="updatePieStock('${d.id}', '${p.name}', this.value)">`;
+                invHtml += `<span>${p.name}:</span><span style="color:var(--orange); text-align:center;">${pieTotals[p.name] || 0}</span>
+                <input type="number" value="${stock}" class="stock-input" 
+                       onfocus="_suppressRender=true" 
+                       onblur="_suppressRender=false" 
+                       onchange="updatePieStock('${d.id}', '${p.name}', this.value)">`;
             });
             invHtml += `</div>`;
 
@@ -210,7 +229,7 @@
         snap.forEach(d => {
             const data = d.data(); if (data.type !== 'PICKUP') return;
             const div = document.createElement('div'); div.className = 'order-card';
-            div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${d.id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div><div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong><ul class='order-items'>${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul></div><div style='display:flex;gap:10px'><button class='btn btn-ready'>Ready</button><button class='btn btn-cancel'>Cancel</button></div>`;
+            div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${d.id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div><div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong><ul style='list-style:none; font-size:0.8rem; color:var(--muted); text-align:left;'>${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul></div><div style='display:flex;gap:10px'><button class='btn btn-ready'>Ready</button><button class='btn btn-cancel'>Cancel</button></div>`;
             div.querySelector('.btn-ready').onclick = () => updateDoc(doc(db, "orders", d.id), { status: 'ready' });
             div.querySelector('.btn-cancel').onclick = () => confirm('Cancel?') && updateDoc(doc(db, "orders", d.id), { status: 'cancelled' });
             live.appendChild(div);
@@ -318,7 +337,6 @@
 
     async function addItem() { const name = document.getElementById('new-name').value.trim(); const price = parseFloat(document.getElementById('new-price').value); const category = document.getElementById('new-cat').value; if (!name || isNaN(price) || !category) return; await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: 999, subOptions: [], variants: [] }); document.getElementById('new-name').value=""; document.getElementById('new-price').value=""; }
     function addCategory() { const name = document.getElementById('new-cat-name').value.toUpperCase().trim(); if (!name || allCategories.includes(name)) return; setDoc(doc(db, "settings", "categories"), { list: [...allCategories, name] }); document.getElementById('new-cat-name').value=""; }
-    async function archivePies() { if (!confirm("Archive?")) return; const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("status", "==", "pending"))); const b = writeBatch(db); snap.forEach(d => b.update(d.ref, { status: "archived" })); await b.commit(); alert("Archived!"); }
     async function addCollectionDate() { const dateStr = document.getElementById('new-pie-date').value.trim(); const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm"; if(!dateStr) return alert("Enter a date"); const pies = allMenuItems.filter(i => i.category === 'PIES'); const inv = {}; pies.forEach(p => inv[p.name] = 0); const snap = await getDoc(doc(db, "settings", "collection_dates")); const updated = [...(snap.data()?.dates || []), { id: Date.now().toString(), label: dateStr, times, inventory: inv, active: true }]; await setDoc(doc(db, "settings", "collection_dates"), { dates: updated }); document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = ""; }
 </script>
 </body>
