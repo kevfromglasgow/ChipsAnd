@@ -10,26 +10,51 @@
     <style>
         :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --surface-2: #1F1F1F; --text: #F0EDE8; --muted: #888; --green: #2ecc71; --red: #e74c3c; --border: rgba(255,255,255,0.08); }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 60px; }
+        
+        body { 
+            font-family: 'DM Sans', sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            padding-bottom: 60px; 
+            text-align: left; 
+        }
+
         .app-header { background: var(--surface); padding: 10px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .logo-admin { height: 40px; width: auto; }
-        .tab-nav { display: flex; margin: 20px 32px 0; border-bottom: 1px solid var(--border); overflow-x: auto; }
+        
+        .tab-nav { display: flex; margin: 20px 32px 0; border-bottom: 1px solid var(--border); overflow-x: auto; justify-content: flex-start; }
         .tab-btn { background: none; border: none; color: var(--muted); padding: 14px 22px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
         .tab-btn.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
-        .content-area { padding: 24px 32px; max-width: 900px; margin: 0 auto; }
-        .card { background: var(--surface); border-radius: 16px; padding: 22px; margin-bottom: 18px; border: 1px solid var(--border); }
-        .order-card { background: var(--surface-2); border-radius: 14px; padding: 18px; margin-bottom: 12px; }
+        
+        .content-area { padding: 24px 32px; max-width: 900px; margin: 0 auto; text-align: left; }
+        .card { background: var(--surface); border-radius: 16px; padding: 22px; margin-bottom: 18px; border: 1px solid var(--border); text-align: left; }
+        
+        .order-card { background: var(--surface-2); border-radius: 14px; padding: 18px; margin-bottom: 12px; text-align: left; }
         .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
         .btn-primary { background: var(--orange); color: white; }
         .btn-ready { background: var(--green); color: white; }
         .btn-cancel { background: var(--red); color: white; }
+        
         input, select, textarea { background: var(--surface-2); border: 1px solid var(--border); color: white; padding: 10px 12px; border-radius: 8px; width: 100%; font-family: 'DM Sans', sans-serif; }
         .hidden { display: none !important; }
+        
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: none; align-items: center; justify-content: center; z-index: 9999; }
         .status-bar { margin: 20px 32px; background: var(--surface); border-radius: 14px; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
-        .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 12px; }
-        .inv-row.dragging { opacity: 0.4; background: var(--orange); }
+        
+        .inv-row { 
+            display: flex; 
+            align-items: center; 
+            padding: 12px 16px; 
+            border-bottom: 1px solid var(--border); 
+            gap: 15px; 
+            text-align: left;
+        }
+        .inv-row:last-child { border-bottom: none; }
         .stats-tile { background: var(--surface-2); text-align: center; padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px; border-bottom: 1px solid var(--border); }
+        td { padding: 12px 10px; border-bottom: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -52,7 +77,7 @@
     </header>
 
     <div class="status-bar">
-        <div style="font-size: 1.1rem;">Shop Status: <strong id="status-text">...</strong></div>
+        <div style="font-size: 1.1rem; text-align: left;">Shop Status: <strong id="status-text">...</strong></div>
         <button class="btn btn-primary" id="toggle-shop-btn">Toggle Shop Status</button>
     </div>
 
@@ -76,7 +101,6 @@
                 </div>
                 <div id="dates-list-admin"></div>
             </div>
-            <div id="pie-list"></div>
         </div>
 
         <div id="tab-menu" class="tab-panel hidden">
@@ -112,12 +136,12 @@
                 </div>
 
                 <div class="card" style="background:transparent; padding:0; border:none;">
-                    <table style="width:100%; border-collapse: collapse;">
+                    <table>
                         <thead>
-                            <tr style="text-align:left; color:var(--muted); border-bottom:1px solid var(--border); font-size:0.8rem;">
-                                <th style="padding:12px;">FLAVOR</th>
-                                <th style="padding:12px; text-align:center;">SOLD</th>
-                                <th style="padding:12px; text-align:right;">SUBTOTAL</th>
+                            <tr>
+                                <th>FLAVOR</th>
+                                <th style="text-align:center;">SOLD</th>
+                                <th style="text-align:right;">SUBTOTAL</th>
                             </tr>
                         </thead>
                         <tbody id="insights-rows"></tbody>
@@ -232,7 +256,6 @@
             const pieItem = allMenuItems.find(i => i.name === name);
             const price = pieItem ? pieItem.price : 0;
             const row = document.createElement('tr');
-            row.style.borderBottom = "1px solid var(--border)";
             row.innerHTML = `<td style="padding:12px;">${name}</td><td style="padding:12px; text-align:center; font-weight:bold;">${qty}</td><td style="padding:12px; text-align:right; color:var(--orange);">£${(qty * price).toFixed(2)}</td>`;
             tbody.appendChild(row);
         });
@@ -261,7 +284,7 @@
             invHtml += `</div>`;
 
             const div = document.createElement('div'); div.className = 'card'; div.style.background = "var(--surface-2)";
-            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start;"><div><strong>${d.label}</strong><br><span style='font-size:0.75rem;color:var(--orange)'>${d.times} — ${dateOrders.length} Paid Orders</span></div><div style='display:flex; gap:8px;'><button class='btn' style='background:#34495e; padding: 5px 10px; font-size:0.7rem;' onclick="generatePiePDF('${d.label}')">📄 Orders</button><button class='btn' style='background:#673ab7; padding: 5px 10px; font-size:0.7rem;' onclick="generateTallyPDF('${d.label}')">📊 Tally</button><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem; padding: 5px 10px;' onclick="toggleDate('${d.id}')">${d.active ? 'Online' : 'Hidden'}</button><button class='btn btn-cancel' style='padding:5px 10px;' onclick="deleteDate('${d.id}')">✕</button></div></div>${invHtml}`;
+            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start; text-align:left;"><div><strong>${d.label}</strong><br><span style='font-size:0.75rem;color:var(--orange)'>${d.times} — ${dateOrders.length} Paid Orders</span></div><div style='display:flex; gap:8px;'><button class='btn' style='background:#34495e; padding: 5px 10px; font-size:0.7rem;' onclick="generatePiePDF('${d.label}')">📄 Orders</button><button class='btn' style='background:#673ab7; padding: 5px 10px; font-size:0.7rem;' onclick="generateTallyPDF('${d.label}')">📊 Tally</button><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem; padding: 5px 10px;' onclick="toggleDate('${d.id}')">${d.active ? 'Online' : 'Hidden'}</button><button class='btn btn-cancel' style='padding:5px 10px;' onclick="deleteDate('${d.id}')">✕</button></div></div>${invHtml}`;
             wrap.appendChild(div);
         });
     }
@@ -273,7 +296,7 @@
             if (data.type === 'PICKUP') {
                 const div = document.createElement('div'); div.className = 'order-card';
                 const items = data.items.map(i => `<li>${i.name}</li>`).join('');
-                div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div><div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong><ul style='list-style:none; font-size:0.8rem; color:var(--muted)'>${items}</ul></div><div style='display:flex;gap:10px'><button class='btn btn-ready'>Ready</button><button class='btn btn-cancel'>Cancel</button></div>`;
+                div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div><div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong><ul style='list-style:none; font-size:0.8rem; color:var(--muted); text-align:left;'>${items}</ul></div><div style='display:flex;gap:10px'><button class='btn btn-ready'>Ready</button><button class='btn btn-cancel'>Cancel</button></div>`;
                 div.querySelector('.btn-ready').onclick = () => updateDoc(doc(db, "orders", id), { status: 'ready' });
                 div.querySelector('.btn-cancel').onclick = () => confirm('Cancel?') && updateDoc(doc(db, "orders", id), { status: 'cancelled' });
                 live.appendChild(div);
@@ -285,16 +308,28 @@
         const list = document.getElementById('menu-list'); list.innerHTML = "";
         allCategories.forEach(cat => {
             const items = allMenuItems.filter(i => i.category === cat);
-            const sec = document.createElement('div'); sec.innerHTML = `<div style='color:var(--orange); font-size:0.7rem; margin: 20px 0 10px; text-transform:uppercase;'>${cat}</div>`;
+            const sec = document.createElement('div'); sec.innerHTML = `<div style='color:var(--orange); font-size:0.7rem; margin: 20px 0 10px; text-transform:uppercase; text-align:left;'>${cat}</div>`;
             const container = document.createElement('div'); container.className = 'card'; container.style.padding = "0";
             items.forEach(item => {
                 const row = document.createElement('div'); row.className = 'inv-row'; row.dataset.id = item.id;
-                row.innerHTML = `<span style='color:var(--muted)'>⠿</span><span style='flex:1'>${item.name}</span><span style='color:var(--orange)'>£${parseFloat(item.price).toFixed(2)}</span><input type='checkbox' ${item.is_available ? 'checked' : ''} onchange="updateDoc(doc(db,'menu','${item.id}'),{is_available:this.checked})"><button style='background:none; border:none; color:var(--red); cursor:pointer;' onclick="confirm('Delete?') && deleteDoc(doc(db,'menu','${item.id}'))">✕</button>`;
+                row.innerHTML = `<span style='color:var(--muted)'>⠿</span><span style='flex:1; text-align:left;'>${item.name}</span><span style='color:var(--orange)'>£${parseFloat(item.price).toFixed(2)}</span><input type='checkbox' ${item.is_available ? 'checked' : ''} style='width:auto;' onchange="updateDoc(doc(db,'menu','${item.id}'),{is_available:this.checked})"><button style='background:none; border:none; color:var(--red); cursor:pointer;' onclick="confirm('Delete?') && deleteDoc(doc(db,'menu','${item.id}'))">✕</button>`;
                 container.appendChild(row);
             });
             sec.appendChild(container); list.appendChild(sec);
         });
     }
+
+    function renderCatTags() {
+        const wrap = document.getElementById('cat-tags-list'); wrap.innerHTML = "";
+        allCategories.forEach(cat => {
+            const tag = document.createElement('div'); 
+            tag.style.cssText = "background:var(--surface-2); padding:6px 12px; border-radius:20px; font-size:0.8rem; border:1px solid var(--border);";
+            tag.innerHTML = `${cat} <span style='cursor:pointer; margin-left:8px; color:var(--muted);' onclick="deleteCategory('${cat}')">✕</span>`;
+            wrap.appendChild(tag);
+        });
+    }
+
+    window.deleteCategory = (cat) => { if(confirm("Delete category?")) { const list = allCategories.filter(c => c !== cat); setDoc(doc(db, "settings", "categories"), { list }); }};
 
     window.updatePieStock = async (id, pie, val) => {
         const num = parseInt(val); if (isNaN(num)) return;
@@ -326,7 +361,18 @@
         pdf.save(`Tally_${dateLabel}.pdf`);
     }
 
-    async function addCollectionDate() { const dateStr = document.getElementById('new-pie-date').value.trim(); if(!dateStr) return; const pieItems = allMenuItems.filter(i => i.category === 'PIES'); const inv = {}; pieItems.forEach(p => inv[p.name] = 0); const s = await getDoc(doc(db, "settings", "collection_dates")); const updated = [...(s.data()?.dates || []), { id: Date.now().toString(), label: dateStr, times: document.getElementById('new-pie-times').value, inventory: inv, active: true }]; await setDoc(doc(db, "settings", "collection_dates"), { dates: updated }); }
+    async function addCollectionDate() { 
+        const dateStr = document.getElementById('new-pie-date').value.trim(); 
+        if(!dateStr) return; 
+        const pieItems = allMenuItems.filter(i => i.category === 'PIES'); 
+        const inv = {}; 
+        pieItems.forEach(p => inv[p.name] = 0); 
+        const s = await getDoc(doc(db, "settings", "collection_dates")); 
+        const updated = [...(s.data()?.dates || []), { id: Date.now().toString(), label: dateStr, times: document.getElementById('new-pie-times').value, inventory: inv, active: true }]; 
+        await setDoc(doc(db, "settings", "collection_dates"), { dates: updated }); 
+        document.getElementById('new-pie-date').value = "";
+        document.getElementById('new-pie-times').value = "";
+    }
 </script>
 </body>
 </html>
