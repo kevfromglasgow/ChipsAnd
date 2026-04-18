@@ -331,9 +331,9 @@
     window.generatePiePDF = async (dateLabel) => {
         const { jsPDF } = window.jspdf; const pdf = new jsPDF();
         const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("collectionDate", "==", dateLabel), where("paymentStatus", "==", "PAID"), where("status","==","pending")));
-        const rows = snap.docs.map(d => [d.data().customer?.name || '', d.data().items.map(i => i.name).join(', '), d.data().customer?.msg || '-']);
-        pdf.text("Order Sheet: " + dateLabel, 14, 15); pdf.autoTable({ head: [['Customer', 'Items', 'Notes']], body: rows });
-        pdf.save(`Orders_${dateLabel}.pdf`);
+        const rows = snap.docs.map(d => { const counts = {}; d.data().items.forEach(i => counts[i.name] = (counts[i.name] || 0) + 1); return [d.data().customer?.name || '', Object.entries(counts).map(([n, c]) => c > 1 ? `${n} (x${c})` : n).join(', '), d.data().customer?.msg || '-']; });
+        pdf.text("Order Sheet: " + dateLabel, 14, 15); pdf.autoTable({ head: [['Customer', 'Items', 'Notes']], body: rows, theme: 'striped', headStyles: { fillColor: [31, 31, 31] } });
+        pdf.save(`Orders_${dateLabel.replace(/ /g, '_')}.pdf`);
     }
 
     window.generateTallyPDF = async (dateLabel) => {
