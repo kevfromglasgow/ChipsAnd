@@ -11,44 +11,58 @@
         :root { --orange: #F4712B; --bg: #0E0E0E; --surface: #161616; --surface-2: #1F1F1F; --text: #F0EDE8; --muted: #888; --green: #2ecc71; --red: #e74c3c; --border: rgba(255,255,255,0.08); }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 60px; text-align: left; }
-        .app-header { background: var(--surface); padding: 10px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        .logo-admin { height: 40px; width: auto; }
-        .tab-nav { display: flex; margin: 20px 32px 0; border-bottom: 1px solid var(--border); }
-        .tab-btn { background: none; border: none; color: var(--muted); padding: 14px 22px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; font-family: 'DM Sans', sans-serif; }
+        
+        .app-header { background: var(--surface); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .logo-admin { height: 35px; width: auto; }
+        
+        .tab-nav { display: flex; margin: 20px 20px 0; border-bottom: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .tab-btn { background: none; border: none; color: var(--muted); padding: 12px 18px; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
         .tab-btn.active { color: var(--orange); border-bottom: 2px solid var(--orange); }
-        .content-area { padding: 24px 32px; max-width: 900px; }
-        .card { background: var(--surface); border-radius: 16px; padding: 22px; margin-bottom: 18px; border: 1px solid var(--border); }
+        
+        .content-area { padding: 20px; max-width: 900px; margin: 0 auto; }
+        .card { background: var(--surface); border-radius: 16px; padding: 20px; margin-bottom: 18px; border: 1px solid var(--border); }
         .order-card { background: var(--surface-2); border-radius: 14px; padding: 18px; margin-bottom: 12px; }
-        .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
+        
+        .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; }
         .btn-primary { background: var(--orange); color: white; }
         .btn-ready { background: var(--green); color: white; }
         .btn-cancel { background: var(--red); color: white; }
-        input[type=text], input[type=email], input[type=password], input[type=number], select { background: var(--surface-2); border: 1px solid var(--border); color: white; padding: 10px 12px; border-radius: 8px; width: 100%; font-family: 'DM Sans', sans-serif; }
+        
+        input[type=text], input[type=email], input[type=password], input[type=number], select { background: var(--surface-2); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; width: 100%; font-family: 'DM Sans', sans-serif; font-size: 16px; }
         input:focus, select:focus { outline: none; border-color: var(--orange); }
         .hidden { display: none !important; }
+        
         #login-gate { position: fixed; inset: 0; background: var(--bg); display: none; align-items: center; justify-content: center; z-index: 9999; }
-        .status-bar { margin: 20px 32px; background: var(--surface); border-radius: 14px; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
-        .cat-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; cursor: grab; font-size: 0.85rem; user-select: none; }
-        .cat-tag.dragging { opacity: 0.5; border: 1px dashed var(--orange); }
-        .inv-row { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: grab; gap: 12px; transition: background 0.2s; text-align: left; }
-        .inv-row.dragging { opacity: 0.4; background: var(--orange); }
+        .status-bar { margin: 20px; background: var(--surface); border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+        
+        .inv-row { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); cursor: grab; gap: 10px; text-align: left; }
         .drag-handle { color: var(--muted); cursor: grab; flex-shrink: 0; }
-        .inv-name-input { flex: 2; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; }
-        .inv-price-input { width: 70px; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--orange); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; padding: 2px 4px; outline: none; text-align: right; }
-        .opts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
-
-        /* Stock Input Arrows Reset */
+        .inv-name-input { flex: 2; background: transparent; border: none; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; }
+        .inv-price-input { width: 60px; background: transparent; border: none; color: var(--orange); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; text-align: right; outline: none; }
+        
+        /* Stock Input Fixes */
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
-        .stock-input { width: 60px !important; padding: 4px 8px !important; text-align: center !important; }
+        .stock-input { width: 60px !important; padding: 4px !important; text-align: center !important; }
+
+        @media (max-width: 600px) {
+            .app-header { padding: 10px 15px; }
+            .status-bar { flex-direction: column; gap: 12px; text-align: center; }
+            .card > div[style*="display:flex"] { flex-direction: column !important; gap: 15px !important; }
+            .card .btn-group { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+            .btn-cancel { grid-column: span 2; }
+            div[style*="display:grid; grid-template-columns: 1fr 100px auto"] { grid-template-columns: 1fr !important; }
+            .inv-row { flex-wrap: wrap; }
+            .inv-name-input { flex: 1 1 100%; font-weight: bold; margin-bottom: 5px; }
+        }
     </style>
 </head>
 <body>
 
 <div id="login-gate">
     <div style="width:320px;text-align:center;">
-        <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" style="width:220px; margin-bottom:30px;">
+        <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" style="width:200px; margin-bottom:30px;">
         <div style="display:flex;flex-direction:column;gap:10px;">
             <input type="email" id="admin-email" placeholder="Email">
             <input type="password" id="admin-pass" placeholder="Password">
@@ -60,17 +74,17 @@
 <div id="admin-content" class="hidden">
     <header class="app-header">
         <img src="https://raw.githubusercontent.com/kevfromglasgow/ChipsAnd/main/ChipsAndLogo.png" class="logo-admin">
-        <button class="btn" style="background:#2a2a2a;color:white;" id="logout-btn">Logout</button>
+        <button class="btn" style="background:#2a2a2a;color:white;padding:8px 12px;font-size:0.75rem;" id="logout-btn">Logout</button>
     </header>
 
     <div class="status-bar">
-        <div style="font-size: 1.1rem; text-align: left;">Shop Status: <strong id="status-text">...</strong></div>
-        <button class="btn btn-primary" id="toggle-shop-btn">Toggle Shop Status</button>
+        <div style="font-size: 1rem; text-align: left;">Shop Status: <strong id="status-text">...</strong></div>
+        <button class="btn btn-primary" id="toggle-shop-btn" style="padding:8px 16px;">Toggle Status</button>
     </div>
 
     <nav class="tab-nav">
-        <button class="tab-btn active" data-tab="live">Live Orders</button>
-        <button class="tab-btn" data-tab="pies">Pie Batch</button>
+        <button class="tab-btn active" data-tab="live">Orders</button>
+        <button class="tab-btn" data-tab="pies">Batches</button>
         <button class="tab-btn" data-tab="menu">Inventory</button>
         <a href="insights.html" target="_blank" class="tab-btn" style="text-decoration:none;">📈 Insights</a>
     </nav>
@@ -80,11 +94,11 @@
 
         <div id="tab-pies" class="tab-panel hidden">
             <div class="card" style="border-color:var(--orange)">
-                <h3 style="margin-bottom:16px">Collection Dates Manager</h3>
+                <h3 style="margin-bottom:16px; font-size: 1.1rem;">Collection Dates</h3>
                 <div style="display:grid; grid-template-columns: 1fr 100px auto; gap:10px; margin-bottom:12px;">
-                    <input type="text" id="new-pie-date" placeholder="e.g. Friday 17th April">
-                    <input type="text" id="new-pie-times" placeholder="9am - 5pm">
-                    <button class="btn btn-primary" id="add-date-btn">Add Date</button>
+                    <input type="text" id="new-pie-date" placeholder="Date">
+                    <input type="text" id="new-pie-times" placeholder="Times">
+                    <button class="btn btn-primary" id="add-date-btn">Add</button>
                 </div>
                 <div id="dates-list-admin"></div>
             </div>
@@ -98,15 +112,6 @@
                     <input type="text" id="new-cat-name" placeholder="New category">
                     <button class="btn btn-primary" id="add-cat-btn">Add</button>
                 </div>
-            </div>
-            <div class="card">
-                <h3>Add Item</h3>
-                <div style="display:grid;grid-template-columns:1fr 120px 1fr;gap:10px;margin-bottom:12px;">
-                    <input type="text" id="new-name" placeholder="Item name">
-                    <input type="number" id="new-price" placeholder="Price £" step="0.01">
-                    <select id="new-cat"><option value="">Select category…</option></select>
-                </div>
-                <button class="btn btn-primary" id="add-item-btn">Add to Menu</button>
             </div>
             <div id="menu-list"></div>
         </div>
@@ -171,7 +176,6 @@
         document.getElementById('toggle-shop-btn').onclick = () => updateDoc(doc(db, "settings", "truck_status"), { is_closed: !window._isClosed });
         document.getElementById('add-date-btn').onclick = addCollectionDate;
         document.getElementById('add-cat-btn').onclick = addCategory;
-        document.getElementById('add-item-btn').onclick = addItem;
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.onclick = () => {
@@ -196,10 +200,10 @@
             dateOrders.forEach(o => o.items.forEach(i => pieTotals[i.name] = (pieTotals[i.name] || 0) + 1));
 
             let invHtml = `<div style="margin-top:15px; display:grid; grid-template-columns: 1fr auto auto; gap:10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-                            <div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase;">Flavor</div><div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; text-align:center;">Sold</div><div style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; text-align:right;">Stock</div>`;
+                            <div style="font-size:0.65rem; color:var(--muted); text-transform:uppercase;">Flavor</div><div style="font-size:0.65rem; color:var(--muted); text-transform:uppercase; text-align:center;">Sold</div><div style="font-size:0.65rem; color:var(--muted); text-transform:uppercase; text-align:right;">Stock</div>`;
             piesFromMenu.forEach(p => {
                 const stock = d.inventory[p.name] || 0;
-                invHtml += `<span>${p.name}:</span><span style="color:var(--orange); text-align:center;">${pieTotals[p.name] || 0}</span>
+                invHtml += `<span style="font-size:0.8rem">${p.name}:</span><span style="color:var(--orange); text-align:center; font-size:0.8rem">${pieTotals[p.name] || 0}</span>
                 <input type="number" value="${stock}" class="stock-input" 
                        onfocus="_suppressRender=true" 
                        onblur="_suppressRender=false" 
@@ -208,7 +212,18 @@
             invHtml += `</div>`;
 
             const div = document.createElement('div'); div.className = 'card'; div.style.background = "var(--surface-2)";
-            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start; text-align:left;"><div><strong>${d.label}</strong><br><span style='font-size:0.75rem;color:var(--orange)'>${d.times} — ${dateOrders.length} Paid Orders</span></div><div style='display:flex; gap:8px;'><button class='btn' style='background:#34495e; font-size:0.7rem;' onclick="generatePiePDF('${d.label}')">📄 Orders</button><button class='btn' style='background:#673ab7; font-size:0.7rem;' onclick="generateTallyPDF('${d.label}')">📊 Tally</button><button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem;' onclick="toggleDate('${d.id}', event)">${d.active ? 'Online' : 'Hidden'}</button><button class='btn btn-cancel' onclick="deleteDate('${d.id}')">✕</button></div></div>${invHtml}`;
+            div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start; text-align:left;">
+                <div style="flex:1">
+                    <strong style="font-size:0.9rem">${d.label}</strong><br>
+                    <span style='font-size:0.75rem;color:var(--orange)'>${d.times} — ${dateOrders.length} Paid Orders</span>
+                </div>
+                <div class="btn-group" style='display:flex; gap:6px;'>
+                    <button class='btn' style='background:#34495e; padding: 6px; flex:1;' onclick="generatePiePDF('${d.label}')"><span style="font-size:1.2rem">📄</span></button>
+                    <button class='btn' style='background:#673ab7; padding: 6px; flex:1;' onclick="generateTallyPDF('${d.label}')"><span style="font-size:1.2rem">📊</span></button>
+                    <button class='btn' style='background:${d.active ? 'var(--green)' : '#444'}; font-size:0.7rem; padding: 6px 12px; flex:1;' onclick="toggleDate('${d.id}', event)">${d.active ? 'Online' : 'Hidden'}</button>
+                    <button class='btn btn-cancel' style="padding: 6px;" onclick="deleteDate('${d.id}')">✕</button>
+                </div>
+            </div>${invHtml}`;
             wrap.appendChild(div);
         });
     }
@@ -218,7 +233,7 @@
         snap.forEach(d => {
             const data = d.data(); if (data.type !== 'PICKUP') return;
             const div = document.createElement('div'); div.className = 'order-card';
-            div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${d.id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div><div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong><ul style='list-style:none; font-size:0.8rem; color:var(--muted); text-align:left;'>${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul></div><div style='display:flex;gap:10px'><button class='btn btn-ready'>Ready</button><button class='btn btn-cancel'>Cancel</button></div>`;
+            div.innerHTML = `<div style='display:flex;justify-content:space-between'><strong>#${d.id.slice(-4).toUpperCase()}</strong><span class='btn-primary' style='padding:2px 8px;border-radius:5px;font-size:0.7rem'>${data.type}</span></div><div style='margin:10px 0'><strong>${data.customer?.name || ''}</strong><ul style='list-style:none; font-size:0.8rem; color:var(--muted); text-align:left;'>${data.items.map(i => `<li>${i.name}</li>`).join('')}</ul></div><div style='display:flex;gap:10px'><button class='btn btn-ready' style="flex:1">Ready</button><button class='btn btn-cancel' style="flex:1">Cancel</button></div>`;
             div.querySelector('.btn-ready').onclick = () => updateDoc(doc(db, "orders", d.id), { status: 'ready' });
             div.querySelector('.btn-cancel').onclick = () => confirm('Cancel?') && updateDoc(doc(db, "orders", d.id), { status: 'cancelled' });
             live.appendChild(div);
@@ -241,12 +256,11 @@
     function makeRow(item) {
         const row = document.createElement('div'); row.className = 'inv-row'; row.draggable = true; row.dataset.id = item.id;
         const hasV = item.variants && item.variants.length > 0;
-        row.innerHTML = `<span class='drag-handle'>⠿</span><input type='text' class='inv-name-input' value="${item.name}"><div style="display:flex; align-items:center; gap:4px;"><span style="color:var(--orange); font-size:0.8rem;">£</span><input type='number' class='inv-price-input' value="${parseFloat(item.price || 0).toFixed(2)}" step="0.01" ${hasV ? 'disabled style="opacity:0.4"' : ''} onfocus="_suppressRender=true" onblur="_suppressRender=false; updateItemPrice('${item.id}', this.value)"></div><input type='checkbox' class='inv-avail-check' ${item.is_available ? 'checked' : ''} style='width:auto; cursor:pointer;'><button class='opts-btn'>⚙ Options</button><button style='background:none; border:none; color:var(--red); cursor:pointer;'>✕</button>`;
+        row.innerHTML = `<span class='drag-handle'>⠿</span><input type='text' class='inv-name-input' value="${item.name}"><div style="display:flex; align-items:center; gap:4px;"><span style="color:var(--orange); font-size:0.8rem;">£</span><input type='number' class='inv-price-input' value="${parseFloat(item.price || 0).toFixed(2)}" step="0.01" ${hasV ? 'disabled style="opacity:0.4"' : ''} onfocus="_suppressRender=true" onblur="_suppressRender=false; updateItemPrice('${item.id}', this.value)"></div><input type='checkbox' class='inv-avail-check' ${item.is_available ? 'checked' : ''} style='width:auto; cursor:pointer;'><button style='background:none; border:none; color:var(--red); cursor:pointer;'>✕</button>`;
         const [nameInp, priceInp, availInp] = row.querySelectorAll('input');
         nameInp.onfocus = () => _suppressRender = true;
         nameInp.onblur = async (e) => { _suppressRender = false; if(e.target.value.trim() !== item.name) await updateDoc(doc(db, "menu", item.id), { name: e.target.value.trim() }); };
         availInp.onchange = async () => await updateDoc(doc(db, "menu", item.id), { is_available: availInp.checked });
-        row.querySelector('.opts-btn').onclick = () => toggleOptsEditor(item, row);
         row.querySelector('button:last-child').onclick = () => confirm('Delete item?') && deleteDoc(doc(db, 'menu', item.id));
         return row;
     }
@@ -265,19 +279,7 @@
         });
     }
 
-    function renderCatDropdown() { const sel = document.getElementById('new-cat'); if(!sel) return; sel.innerHTML = '<option value="">Select category…</option>'; allCategories.forEach(c => { const o = document.createElement('option'); o.value = c; o.innerText = c; sel.appendChild(o); }); }
-
-    function toggleOptsEditor(item, row) {
-        const next = row.nextElementSibling; if (next && next.classList.contains('opts-editor')) { next.remove(); return; }
-        const editor = document.createElement('div'); editor.className = 'opts-editor'; editor.style.padding = "20px";
-        const refresh = async () => {
-            const snap = await getDoc(doc(db, "menu", item.id)); const d = snap.data();
-            editor.innerHTML = `<h5 style="margin-bottom:10px">Options</h5><div>${(d.subOptions||[]).map(o => `<span style="background:#222; padding:4px 8px; border-radius:4px; margin-right:5px;">${o}<button style="border:none; background:none; color:#888; margin-left:5px;" onclick="updateSubOpt('${item.id}','${o}')">✕</button></span>`).join('')}</div><div style="margin-top:10px"><input type='text' id='f-in-${item.id}' style="width:120px"><button class="btn btn-primary" onclick="addSubOpt('${item.id}')" style="padding:5px 10px; margin-left:5px;">+</button></div>`;
-        };
-        window.addSubOpt = async (id) => { const val = document.getElementById('f-in-'+id).value.trim(); if(!val) return; const snap = await getDoc(doc(db, "menu", id)); await updateDoc(doc(db, "menu", id), { subOptions: [...(snap.data().subOptions||[]), val] }); refresh(); };
-        window.updateSubOpt = async (id, opt) => { const snap = await getDoc(doc(db, "menu", id)); await updateDoc(doc(db, "menu", id), { subOptions: snap.data().subOptions.filter(o=>o!==opt) }); refresh(); };
-        row.insertAdjacentElement('afterend', editor); refresh();
-    }
+    function renderCatDropdown() { const sel = document.getElementById('new-cat'); if(!sel) return; sel.innerHTML = '<option value="">Category</option>'; allCategories.forEach(c => { const o = document.createElement('option'); o.value = c; o.innerText = c; sel.appendChild(o); }); }
 
     function initDragEvents(container, selector, onDropCallback) {
         let draggedItem = null;
@@ -304,18 +306,14 @@
     window.updatePieStock = async (id, pie, val) => { const num = parseInt(val); if (isNaN(num)) return; const s = await getDoc(doc(db, "settings", "collection_dates")); const dts = s.data().dates.map(d => d.id === id ? {...d, inventory: {...d.inventory, [pie]: num}} : d); await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts }); };
     
     window.toggleDate = async (id, event) => { 
-        const btn = event.target;
+        const btn = event.target.closest('button');
         const currentlyOnline = btn.innerText === 'Online';
-        
         _suppressRender = true;
-        
         btn.innerText = currentlyOnline ? 'Hidden' : 'Online';
         btn.style.background = currentlyOnline ? '#444' : 'var(--green)';
-
         const s = await getDoc(doc(db, "settings", "collection_dates")); 
         const dts = s.data().dates.map(d => d.id === id ? {...d, active: !currentlyOnline} : d); 
         await updateDoc(doc(db, "settings", "collection_dates"), { dates: dts });
-        
         setTimeout(() => { _suppressRender = false; }, 800);
     };
 
@@ -328,12 +326,38 @@
         setTimeout(() => { _suppressRender = false; }, 800);
     };
 
+    // UPDATED GROUPED PDF GENERATOR
     window.generatePiePDF = async (dateLabel) => {
-        const { jsPDF } = window.jspdf; const pdf = new jsPDF();
-        const snap = await getDocs(query(collection(db, "orders"), where("type", "==", "PRE-ORDER"), where("collectionDate", "==", dateLabel), where("paymentStatus", "==", "PAID"), where("status","==","pending")));
-        const rows = snap.docs.map(d => [d.data().customer?.name || '', d.data().items.map(i => i.name).join(', '), d.data().customer?.msg || '-']);
-        pdf.text("Order Sheet: " + dateLabel, 14, 15); pdf.autoTable({ head: [['Customer', 'Items', 'Notes']], body: rows });
-        pdf.save(`Orders_${dateLabel}.pdf`);
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+        const snap = await getDocs(query(collection(db, "orders"), 
+            where("type", "==", "PRE-ORDER"), 
+            where("collectionDate", "==", dateLabel), 
+            where("paymentStatus", "==", "PAID"), 
+            where("status","==","pending")));
+
+        const rows = snap.docs.map(d => {
+            const data = d.data();
+            const itemCounts = {};
+            data.items.forEach(item => {
+                itemCounts[item.name] = (itemCounts[item.name] || 0) + 1;
+            });
+
+            const itemString = Object.entries(itemCounts)
+                .map(([name, count]) => count > 1 ? `${name} (x${count})` : name)
+                .join(', ');
+
+            return [data.customer?.name || '', itemString, data.customer?.msg || '-'];
+        });
+
+        pdf.text("Order Sheet: " + dateLabel, 14, 15);
+        pdf.autoTable({ 
+            head: [['Customer', 'Items', 'Notes']], 
+            body: rows,
+            theme: 'striped',
+            headStyles: { fillColor: [31, 31, 31] }
+        });
+        pdf.save(`Orders_${dateLabel.replace(/ /g, '_')}.pdf`);
     }
 
     window.generateTallyPDF = async (dateLabel) => {
@@ -347,7 +371,6 @@
         pdf.save(`Tally_${dateLabel}.pdf`);
     }
 
-    async function addItem() { const name = document.getElementById('new-name').value.trim(); const price = parseFloat(document.getElementById('new-price').value); const category = document.getElementById('new-cat').value; if (!name || isNaN(price) || !category) return; await addDoc(collection(db, "menu"), { name, price, category, is_available: true, sortOrder: 999, subOptions: [], variants: [] }); document.getElementById('new-name').value=""; document.getElementById('new-price').value=""; }
     function addCategory() { const name = document.getElementById('new-cat-name').value.toUpperCase().trim(); if (!name || allCategories.includes(name)) return; setDoc(doc(db, "settings", "categories"), { list: [...allCategories, name] }); document.getElementById('new-cat-name').value=""; }
     async function addCollectionDate() { const dateStr = document.getElementById('new-pie-date').value.trim(); const times = document.getElementById('new-pie-times').value.trim() || "9am - 5pm"; if(!dateStr) return alert("Enter a date"); const pies = allMenuItems.filter(i => i.category === 'PIES'); const inv = {}; pies.forEach(p => inv[p.name] = 0); const snap = await getDoc(doc(db, "settings", "collection_dates")); const updated = [...(snap.data()?.dates || []), { id: Date.now().toString(), label: dateStr, times, inventory: inv, active: true }]; await setDoc(doc(db, "settings", "collection_dates"), { dates: updated }); document.getElementById('new-pie-date').value = ""; document.getElementById('new-pie-times').value = ""; }
 </script>
